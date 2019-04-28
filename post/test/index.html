@@ -4,14 +4,20 @@
     <meta charset="utf-8" >
 
 <title>test | Gridea</title>
-<meta name="description" content="温故而知新">
+<meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556185780949">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556443708104">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -29,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1556185780949" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556443708104" class="site-logo">
         <h1 class="site-title">Gridea</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -79,7 +85,7 @@
       
     </div>
     <div class="site-description">
-      温故而知新
+      天地不仁以万物为刍狗
     </div>
     <div class="site-footer">
       Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
@@ -92,7 +98,7 @@
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
             <h2 class="post-title">test</h2>
-            <div class="post-date">2019-04-25</div>
+            <div class="post-date">2019-04-28</div>
             
             <div class="post-content">
               <p>hello world</p>
@@ -102,14 +108,20 @@
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://jzq6520.github.io/post/hello-gridea">
+                <a href="https://jzq6520.github.io/post/about">
                   <h3 class="post-title">
-                    Hello Gridea
+                    关于
                   </h3>
                 </a>
               </div>
             
 
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
             
 
           </div>
@@ -134,6 +146,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 
