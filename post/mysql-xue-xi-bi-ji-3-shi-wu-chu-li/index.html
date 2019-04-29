@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>进度条工具tqdm | 姜</title>
+<title>MySQL学习笔记-3事务处理 | 姜</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -97,51 +97,61 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">进度条工具tqdm</h2>
+            <h2 class="post-title">MySQL学习笔记-3事务处理</h2>
             <div class="post-date">2019-04-29</div>
             
-              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/python-jin-du-tiao-gong-ju-tqdm.png')">
-              </div>
-            
             <div class="post-content">
-              <h2 id="安装">安装</h2>
-<pre><code>pip install tqdm
-</code></pre>
-<h2 id="使用">使用</h2>
-<p>tqdm包是一个python进度条工具，可以在我们进行for循环的时候显示我们的迭代进度。</p>
-<p>例如：</p>
-<pre><code class="language-python">from tqdm import tqdm
-import time
-
-text = &quot;&quot;
-for char in tqdm([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]):
-    time.sleep(0.25)
-    text = text + char
-</code></pre>
-<p>也可以用于显示文件下载进度、文件加载进度。</p>
-<p>可以自定义进度条的加载，例如：</p>
-<pre><code class="language-python">with tqdm(total=100) as pbar:
-    for i in range(10):
-        pbar.update(10)
-</code></pre>
-<p>或</p>
-<pre><code class="language-python">pbar = tqdm(total=100)
-for i in range(10):
-    pbar.update(10)
-pbar.close()
-</code></pre>
-<h2 id="引用">引用</h2>
+              <h1 id="mysql事务处理">MySQL事务处理</h1>
 <ul>
-<li><a href="https://github.com/tqdm/tqdm">https://github.com/tqdm/tqdm</a></li>
-<li><a href="https://blog.csdn.net/qq_40666028/article/details/79335961">https://blog.csdn.net/qq_40666028/article/details/79335961</a></li>
+<li>MyISAM和 InnoDB是mysql常用的引擎，前者不支持事务处理后者支持。</li>
+<li>事务处理用来维护数据库的完整性，它保证成批的Mysql操作要么执行，要么都不执行。</li>
+<li>关系型数据库设计把数据存储在多个表里，使数据更容易操纵、维护和重用。</li>
+<li>关键：事务处理的关键在于，将SQL语句分解为逻辑块，并明确规定数据何时退回何时不应该退回。</li>
 </ul>
+<h2 id="控制事务处理">控制事务处理</h2>
+<ul>
+<li>开始：start transaction</li>
+<li>回滚：rollback</li>
+<li>commit：平时的Mysql语句都是隐式提交，<strong>但在事务处理的时候需要显示提交</strong>，commit语句只有在不出错时提交。</li>
+<li>保留点：可以指定回退到指定的点，这个点使用**savepoint pointname;**给出保留点。<strong>注：可以多设置保留点，以方便后面回滚</strong>。release savepoint 删除保留点。</li>
+</ul>
+<h3 id="更改默认提交行为">更改默认提交行为</h3>
+<p>设置： autocommit = 0;
+autocommit是针对每个连接的，不是服务器的。</p>
+<h2 id="字符集合校对顺序">字符集合校对顺序</h2>
+<p>不同的语言和字符集需要以不同的方式存储和检索。因此，MySQL需要<strong>适应不同的字符集</strong>，适应不同的<strong>排序和检索</strong>数据的方法。</p>
+<ul>
+<li>字符集：为字母和符号的集合</li>
+<li>编码：某个字符集的内部表示</li>
+<li>校对：规定字符如何比较,例如区分大小写还是不区分。</li>
+</ul>
+<p><code>show CHARACTER SET</code>
+<code>SHOW COLLATION</code></p>
+<p>可以在创建数据库，表，或者定义列的时候指定默认的校对。</p>
+<pre><code class="language-sql">--表指定
+CREATE TABLE mytable
+(
+columnn1 INT,
+columnn2 VARCHAR(10) CHARACTER SET latin1 COLLATE --列指定
+) DEFAULT CHARACTER SET hebrew
+  COLLATE hebrew_general_ri;
+</code></pre>
+<p>校对在对用ORDER BY 子句检索出来的数据排序时起重要作用。</p>
+<pre><code class="language-sql">--或者排列的时候指定
+SELECT * FROM customers
+ORDER BY lastname, firstname COLLATE latin1_general_cs;
+</code></pre>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
-                    python
+                  <a href="https://jzq6520.github.io/tag/w95GY-Zrv" class="tag">
+                    MySQL
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/W3LexV2-o" class="tag">
+                    sql
                   </a>
                 
               </div>
@@ -149,9 +159,9 @@ pbar.close()
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://jzq6520.github.io/post/about">
+                <a href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-2-jin-jie">
                   <h3 class="post-title">
-                    关于
+                    MySQL学习笔记-2进阶
                   </h3>
                 </a>
               </div>

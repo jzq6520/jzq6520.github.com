@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>MySQL学习笔记-1基本语法 | 姜</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556519169825">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556519169825" class="site-logo">
+        <h1 class="site-title">姜</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">MySQL学习笔记-1基本语法</h2>
+            <div class="post-date">2019-04-29</div>
+            
+            <div class="post-content">
+              <h1 id="sql-基本语法">sql 基本语法</h1>
+<p>数据库是由许多表组成的一个库。
+每条语句以分好<code>;</code>结束。
+适用于mysql
+delect只能删除行，drop才是真正的remove，什么都能删。</p>
+<h2 id="安装">安装</h2>
+<p>使用bmg文件安装，安装完成后输入：
+<code>mysql --version</code>
+如果安装显示command not found，执行下面的命令</p>
+<pre><code>$ cd /usr/local/bin/
+
+$ sudo ln -fs /usr/local/mysql/bin/mysql mysql
+</code></pre>
+<h2 id="mysql服务启动和关闭可以在系统偏好设置里面操作终端命令如下">mysql服务启动和关闭可以在系统偏好设置里面操作，终端命令如下：</h2>
+<pre><code>$ sudo /usr/local/mysql/support-files/mysql.server start
+$ sudo /usr/local/mysql/support-files/mysql.server stop
+</code></pre>
+<h2 id="登录">登录</h2>
+<p><code>mysql -u user -p password</code></p>
+<h2 id="登出">登出</h2>
+<p><code>mysql&gt; QUIT</code></p>
+<h2 id="进入数据库">进入数据库</h2>
+<p><code>use database_name</code></p>
+<h2 id="显示数据库中的表">显示数据库中的表</h2>
+<p><code>show tables</code></p>
+<h2 id="显示所有的数据库">显示所有的数据库</h2>
+<p><code>show databases</code></p>
+<h2 id="sql语法学习">sql语法学习</h2>
+<p><a href="http://www.w3school.com.cn/sql/sql_syntax.asp">http://www.w3school.com.cn/sql/sql_syntax.asp</a></p>
+<h2 id="sql-dml-和-ddl">SQL DML 和 DDL</h2>
+<p>可以把 SQL 分为两个部分：数据操作语言 (DML) 和 数据定义语言 (DDL)。</p>
+<p>SQL (结构化查询语言)是用于执行查询的语法。但是 SQL 语言也包含用于更新、插入和删除记录的语法。</p>
+<p>查询和更新指令构成了 SQL 的 DML 部分（对<strong>数据</strong>进行操作，不是表还有其他的）：</p>
+<ul>
+<li>SELECT - 从数据库表中获取数据</li>
+<li>UPDATE - 更新数据库表中的数据</li>
+<li>DELETE - 从数据库表中删除数据</li>
+<li>INSERT INTO - 向数据库表中插入数据</li>
+</ul>
+<p>SQL 的数据定义语言 (DDL) 部分使我们有能力创建或删除<strong>表格</strong>。我们也可以定义<strong>索引</strong>（键），规定<strong>表之间</strong>的链接，以及施加<strong>表间</strong>的约束。</p>
+<p>SQL 中最重要的 DDL 语句:</p>
+<ul>
+<li>CREATE DATABASE - 创建新数据库</li>
+<li>ALTER DATABASE - 修改数据库</li>
+<li>CREATE TABLE - 创建新表</li>
+<li>ALTER TABLE - 变更（改变）数据库表</li>
+<li>DROP TABLE - 删除表</li>
+<li>CREATE INDEX - 创建索引（搜索键）</li>
+<li>DROP INDEX - 删除索引</li>
+</ul>
+<h2 id="create-database-创建数据库">CREATE DATABASE 创建数据库</h2>
+<p>CREATE DATABASE 用于创建数据库。
+<code>CREATE DATABASE database_name</code>
+SHOW DATABASES 查看数据库。</p>
+<h3 id="create-table-创建表">CREATE TABLE 创建表</h3>
+<p>CREATE TABLE 语句用于创建数据库中的表。</p>
+<pre><code class="language-SQL">CREATE TABLE 表名称
+(
+列名称1 数据类型,
+列名称2 数据类型,
+列名称3 数据类型,
+....
+)
+</code></pre>
+<p>数据类型（data_type）规定了列可容纳何种<a href="http://www.w3school.com.cn/sql/sql_create_table.asp">数据类型</a>。</p>
+<h2 id="selectfrom-选择表">SELECT.....FROM... 选择表</h2>
+<ul>
+<li>SELECT 列名称 FROM 表名</li>
+</ul>
+<p>DISTINCT放回唯一的不同的值</p>
+<ul>
+<li>SELECT DISTINCT 列 FROM 表</li>
+</ul>
+<p>选择指定的行的数量：</p>
+<ul>
+<li>加 LIMIT number</li>
+</ul>
+<h2 id="where-筛选条件">WHERE 筛选条件</h2>
+<p>如需<strong>有条件</strong>地从表中选取数据，可将 WHERE 子句添加到 SELECT 语句。
+增加选取条件。</p>
+<ul>
+<li>SELECT 列名称 FROM 表名称 WHERE 列 运算符 值</li>
+</ul>
+<p><code>SELECT * FROM Persons WHERE City='Beijing'</code>
+注意：表中的字符串加单引号</p>
+<ul>
+<li>
+<p>一次性指定多个值：
+WHERE column_name IN (value1,value2,...)
+<code>WHERE LastName IN ('Adams','Carter')</code></p>
+</li>
+<li>
+<p>LIKE :匹配字符串
+使用的<a href="http://www.w3school.com.cn/sql/sql_wildcards.asp">通配符</a></p>
+</li>
+<li>
+<p>BETWEEN
+操作符 BETWEEN ... AND 会选取介于两个值之间的数据范围。这些值可以是数值、文本或者日期。
+<code>BETWEEN value1 AND value2</code></p>
+</li>
+</ul>
+<h2 id="and-or-整合筛选条件">AND, OR 整合筛选条件</h2>
+<p>AND 和 OR 可在 WHERE 子语句中把两个或多个条件结合起来。</p>
+<h2 id="order-by-排序">ORDER BY 排序</h2>
+<p>ORDER BY 语句用于根据指定的列对结果集进行排序。
+ORDER BY 语句<strong>默认按照升序</strong>对记录进行排序。
+如果您希望按照降序对记录进行排序，可以使用** DESC 关键字**。</p>
+<p>顺序是从上向下看。</p>
+<h3 id="如果对第一列进行降序第二列升序">如果对第一列进行降序，第二列升序</h3>
+<p>在第一列中有相同的值时，第二列是以升序排列的。
+不相同的值不进行排序。</p>
+<h2 id="insert-intovalues-插入新的行">INSERT INTO....VALUES... 插入新的行</h2>
+<p>在表中插入新的行。
+如果单独选择几个列插入，则没有值的列为空。</p>
+<ul>
+<li>INSERT INTO 表名称 VALUES (值1, 值2,....)：一行</li>
+<li>INSERT INTO 表名称(列1, 列2,...) VALUES (值1, 值2,....)：指定选择的列</li>
+</ul>
+<h2 id="updatesetwhere-修改表中的数据">UPDATE....SET....WHERE... 修改表中的数据</h2>
+<p>UPDATE 用于修改表中的数据。
+where用来选择哪一行。</p>
+<ul>
+<li>UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值</li>
+</ul>
+<h2 id="delete-删除行">DELETE 删除行</h2>
+<p>配合from和where使用</p>
+<ul>
+<li>DELETE FROM 表名称 WHERE 列名称 = 值 ： 删除指定行</li>
+<li>DELETE * FROM table_name : 删除所有行</li>
+</ul>
+<h2 id="指定别名-asalias">指定别名 AS（alias）</h2>
+<p>总的来说就是跟在原来名字的后面，<em>原名 AS 别名</em>。</p>
+<ul>
+<li>给表指定别名：</li>
+</ul>
+<pre><code>SELECT column_name(s)
+FROM table_name
+AS alias_name
+</code></pre>
+<ul>
+<li>给列指定别名</li>
+</ul>
+<pre><code>SELECT column_name AS alias_name
+FROM table_name
+</code></pre>
+<h2 id="join-连接两个表">join 连接两个表</h2>
+<p>和pandas中的连接相似，通过主键，连接两个表。
+也可以通过where实现一部分功能，但是通过join实现更加方便和完整。
+跟在from后面，on指定主键</p>
+<pre><code class="language-sql">SELECT column_name(s)
+FROM table_name1
+INNER JOIN（可以用不同类型的join命令代替） table_name2 
+ON table_name1.column_name=table_name2.column_name
+</code></pre>
+<pre><code class="language-sql">SELECT Persons.LastName, Persons.FirstName, Orders.OrderNo
+FROM Persons
+INNER JOIN Orders
+ON Persons.Id_P = Orders.Id_P
+ORDER BY Persons.LastName
+</code></pre>
+<h3 id="不同的-sql-join">不同的 SQL JOIN</h3>
+<p>除了我们在上面的例子中使用的 INNER JOIN（内连接），我们还可以使用其他几种连接。</p>
+<p>下面列出了您可以使用的 JOIN 类型，以及它们之间的差异。</p>
+<ul>
+<li>JOIN: 如果表中有至少一个匹配，则返回行，与INNER JOIN一样。但INNER跟直观。</li>
+<li>LEFT JOIN: 即使右表中没有匹配，也从左表返回所有的行</li>
+<li>RIGHT JOIN: 即使左表中没有匹配，也从右表返回所有的行</li>
+<li>FULL JOIN: 只要其中一个表中存在匹配，就返回行。类似并集，把两个表都整合到一块。</li>
+<li>INNER JOIN: 内连接，放回交集</li>
+</ul>
+<h2 id="union-连接两个表的内容不是合并">UNION 连接两个表的内容（不是合并）</h2>
+<p>UNION 操作符用于合并(上下连接)两个或多个 SELECT 语句的结果集。</p>
+<pre><code class="language-sql">SELECT column_name(s) FROM table_name1
+UNION
+SELECT column_name(s) FROM table_name2
+</code></pre>
+<p>默认地，UNION 操作符选取不同的值。如果允许重复的值，请使用 UNION ALL。</p>
+<pre><code class="language-sql">SELECT column_name(s) FROM table_name1
+UNION ALL
+SELECT column_name(s) FROM table_name2
+</code></pre>
+<h2 id="select-into-选取数据插入另外一个表备份存档">SELECT INTO 选取数据插入另外一个表，备份存档</h2>
+<p>SELECT INTO 语句从一个表中选取数据，然后把数据插入另一个表中。
+SELECT INTO 语句常用于创建表的<em>备份复件</em>或者用于对记录<em>进行存档</em>。</p>
+<pre><code class="language-sql">SELECT *
+INTO new_table_name [IN externaldatabase] 
+FROM old_tablename
+</code></pre>
+<h2 id="sql-约束-constraints">SQL 约束 (Constraints)</h2>
+<p>SQL 约束
+<em>约束用于限制加入表的数据的类型。</em></p>
+<p>可以在创建表时规定约束（通过 CREATE TABLE 语句），或者在表创建之后也可以（通过 ALTER TABLE 语句）。</p>
+<p>我们将主要探讨以下几种约束：</p>
+<ul>
+<li>NOT NULL</li>
+<li>UNIQUE</li>
+<li>PRIMARY KEY</li>
+<li>FOREIGN KEY</li>
+<li>CHECK</li>
+<li>DEFAULT</li>
+</ul>
+<h3 id="not-null-not-null-约束非空">NOT NULL (not null) 约束非空</h3>
+<p>NOT NULL 约束强制列不接受 NULL 值。
+下面的 SQL 语句强制 &quot;Id_P&quot; 列和 &quot;LastName&quot; 列不接受 NULL 值：</p>
+<pre><code class="language-sql">CREATE TABLE Persons
+(
+Id_P int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255)
+)
+</code></pre>
+<h3 id="unique-约束">UNIQUE 约束</h3>
+<p><a href="http://www.w3school.com.cn/sql/sql_unique.asp">UNIQUE 约束</a>唯一标识数据库表中的每条记录。具体看看这个网站。还不是很明白什么用。
+UNIQUE 和 PRIMARY KEY 约束均为列或列集合提供了唯一性的保证。
+PRIMARY KEY 拥有自动定义的 UNIQUE 约束。
+请注意，每个表可以有多个 UNIQUE 约束，但是每个表只能有一个 PRIMARY KEY 约束。</p>
+<h3 id="primary-key-约束">PRIMARY KEY 约束</h3>
+<p><a href="http://www.w3school.com.cn/sql/sql_primarykey.asp">PRIMARY KEY 约束</a>唯一标识数据库表中的每条记录。
+主键必须包含唯一的值。
+主键列不能包含 NULL 值。
+每个表都应该有一个主键，并且每个表只能有一个主键。</p>
+<h3 id="foreignforeign-key-约束">FOREIGN（foreign） KEY 约束</h3>
+<p>不是很懂作用？
+一个表中的 FOREIGN KEY 指向另一个表中的 PRIMARY KEY。
+FOREIGN KEY 约束用于预防破坏表之间连接的动作。
+FOREIGN KEY 约束也能防止非法数据插入外键列，因为它必须是它指向的那个表中的值之一。</p>
+<pre><code class="language-sql">CREATE TABLE Orders
+(
+Id_O int NOT NULL,
+OrderNo int NOT NULL,
+Id_P int,
+PRIMARY KEY (Id_O),
+FOREIGN KEY (Id_P) REFERENCES Persons(Id_P)
+)
+</code></pre>
+<h3 id="check-约束值范围">CHECK 约束值范围</h3>
+<p>CHECK 约束用于限制列中的值的范围。
+如果对单个列定义 CHECK 约束，那么该列只允许特定的值。
+如果对一个表定义 CHECK 约束，那么此约束会在特定的列中对值进行限制。
+下面的 SQL 在 &quot;Persons&quot; 表创建时为 &quot;Id_P&quot; 列创建 CHECK 约束。CHECK 约束规定 &quot;Id_P&quot; 列必须只包含大于 0 的整数。</p>
+<pre><code class="language-sql">CREATE TABLE Persons
+(
+Id_P int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+CHECK (Id_P&gt;0)
+)
+</code></pre>
+<p>一个列约束</p>
+<pre><code class="language-sql">CREATE TABLE Persons
+(
+Id_P int NOT NULL CHECK (Id_P&gt;0), 
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255)
+)
+</code></pre>
+<p>跟多的可以见<a href="http://www.w3school.com.cn/sql/sql_check.asp">这里</a>。</p>
+<h3 id="default-约束插入默认值">DEFAULT 约束插入默认值</h3>
+<p>DEFAULT 约束用于向列中插入默认值。
+如果没有规定其他的值，那么会将默认值添加到所有的新记录。
+下面的 SQL 在 &quot;Persons&quot; 表创建时为 &quot;City&quot; 列创建 DEFAULT 约束：</p>
+<pre><code>CREATE TABLE Persons
+(
+Id_P int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255) DEFAULT 'Sandnes'
+)
+</code></pre>
+<p>也可以插入系统的值
+跟多可见<a href="http://www.w3school.com.cn/sql/sql_default.asp">这里</a>。</p>
+<h2 id="create-index-创建索引">CREATE INDEX 创建索引</h2>
+<p>CREATE INDEX 语句用于在表中***创建索引***。
+在不读取整个表的情况下，索引使数据库应用程序可以更快地查找数据。</p>
+<h3 id="索引">索引</h3>
+<p>您可以在表中创建索引，以便更加快速高效地查询数据。
+用户无法看到索引，它们只能被用来加速搜索/查询。
+<strong>注释</strong>：<em>更新一个包含索引的表需要比更新一个没有索引的表更多的时间，这是由于索引本身也需要更新。因此，理想的做法是仅仅在常常被搜索的列（以及表）上面创建索引。</em></p>
+<p>在表上创建一个简单的索引。允许使用重复的值：</p>
+<pre><code class="language-sql">CREATE INDEX index_name
+ON table_name (column_name)
+</code></pre>
+<p>注释：&quot;column_name&quot; 规定需要索引的列。</p>
+<p>CREATE UNIQUE INDEX 语法
+在表上创建一个唯一的索引。唯一的索引意味着两个行不能拥有相同的索引值。</p>
+<pre><code class="language-sql">CREATE UNIQUE INDEX index_name
+ON table_name (column_name)
+</code></pre>
+<p>如果您希望以降序索引某个列中的值，您可以在列名称之后添加保留字 DESC：</p>
+<pre><code class="language-sql">CREATE UNIQUE INDEX index_name
+ON table_name (column_name DESC)
+</code></pre>
+<p>假如您希望索引不止一个列，您可以在括号中列出这些列的名称，用逗号隔开：</p>
+<pre><code class="language-sql">CREATE INDEX PersonIndex
+ON Person (LastName, FirstName)
+</code></pre>
+<h2 id="sql-撤销索引-表以及数据库删除表索引和数据库">SQL 撤销索引、表以及数据库(删除表，索引和数据库)</h2>
+<h3 id="drop-index-删除索引">DROP INDEX 删除索引</h3>
+<p>我们可以使用 DROP INDEX 命令删除表格中的索引。</p>
+<pre><code class="language-sql">ALTER TABLE table_name DROP INDEX index_name
+</code></pre>
+<h3 id="drop-table-删除表">DROP TABLE 删除表</h3>
+<p>DROP TABLE 语句用于删除表（表的结构、属性以及索引也会被删除）：
+<code>DROP TABLE 表名称</code></p>
+<h3 id="drop-database-删除数据库">DROP DATABASE 删除数据库</h3>
+<p><code>DROP DATABASE 数据库名称</code></p>
+<h3 id="truncate-table-清空表中数据">TRUNCATE TABLE 清空表中数据</h3>
+<p>如果我们仅仅需要除去表内的数据，但并不删除表本身，那么我们该如何做呢？
+<code>TRUNCATE TABLE 表名称</code></p>
+<h2 id="alter-table-语句">ALTER TABLE 语句</h2>
+<p>在已有的表中添加、修改或删除列</p>
+<h3 id="alter-table-add-增加列">ALTER TABLE .... ADD ... 增加列</h3>
+<p>如需在表中添加列，请使用下列语法:</p>
+<pre><code class="language-sql">ALTER TABLE table_name
+ADD column_name datatype
+</code></pre>
+<h3 id="alter-table-drop-column-删除列">ALTER TABLE .... DROP COLUMN... 删除列</h3>
+<pre><code class="language-SQL">ALTER TABLE table_name 
+DROP COLUMN column_name
+</code></pre>
+<p>注释：某些数据库系统不允许这种在数据库表中删除列的方式 (DROP COLUMN column_name)。
+要改变表中列的数据类型，请使用下列语法：</p>
+<pre><code class="language-sql">ALTER TABLE table_name
+ALTER COLUMN column_name datatype
+</code></pre>
+<h3 id="改变表中列的数据类型">改变表中列的数据类型</h3>
+<pre><code class="language-sql">ALTER TABLE table_name
+MODIFY COLUMN column_name datatype
+</code></pre>
+<h2 id="auto-increment-插入表中时生成一个唯一的数字">AUTO INCREMENT 插入表中时生成一个唯一的数字</h2>
+<p>Auto-increment 会在新记录插入表中时生成一个唯一的数字。</p>
+<p>我们通常希望在每次插入新记录时，自动地创建主键字段的值。
+我们可以在表中创建一个 auto-increment 字段。
+MySQL 使用 AUTO_INCREMENT 关键字来执行 auto-increment 任务。
+默认地，AUTO_INCREMENT 的开始值是 1，每条新记录递增 1。
+更多见<a href="http://www.w3school.com.cn/sql/sql_autoincrement.asp">这里</a>。</p>
+<h2 id="view视图">VIEW（视图）</h2>
+<p>视图就好像我定义一个函数，我们规定需要显示满足某些条件的数据，这样当我们需要查看这些数据的时候，就不需要重新去写这些语句了。
+在 SQL 中，视图是基于 SQL 语句的结果集的可视化的表。</p>
+<p>视图包含行和列，就像一个真实的表。视图中的字段就是来自一个或多个数据库中的真实的表中的字段。我们可以向视图添加 SQL 函数、WHERE 以及 JOIN 语句，我们也可以提交数据，就像这些来自于某个单一的表。</p>
+<p>注释：数据库的设计和结构不会受到视图中的函数、where 或 join 语句的影响。</p>
+<pre><code class="language-sql">CREATE VIEW view_name AS
+SELECT column_name(s)
+FROM table_name
+WHERE condition
+</code></pre>
+<p>查询视图（使用这个视图）：</p>
+<pre><code class="language-sql">SELECT * FROM [Current Product List]
+</code></pre>
+<p>更多可见<a href="http://www.w3school.com.cn/sql/sql_view.asp">这里</a>。</p>
+<h2 id="日期">日期</h2>
+<p>只要数据包含的只是日期部分，运行查询就不会出问题。但是，如果涉及时间，情况就有点复杂了。
+<a href="http://www.w3school.com.cn/sql/sql_dates.asp">下面的表格</a>（在这个链接里）列出了 MySQL 中最重要的内建日期函数。</p>
+<pre><code>MySQL 使用下列数据类型在数据库中存储日期或日期/时间值：
+DATE - 格式 YYYY-MM-DD
+DATETIME - 格式: YYYY-MM-DD HH:MM:SS
+TIMESTAMP - 格式: YYYY-MM-DD HH:MM:SS
+YEAR - 格式 YYYY 或 YY
+</code></pre>
+<h3 id="日期处理">日期处理</h3>
+<p>如果不涉及时间部分，那么我们可以轻松地比较两个日期！
+例如
+<code>SELECT * FROM Orders WHERE OrderDate='2008-12-26'</code></p>
+<p>如果日期中包含时间，那么上面的语句就无法查询到结果。
+那么我们得不到结果。这是由于该查询不含有时间部分的日期。
+**提示：**<em>如果您希望使查询简单且更易维护，那么请不要在日期中使用时间部分！</em></p>
+<h2 id="null-值">NULL 值</h2>
+<p>NULL 值是遗漏的未知数据。
+默认地，表的列可以存放 NULL 值。</p>
+<p>如果表中的某个列是可选的，那么我们可以在不向该列添加值的情况下插入新记录或更新已有的记录。这意味着该字段将以 NULL 值保存。</p>
+<p>NULL 值的处理方式与其他值不同。
+NULL 用作未知的或不适用的值的占位符。
+注释：无法比较 NULL 和 0；它们是不等价的。</p>
+<h3 id="那么我们如何测试-null-值呢">那么我们如何测试 NULL 值呢？</h3>
+<p>无法使用比较运算符来测试 NULL 值，比如 =, &lt;, 或者 &lt;&gt;。
+<strong>我们必须使用 IS NULL 和 IS NOT NULL 操作符。</strong></p>
+<h3 id="sql-is-null">SQL IS NULL</h3>
+<p>我们如何仅仅选取在 &quot;Address&quot; 列中带有 NULL 值的记录呢？
+我们必须使用 IS NULL 操作符：</p>
+<pre><code class="language-sql">SELECT LastName,FirstName,Address FROM Persons
+WHERE Address IS NULL
+</code></pre>
+<p>这里的Address是列名。</p>
+<h3 id="sql-is-not-null">SQL IS NOT NULL</h3>
+<pre><code class="language-sql">SELECT LastName,FirstName,Address FROM Persons
+WHERE Address IS NOT NULL
+</code></pre>
+<h2 id="数值表达式">数值表达式</h2>
+<pre><code class="language-sql">SELECT numerical_expression as  OPERATION_NAME
+[FROM table_name
+WHERE CONDITION] ;
+</code></pre>
+<p>这里 numerical_expression 为数学运算或者任何公式。</p>
+<h2 id="创建数据库的例子">创建数据库的例子</h2>
+<pre><code class="language-sql">username$ mysql -u root
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 6
+Server version: 5.7.18 MySQL Community Server (GPL)
+
+mysql&gt; SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.01 sec)
+
+mysql&gt; CREATE DATABASE test_db;
+mysql&gt; use test_db;
+mysql&gt; show tables;
+Empty set (0.00 sec)
+
+mysql&gt; CREATE TABLE Persons
+    -&gt; (
+    -&gt; Id_P int,
+    -&gt; LastName varchar(255),
+    -&gt; FirstName varchar(255),
+    -&gt; Address varchar(255),
+    -&gt; City varchar(255)
+    -&gt; );
+    
+mysql&gt; show tables;
+
++-------------------+
+| Tables_in_test_db |
++-------------------+
+| Persons           |
++-------------------+
+1 row in set (0.00 sec)
+
+mysql&gt; INSERT INTO Persons VALUES (1,'jiang','zhiqiang','hangzhou','zhejiang');
+Query OK, 1 row affected (0.01 sec)
+
+mysql&gt; select * from Persons;
+
++------+----------+-----------+----------+----------+
+| Id_P | LastName | FirstName | Address  | City     |
++------+----------+-----------+----------+----------+
+|    1 | jiang    | zhiqiang  | hangzhou | zhejiang |
++------+----------+-----------+----------+----------+
+1 row in set (0.00 sec)
+
+mysql&gt; QUIT
+Bye
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/w95GY-Zrv" class="tag">
+                    MySQL
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/W3LexV2-o" class="tag">
+                    sql
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/python-jin-du-tiao-gong-ju-tqdm">
+                  <h3 class="post-title">
+                    进度条工具tqdm
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
