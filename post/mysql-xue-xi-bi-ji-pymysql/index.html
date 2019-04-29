@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>MySQL学习笔记-pymysql | 姜</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556519513569">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556519513569" class="site-logo">
+        <h1 class="site-title">姜</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">MySQL学习笔记-pymysql</h2>
+            <div class="post-date">2019-04-29</div>
+            
+            <div class="post-content">
+              <h1 id="pymysql">pymysql</h1>
+<p>pymysql 是在py3和py2上都可以使用的连接 MySQL 服务器的一个库。</p>
+<h2 id="事务">事务</h2>
+<p>事务机制可以确保数据一致性。
+事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。</p>
+<ul>
+<li>原子性（atomicity）。一个事务是一个不可分割的工作单位，事务中包括的诸操作要么都做，要么都不做。</li>
+<li>一致性（consistency）。事务必须是使数据库从一个一致性状态变到另一个一致性状态。一致性与原子性是密切相关的。</li>
+<li>隔离性（isolation）。一个事务的执行不能被其他事务干扰。即一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务之间不能互相干扰。</li>
+<li>持久性（durability）。持续性也称永久性（permanence），指一个事务一旦提交，它对数据库中数据的改变就应该是永久性的。接下来的其他操作或故障不应该对其有任何影响。
+Python DB API 2.0 的事务提供了两个方法 commit 或 rollback。</li>
+</ul>
+<h2 id="安装">安装</h2>
+<p>首先查看了conda库中是否有这个包<code>conda search pymysql</code>，发现是有的并且有py2.7版本，直接安装<code>conda install pymysql</code></p>
+<h2 id="cursor游标">cursor游标</h2>
+<p>游标就像一辆货车，把指令带过去执行(execute)，然后运回来值(fetch*)。</p>
+<h2 id="fetch">fetch</h2>
+<ul>
+<li>fetchone(): 该方法获取下一个查询结果集。结果集是一个对象</li>
+<li>fetchall(): 接收全部的返回结果行.</li>
+<li>rowcount: 这是一个只读属性，并返回执行execute()方法后影响的行数。</li>
+</ul>
+<h2 id="使用">使用</h2>
+<pre><code class="language-python">## 建立数据库连接
+conn = pymysql.Connect(host='127.0.0.1',
+							user='root',
+							passwd='123456',
+							db='python_mysql',
+							charset='utf8')
+# 使用 cursor() 方法创建一个游标对象 cursor
+# 每一个游标对象传送一条sql
+cursor = conn.cursor()
+# 使用 execute()  方法执行 SQL 查询 
+cursor.execute(&quot;SELECT VERSION()&quot;)
+# 使用 fetchone() 方法获取单条数据.两个单词tetch one
+# fetchall() 所有
+conn.commit()
+data = cursor.fetchone()
+print (&quot;Database version : %s &quot; % data)
+# 关闭数据库连接
+db.close()
+</code></pre>
+<h2 id="代码">代码</h2>
+<p>转账：</p>
+<pre><code class="language-python"># -*- coding: UTF-8 -*-
+import sys
+import pymysql
+
+class TransferMoney(object):
+	def __init__(self, conn):
+		self.conn = conn
+
+	def check_acct_available(self, acctid):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;select * from account where acctid=%s&quot; % acctid
+			cursor.execute(sql)
+			print &quot;check_acct_available: &quot; + sql
+			rs = cursor.fetchall()
+			if len(rs) !=1:
+				raise Exception(&quot;账号%s不存在&quot; % acctid)
+		finally:
+		#关闭cursor
+			cursor.close()
+	
+	def has_enough_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;select money from account where acctid=%s and money &gt;= %s &quot; % (acctid, money)
+			cursor.execute(sql)
+			print &quot;has_enough_money: &quot; + sql
+			rs = cursor.fetchall()
+			if len(rs) != 1:
+				raise Exception(&quot;账号%s金额不足,剩余金额为%s&quot;%(acctid, money))
+		finally:
+			cursor.close()
+
+	def reduce_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;update account set money = money - %s where acctid=%s&quot;%(money, acctid)
+			cursor.execute(sql)
+			print &quot;reduce_money: &quot; + sql
+
+			if cursor.rowcount !=1 :
+				raise Exception(&quot;账号%s减款失败&quot;%(acctid))
+		finally:
+			cursor.close()
+
+	def add_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;update account set money = money + %s where acctid=%s&quot;%(money, acctid)
+			cursor.execute(sql)
+			print &quot;add_money: &quot; + sql
+
+			if cursor.rowcount !=1 : #判断被影响的行数：cursor.rowcount
+				raise Exception(&quot;账号%s加款失败&quot;%(acctid))
+		finally:
+			cursor.close()
+
+
+	def transfer(self, source_acctid, target_acctid, money):
+		try:
+			self.check_acct_available(source_acctid)
+			self.check_acct_available(target_acctid)
+			self.has_enough_money(source_acctid, money)
+			self.reduce_money(source_acctid, money)
+			self.add_money(target_acctid, money)
+			# 向数据库提交，不开启自动提交
+			self.conn.commit()
+		except Exception as e:
+		# 发生错误时回滚
+			self.conn.rollback()
+			raise e
+
+
+
+if __name__ == &quot;__main__&quot;:
+	source_acctid = sys.argv[1]
+	target_acctid = sys.argv[2]
+	money = sys.argv[3]
+
+	conn = pymysql.Connect(host='127.0.0.1',
+							user='root',
+							passwd='123456',
+							db='python_mysql',
+							charset='utf8'
+							)
+	tr_money = TransferMoney(conn)
+
+	try:
+		tr_money.transfer(source_acctid, target_acctid, money)
+	except Exception as e:
+		print &quot;出现问题：&quot; + str(e)
+	finally:
+	# 关闭连接
+		conn.close()
+
+</code></pre>
+<h2 id="引用">引用</h2>
+<p><a href="http://www.runoob.com/python3/python3-mysql.html">1. http://www.runoob.com/python3/python3-mysql.html</a>
+<a href="http://pymysql.readthedocs.io/en/latest/index.html">2. PyMySQL’s documentation</a>
+<a href="https://github.com/PyMySQL/PyMySQL">3. https://github.com/PyMySQL/PyMySQL</a>
+<a href="https://www.python.org/dev/peps/pep-0249/">4. https://www.python.org/dev/peps/pep-0249/</a></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/w95GY-Zrv" class="tag">
+                    MySQL
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/W3LexV2-o" class="tag">
+                    sql
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
+                    python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-4-an-quan-guan-li-andshu-ju-ku-wei-hu-andgai-shan-xing-neng">
+                  <h3 class="post-title">
+                    MySQL学习笔记-4安全管理&amp;数据库维护&amp;改善性能
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

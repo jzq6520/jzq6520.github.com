@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>MySQL学习笔记-3事务处理 | 姜</title>
+<title>SQL学习笔记-sql内建函数 | 姜</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -97,50 +97,46 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">MySQL学习笔记-3事务处理</h2>
+            <h2 class="post-title">SQL学习笔记-sql内建函数</h2>
             <div class="post-date">2019-04-29</div>
             
             <div class="post-content">
-              <h1 id="mysql事务处理">MySQL事务处理</h1>
-<ul>
-<li>MyISAM和 InnoDB是mysql常用的引擎，前者不支持事务处理后者支持。</li>
-<li>事务处理用来维护数据库的完整性，它保证成批的Mysql操作要么执行，要么都不执行。</li>
-<li>关系型数据库设计把数据存储在多个表里，使数据更容易操纵、维护和重用。</li>
-<li>关键：事务处理的关键在于，将SQL语句分解为逻辑块，并明确规定数据何时退回何时不应该退回。</li>
-</ul>
-<h2 id="控制事务处理">控制事务处理</h2>
-<ul>
-<li>开始：start transaction</li>
-<li>回滚：rollback</li>
-<li>commit：平时的Mysql语句都是隐式提交，<strong>但在事务处理的时候需要显示提交</strong>，commit语句只有在不出错时提交。</li>
-<li>保留点：可以指定回退到指定的点，这个点使用**savepoint pointname;**给出保留点。<strong>注：可以多设置保留点，以方便后面回滚</strong>。release savepoint 删除保留点。</li>
-</ul>
-<h3 id="更改默认提交行为">更改默认提交行为</h3>
-<p>设置： autocommit = 0;
-autocommit是针对每个连接的，不是服务器的。</p>
-<h2 id="字符集合校对顺序">字符集合校对顺序</h2>
-<p>不同的语言和字符集需要以不同的方式存储和检索。因此，MySQL需要<strong>适应不同的字符集</strong>，适应不同的<strong>排序和检索</strong>数据的方法。</p>
-<ul>
-<li>字符集：为字母和符号的集合</li>
-<li>编码：某个字符集的内部表示</li>
-<li>校对：规定字符如何比较,例如区分大小写还是不区分。</li>
-</ul>
-<p><code>show CHARACTER SET</code>
-<code>SHOW COLLATION</code></p>
-<p>可以在创建数据库，表，或者定义列的时候指定默认的校对。</p>
-<pre><code class="language-sql">--表指定
-CREATE TABLE mytable
-(
-columnn1 INT,
-columnn2 VARCHAR(10) CHARACTER SET latin1 COLLATE --列指定
-) DEFAULT CHARACTER SET hebrew
-  COLLATE hebrew_general_ri;
+              <p>这里只记录了一点重要的语句，其他的可以用到的时候百度。</p>
+<h1 id="sql-内建函数">sql 内建函数</h1>
+<p>SQL 拥有很多可用于计数和计算的<a href="http://www.w3school.com.cn/sql/sql_functions.asp">内建函数</a>。
+函数的语法
+内建 SQL 函数的语法是：</p>
+<pre><code class="language-sql">SELECT function(列) FROM 表
 </code></pre>
-<p>校对在对用ORDER BY 子句检索出来的数据排序时起重要作用。</p>
-<pre><code class="language-sql">--或者排列的时候指定
-SELECT * FROM customers
-ORDER BY lastname, firstname COLLATE latin1_general_cs;
+<h2 id="函数的类型">函数的类型</h2>
+<p>在 SQL 中，基本的函数类型和种类有若干种。函数的基本类型是：</p>
+<ul>
+<li>Aggregate 合计函数：Aggregate 函数的操作面向一系列的值，并返回一个单一的值。</li>
+<li>Scalar 纯量函数：Scalar 函数的操作面向某个单一的值，并返回基于输入值的一个单一的值。</li>
+</ul>
+<h2 id="group-by-分组语句">GROUP BY 分组语句</h2>
+<p>GROUP BY 语句用于结合合计函数，根据一个或多个列对结果集进行分组。
+例如可以对人进行分组，再使用sum函数，对每个人计算他的工资。</p>
+<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
+FROM table_name
+WHERE column_name operator value
+GROUP BY column_name
 </code></pre>
+<h2 id="having-子句">HAVING 子句</h2>
+<p>在 SQL 中增加 HAVING 子句原因是，WHERE 关键字无法与合计函数一起使用。就相当于普通语句中的where。</p>
+<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
+FROM table_name
+WHERE column_name operator value
+GROUP BY column_name
+HAVING aggregate_function(column_name) operator value
+</code></pre>
+<p>例如可以这么写：</p>
+<pre><code class="language-sql">SELECT Customer,SUM(OrderPrice) FROM Orders
+GROUP BY Customer
+HAVING SUM(OrderPrice)&lt;2000
+</code></pre>
+<h2 id="format-函数">FORMAT() 函数</h2>
+<p>FORMAT 函数用于对字段的显示进行格式化。</p>
 
             </div>
             
@@ -159,9 +155,9 @@ ORDER BY lastname, firstname COLLATE latin1_general_cs;
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-2-jin-jie">
+                <a href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql">
                   <h3 class="post-title">
-                    MySQL学习笔记-2进阶
+                    MySQL学习笔记-pymysql
                   </h3>
                 </a>
               </div>
