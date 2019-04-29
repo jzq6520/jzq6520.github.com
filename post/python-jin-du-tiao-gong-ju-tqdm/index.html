@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556515813995">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556516052867">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1556515813995" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556516052867" class="site-logo">
         <h1 class="site-title">Gridea</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -110,7 +110,7 @@
 <h2 id="使用">使用</h2>
 <p>tqdm包是一个python进度条工具，可以在我们进行for循环的时候显示我们的迭代进度。</p>
 <p>例如：</p>
-<pre><code>from tqdm import tqdm
+<pre><code class="language-python">from tqdm import tqdm
 import time
 
 text = &quot;&quot;
@@ -120,20 +120,20 @@ for char in tqdm([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]):
 </code></pre>
 <p>也可以用于显示文件下载进度、文件加载进度。</p>
 <p>可以自定义进度条的加载，例如：</p>
-<pre><code>with tqdm(total=100) as pbar:
+<pre><code class="language-python">with tqdm(total=100) as pbar:
     for i in range(10):
         pbar.update(10)
 </code></pre>
 <p>或</p>
-<pre><code>pbar = tqdm(total=100)
+<pre><code class="language-python">pbar = tqdm(total=100)
 for i in range(10):
     pbar.update(10)
 pbar.close()
 </code></pre>
 <h2 id="引用">引用</h2>
 <ul>
-<li>https://github.com/tqdm/tqdm</li>
-<li>https://blog.csdn.net/qq_40666028/article/details/79335961</li>
+<li><a href="https://github.com/tqdm/tqdm">https://github.com/tqdm/tqdm</a></li>
+<li><a href="https://blog.csdn.net/qq_40666028/article/details/79335961">https://blog.csdn.net/qq_40666028/article/details/79335961</a></li>
 </ul>
 
             </div>
