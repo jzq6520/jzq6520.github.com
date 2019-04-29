@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>LeetCode-sql | 姜</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556519762283">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556519762283" class="site-logo">
+        <h1 class="site-title">姜</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">LeetCode-sql</h2>
+            <div class="post-date">2019-04-29</div>
+            
+            <div class="post-content">
+              <h1 id="leetcode-sql-刷题">LeetCode sql 刷题</h1>
+<h2 id="自身和自身比较">自身和自身比较</h2>
+<pre><code>mysql&gt; select * from salary;
++------+------+
+| id   | sala |
++------+------+
+|    1 |  200 |
+|    2 |  300 |
+|    3 |  400 |
+|    4 |  500 |
++------+------+
+4 rows in set (0.00 sec)
+
+</code></pre>
+<pre><code>mysql&gt; select a.id as a_id,a.sala as a_sala,b.id as b_id,b.sala as b_sala from salary a,salary b where a.sala&gt;b.sala
+    -&gt; ;
++------+--------+------+--------+
+| a_id | a_sala | b_id | b_sala |
++------+--------+------+--------+
+|    2 |    300 |    1 |    200 |
+|    3 |    400 |    1 |    200 |
+|    4 |    500 |    1 |    200 |
+|    3 |    400 |    2 |    300 |
+|    4 |    500 |    2 |    300 |
+|    4 |    500 |    3 |    400 |
++------+--------+------+--------+
+6 rows in set (0.01 sec)
+</code></pre>
+<p>下面这个一直想不通，是否是b 表满足子查询总的b的条件</p>
+<pre><code>mysql&gt; select b.* from salary b where 2 &gt; (select count(distinct a.sala) from salary a where a.sala&gt;b.sala)
+    -&gt; ;
++------+------+
+| id   | sala |
++------+------+
+|    3 |  400 |
+|    4 |  500 |
++------+------+
+2 rows in set (0.00 sec)
+</code></pre>
+<h2 id="184-department-highest-salar">184. Department Highest Salar</h2>
+<p>问题：</p>
+<pre><code>The Employee table holds all employees. Every employee has an Id, a salary, and there is also a column for the department Id.
+
++----+-------+--------+--------------+
+| Id | Name  | Salary | DepartmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 70000  | 1            |
+| 2  | Henry | 80000  | 2            |
+| 3  | Sam   | 60000  | 2            |
+| 4  | Max   | 90000  | 1            |
++----+-------+--------+--------------+
+The Department table holds all departments of the company.
+
++----+----------+
+| Id | Name     |
++----+----------+
+| 1  | IT       |
+| 2  | Sales    |
++----+----------+
+Write a SQL query to find employees who have the highest salary in each of the departments. For the above tables, Max has the highest salary in the IT department and Henry has the highest salary in the Sales department.
+
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| Sales      | Henry    | 80000  |
++------------+----------+--------+
+</code></pre>
+<p>解：可以使用多个条件进行一起过滤，但是e.DepartmentId, e.Salary这个顺序，要和in里面的字段的顺序要一样。</p>
+<pre><code># Write your MySQL query statement below
+
+select 
+    d.Name as 'Department',
+    e.Name as 'Employee',
+    e.Salary as 'Salary'
+from
+Employee e
+join 
+Department d on e.DepartmentId = d.Id
+where 
+(e.DepartmentId, e.Salary) in
+(
+    select a.DepartmentId,
+            max(a.Salary) 
+    from Employee a
+    group by a.DepartmentId
+)
+;
+
+</code></pre>
+<h2 id="177-nth-highest-salary">177. Nth Highest Salary</h2>
+<p>LIMIT 来定位数据。</p>
+<pre><code>Write a SQL query to get the nth highest salary from the Employee table.
+
++----+--------+
+| Id | Salary |
++----+--------+
+| 1  | 100    |
+| 2  | 200    |
+| 3  | 300    |
++----+--------+
+For example, given the above Employee table, the nth highest salary where n = 2 is 200. If there is no nth highest salary, then the query should return null.
+
++------------------------+
+| getNthHighestSalary(2) |
++------------------------+
+| 200                    |
++------------------------+
+</code></pre>
+<p>解：mysql还是要再看看。</p>
+<pre><code>CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+    DECLARE M INT;
+    set M = N-1;
+  RETURN (
+      # Write your MySQL query statement below.
+      #初始记录行的偏移量是 0,第n个，就是包括第n个，那么索引就是N-1
+     SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT M, 1
+     
+  );
+END
+</code></pre>
+<h2 id="601-human-traffic-of-stadium">601. Human Traffic of Stadium</h2>
+<p>难度很高的一道题</p>
+<pre><code>X city built a new stadium, each day many people visit it and the stats are saved as these columns: id, date, people
+
+Please write a query to display the records which have 3 or more consecutive rows and the amount of people more than 100(inclusive).
+
+For example, the table stadium:
++------+------------+-----------+
+| id   | date       | people    |
++------+------------+-----------+
+| 1    | 2017-01-01 | 10        |
+| 2    | 2017-01-02 | 109       |
+| 3    | 2017-01-03 | 150       |
+| 4    | 2017-01-04 | 99        |
+| 5    | 2017-01-05 | 145       |
+| 6    | 2017-01-06 | 1455      |
+| 7    | 2017-01-07 | 199       |
+| 8    | 2017-01-08 | 188       |
++------+------------+-----------+
+For the sample data above, the output is:
+
++------+------------+-----------+
+| id   | date       | people    |
++------+------------+-----------+
+| 5    | 2017-01-05 | 145       |
+| 6    | 2017-01-06 | 1455      |
+| 7    | 2017-01-07 | 199       |
+| 8    | 2017-01-08 | 188       |
++------+------------+-----------+
+</code></pre>
+<p>解：几个点，首先考察如何判断三个连续的值，建立三个原表的引用，where三个引用，那么形成的是一个笛卡尔积。</p>
+<pre><code>select distinct t1.*
+from stadium t1, stadium t2, stadium t3
+where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
+;
+</code></pre>
+<p>这个结果出来的是满足大于100的值。
+Considering t1, t2 and t3 are identical, we can take one of them to consider what conditions we should add to filter the data and get the final result. Taking t1 for example, it could exist in the beginning of the consecutive 3 days, or the middle, or the last.</p>
+<ul>
+<li>t1 in the beginning: (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1) -- t1, t2, t3</li>
+<li>t1 in the middle: (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3</li>
+<li>t1 in the end: (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1</li>
+</ul>
+<pre><code>select t1.*
+from stadium t1, stadium t2, stadium t3
+where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
+and
+(
+      (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1)  -- t1, t2, t3
+    or
+    (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3
+    or
+    (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1
+)
+;
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/CvL2DP1Uj" class="tag">
+                    LeetCode
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/W3LexV2-o" class="tag">
+                    sql
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/sql-xue-xi-bi-ji-sql-nei-jian-han-shu">
+                  <h3 class="post-title">
+                    SQL学习笔记-sql内建函数
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
