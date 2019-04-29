@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>标签列表 | Gridea</title>
+<title>进度条工具tqdm | Gridea</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -12,6 +12,12 @@
 <link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556515813995">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -90,12 +96,77 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="tag-list-title">标签列表</h2>
-          <div class="tags-container">
+          <div class="post-detail">
+            <h2 class="post-title">进度条工具tqdm</h2>
+            <div class="post-date">2019-04-29</div>
             
-              <a class="tag" href="https://jzq6520.github.io/tag/IvXzr4cLv">python</a>
+              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/python-jin-du-tiao-gong-ju-tqdm.png')">
+              </div>
             
+            <div class="post-content">
+              <h2 id="安装">安装</h2>
+<pre><code>pip install tqdm
+</code></pre>
+<h2 id="使用">使用</h2>
+<p>tqdm包是一个python进度条工具，可以在我们进行for循环的时候显示我们的迭代进度。</p>
+<p>例如：</p>
+<pre><code>from tqdm import tqdm
+import time
+
+text = &quot;&quot;
+for char in tqdm([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]):
+    time.sleep(0.25)
+    text = text + char
+</code></pre>
+<p>也可以用于显示文件下载进度、文件加载进度。</p>
+<p>可以自定义进度条的加载，例如：</p>
+<pre><code>with tqdm(total=100) as pbar:
+    for i in range(10):
+        pbar.update(10)
+</code></pre>
+<p>或</p>
+<pre><code>pbar = tqdm(total=100)
+for i in range(10):
+    pbar.update(10)
+pbar.close()
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://github.com/tqdm/tqdm</li>
+<li>https://blog.csdn.net/qq_40666028/article/details/79335961</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
+                    python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/about">
+                  <h3 class="post-title">
+                    关于
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
           </div>
+
         </div>
       </div>
     </div>
@@ -116,6 +187,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: [''],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 
