@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556611843682">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1556612022870">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1556611843682" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1556612022870" class="site-logo">
         <h1 class="site-title">姜</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -144,7 +144,27 @@
 <img src="https://jzq6520.github.io/post-images/1556610255688.png" alt=""></p>
 <p>m表示最低是多少倍，n表示有几个mask，r就是倍数，d是边界到腐蚀以后边界的距离，p表示mask区域。</p>
 <p>代码：</p>
-<pre><code class="language-python">def dist(a, b):
+<pre><code class="language-python">def get_bboxes(img, gt_path):
+    h, w = img.shape[0:2]
+    lines = util.io.read_lines(gt_path)
+    bboxes = []
+    tags = []
+    for line in lines:
+        line = util.str.remove_all(line, '\xef\xbb\xbf')
+        gt = util.str.split(line, ',')
+
+        x1 = np.int(gt[0])
+        y1 = np.int(gt[1])
+
+        bbox = [np.int(gt[i]) for i in range(4, 32)]
+        bbox = np.asarray(bbox) + ([x1 * 1.0, y1 * 1.0] * 14)
+        bbox = np.asarray(bbox) / ([w * 1.0, h * 1.0] * 14)
+        
+        bboxes.append(bbox)
+        tags.append(True)
+    return np.array(bboxes), tags
+		
+def dist(a, b):
     return np.sqrt(np.sum((a - b) ** 2))
 
 def perimeter(bbox):
