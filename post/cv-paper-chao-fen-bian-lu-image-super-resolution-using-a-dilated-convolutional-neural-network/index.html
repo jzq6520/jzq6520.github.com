@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>进度条工具tqdm | 姜</title>
+<title>CV-Paper-超分辨率-Image super-resolution using a dilated convolutional neural network | 姜</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -97,51 +97,45 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">进度条工具tqdm</h2>
-            <div class="post-date">2019-04-29</div>
+            <h2 class="post-title">CV-Paper-超分辨率-Image super-resolution using a dilated convolutional neural network</h2>
+            <div class="post-date">2019-05-07</div>
             
-              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/python-jin-du-tiao-gong-ju-tqdm.png')">
+              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/cv-paper-chao-fen-bian-lu-image-super-resolution-using-a-dilated-convolutional-neural-network.png')">
               </div>
             
             <div class="post-content">
-              <h2 id="安装">安装</h2>
-<pre><code>pip install tqdm
-</code></pre>
-<h2 id="使用">使用</h2>
-<p>tqdm包是一个python进度条工具，可以在我们进行for循环的时候显示我们的迭代进度。</p>
-<p>例如：</p>
-<pre><code class="language-python">from tqdm import tqdm
-import time
-
-text = &quot;&quot;
-for char in tqdm([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]):
-    time.sleep(0.25)
-    text = text + char
-</code></pre>
-<p>也可以用于显示文件下载进度、文件加载进度。</p>
-<p>可以自定义进度条的加载，例如：</p>
-<pre><code class="language-python">with tqdm(total=100) as pbar:
-    for i in range(10):
-        pbar.update(10)
-</code></pre>
-<p>或</p>
-<pre><code class="language-python">pbar = tqdm(total=100)
-for i in range(10):
-    pbar.update(10)
-pbar.close()
-</code></pre>
-<h2 id="引用">引用</h2>
+              <h1 id="image-super-resolution-using-a-dilated-convolutional-neural-network">Image super-resolution using a dilated convolutional neural network</h1>
+<p>这是一篇很有意思的文章，首先他的应用场景是超分辨率，然后他用到的网络结合了很多优秀的结构，通过这些优秀的结构解决了很多超分辨中的问题。</p>
+<p>而且这个网络非常简单，并且很优雅，让人流连忘返。</p>
+<p>文章提出的网络主要有以下几个部件组成：</p>
+<ol>
+<li>空洞卷积（或叫扩张卷积，dilated convolutional);</li>
+<li>跨越连接（skip connect）；</li>
+<li>不下采样，保留分辨率。</li>
+</ol>
+<h2 id="网络">网络</h2>
+<p><img src="https://jzq6520.github.io/post-images/1557220077383.png" alt=""></p>
+<p>从上图可以看到以下几点：</p>
 <ul>
-<li><a href="https://github.com/tqdm/tqdm">https://github.com/tqdm/tqdm</a></li>
-<li><a href="https://blog.csdn.net/qq_40666028/article/details/79335961">https://blog.csdn.net/qq_40666028/article/details/79335961</a></li>
+<li>网络的输入输出大小是一样的，那么如何获得超分辨率的图像的，是这样的，首先将图像插值放大到2倍，然后输入到这个网络中，网络输出的是分辨率一样，但是细节更加清晰的图像。</li>
+<li>网络只有7层，是一个非常小的网络，因为在使用空洞卷积的到时候，网络并没有进行下采样，所以造成显存和计算量会占用很大，所以文章采用了较小的网络，实现了节省计算资源和显存的作用。</li>
+<li>使用了skip连接，使用skip连接是将低维信息和高维相结合，低维信息往往代表一些图像的细节，而高维信息往往表示一些高维的语义特征，所以通过skip连接然网络的数据具有更多的细节，从而这个超分辨率网络才会更好。</li>
+<li>使用了空洞卷积（dilated conv），空洞卷积具有保留信息而增加感受野的作用，所以空洞卷积在分割和检测中也常常使用。</li>
 </ul>
+<h2 id="放大超过两倍">放大超过两倍</h2>
+<p>如果想将图像放大4倍、5倍或者跟大，那要怎么实现呢？ 文章利用联机的方式来进行放大，只需要将图像多次经过超分辨率网络就可以实现，如果放大倍数不是2的倍数，那么怎么办呢？ 这时候我们可以先放大，再缩小。例如想放大3倍，我们可以先放大4倍，然后再进行下采样即可。</p>
+<p><img src="https://jzq6520.github.io/post-images/1557220626079.png" alt=""></p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
-                    python
+                  <a href="https://jzq6520.github.io/tag/mK6wfi0Yn" class="tag">
+                    机器视觉
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/b0nIvkKcD" class="tag">
+                    论文
                   </a>
                 
               </div>
@@ -149,9 +143,9 @@ pbar.close()
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://jzq6520.github.io/post/about">
+                <a href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection">
                   <h3 class="post-title">
-                    关于
+                    CV-Paper-文字检测-Character Region Awareness for Text Detection
                   </h3>
                 </a>
               </div>
