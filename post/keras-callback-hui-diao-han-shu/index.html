@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>keras-Callback回调函数 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1564383709978">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1564383709978" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">keras-Callback回调函数</h2>
+            <div class="post-date">2019-07-29</div>
+            
+            <div class="post-content">
+              <h2 id="1-回调函数的定义">1 回调函数的定义</h2>
+<p>当程序跑起来时，一般情况下，应用程序（application program）会时常通过API调用库里所预先备好的函数。但是有些库函数（library function）却要求应用先传给它一个函数，好在合适的时候调用，以完成目标任务。这个被传入的、后又被调用的函数就称为回调函数（callback function）。</p>
+<h4 id="回调函数的例子">回调函数的例子</h4>
+<pre><code class="language-python">### 回调函数
+#回调函数1
+#生成一个2k形式的偶数
+def double(x):
+    return x * 2
+    
+#回调函数2
+#生成一个4k形式的偶数
+def quadruple(x):
+    return x * 4
+
+## 使用回调函数的中间函数，也就是回调函数的使用者
+#中间函数
+#接受一个生成偶数的函数作为参数
+#返回一个奇数
+def getOddNumber(k, getEvenNumber):
+    return 1 + getEvenNumber(k)
+    
+#起始函数，这里是程序的主函数
+def main():    
+    k = 1
+    #当需要生成一个2k+1形式的奇数时
+    i = getOddNumber(k, double)
+    print(i)
+    #当需要一个4k+1形式的奇数时
+    i = getOddNumber(k, quadruple)
+    print(i)
+    #当需要一个8k+1形式的奇数时
+    i = getOddNumber(k, lambda x: x * 8)
+    print(i)
+    
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<p>可以发现，其实我们只需要知道回调函数是<strong>传入什么参数，有什么功能即可</strong>，而不能自己去定义传入参数，<strong>所以我们去写回调函数的时候要按照中间函数传入的参数去写</strong>。</p>
+<h2 id="2-keras中的回调函数">2 keras中的回调函数</h2>
+<p>这里我们不讲那些keras中已经定义的回调函数，这里说一下如何创建自己的回调函数。
+keras中定义了一个回调函数的抽象类，这个类包含多个回调函数（即一个类里面有很多方法，这些方法是不同的时期被中间函数调用的）。我们继承这个类，然后重新其中的回调函数即可。
+下面看一下这个基类：
+https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
+<pre><code class="language-python">class Callback(object):
+			 &quot;&quot;&quot;Abstract base class used to build new callbacks.
+    # Properties
+        params: dict. Training parameters
+            (eg. verbosity, batch size, number of epochs...).
+        model: instance of `keras.models.Model`.
+            Reference of the model being trained.
+    The `logs` dictionary that callback methods
+    take as argument will contain keys for quantities relevant to
+    the current batch or epoch.
+    Currently, the `.fit()` method of the `Sequential` model class
+    will include the following quantities in the `logs` that
+    it passes to its callbacks:
+        on_epoch_end: logs include `acc` and `loss`, and
+            optionally include `val_loss`
+            (if validation is enabled in `fit`), and `val_acc`
+            (if validation and accuracy monitoring are enabled).
+        on_batch_begin: logs include `size`,
+            the number of samples in the current batch.
+        on_batch_end: logs include `loss`, and optionally `acc`
+            (if accuracy monitoring is enabled).
+    &quot;&quot;&quot;
+		
+		def __init__(self):
+        self.validation_data = None
+        self.model = None
+		
+		## 注意：set params和 set_model是已经定义好的，也就是说继承这个类以后回调函数本身就会有self.params 和self.model，不需要我们去关心有没有或者怎么得到这两个变量。
+		# 既然是回调函数，那么params这个参数是中间函数传给它的，不需要我们去传。
+    def set_params(self, params): 
+        self.params = params
+
+    def set_model(self, model):
+        self.model = model
+		
+		## 什么时候会调用，直接可以看方法名。
+		# Arguments
+    #        logs: 具体可以看上面链接中给出的注释，每个都不一样。
+		def on_batch_begin(self, batch, logs=None)
+		def on_batch_end(self, batch, logs=None)
+		def on_epoch_begin(self, epoch, logs=None)
+		def on_epoch_end(self, epoch, logs=None)
+		def on_train_batch_begin(self, batch, logs=None)
+		def on_train_batch_end(self, batch, logs=None)
+		def on_test_batch_begin(self, batch, logs=None)
+		def on_test_batch_end(self, batch, logs=None)
+		def on_predict_batch_begin(self, batch, logs=None)
+		def on_predict_batch_end(self, batch, logs=None)
+		def on_train_begin(self, logs=None)
+		def on_train_end(self, logs=None)
+		def on_test_begin(self, logs=None)
+		def on_test_end(self, logs=None)
+		def on_predict_begin(self, logs=None)
+		def on_predict_end(self, logs=None)	
+</code></pre>
+<p>在回调函数中可以使用这两个参数。</p>
+<ul>
+<li>
+<pre><code>    self.params = params： 字典。训练参数， (例如，verbosity, batch size, number of epochs...)。可以打印出来看看。
+</code></pre>
+</li>
+<li>
+<pre><code>    self.model = model：keras.models.Model 的实例。 指代被训练模型。
+</code></pre>
+</li>
+</ul>
+<p>通过类的属性 self.model，回调函数可以获得它所联系的模型。</p>
+<h3 id="keras自定义回调函数的例子">keras自定义回调函数的例子</h3>
+<p>回调函数使用以后，还可以通过类实例来访问实例变量。</p>
+<pre><code class="language-python">class LossHistory(keras.callbacks.Callback):
+		def __init__(self):
+				super(LossHistory, self).__init__()
+				self.losses = []
+				
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
+model = Sequential()
+model.add(Dense(10, input_dim=784, kernel_initializer='uniform'))
+model.add(Activation('softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+
+history = LossHistory()
+model.fit(x_train, y_train, batch_size=128, epochs=20, verbose=0, callbacks=[history])
+
+print(history.losses)
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://github.com/chensvm/Keras-Callback-F1/blob/master/roc_auc_score_Metrics</li>
+<li>https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/jnc4qxpyF" class="tag">
+                    keras
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-paper-chao-fen-bian-lu-image-super-resolution-using-a-dilated-convolutional-neural-network">
+                  <h3 class="post-title">
+                    CV-Paper-超分辨率-Image super-resolution using a dilated convolutional neural network
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

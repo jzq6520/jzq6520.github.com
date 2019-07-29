@@ -1,0 +1,1032 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://jzq6520.github.io</id>
+    <title>chuck</title>
+    <updated>2019-07-29T07:01:54.055Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://jzq6520.github.io"/>
+    <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
+    <subtitle>天地不仁以万物为刍狗</subtitle>
+    <logo>https://jzq6520.github.io/images/avatar.png</logo>
+    <icon>https://jzq6520.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[keras-Callback回调函数]]></title>
+        <id>https://jzq6520.github.io/post/keras-callback-hui-diao-han-shu</id>
+        <link href="https://jzq6520.github.io/post/keras-callback-hui-diao-han-shu">
+        </link>
+        <updated>2019-07-29T06:30:07.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="1-回调函数的定义">1 回调函数的定义</h2>
+<p>当程序跑起来时，一般情况下，应用程序（application program）会时常通过API调用库里所预先备好的函数。但是有些库函数（library function）却要求应用先传给它一个函数，好在合适的时候调用，以完成目标任务。这个被传入的、后又被调用的函数就称为回调函数（callback function）。</p>
+<h4 id="回调函数的例子">回调函数的例子</h4>
+<pre><code class="language-python">### 回调函数
+#回调函数1
+#生成一个2k形式的偶数
+def double(x):
+    return x * 2
+    
+#回调函数2
+#生成一个4k形式的偶数
+def quadruple(x):
+    return x * 4
+
+## 使用回调函数的中间函数，也就是回调函数的使用者
+#中间函数
+#接受一个生成偶数的函数作为参数
+#返回一个奇数
+def getOddNumber(k, getEvenNumber):
+    return 1 + getEvenNumber(k)
+    
+#起始函数，这里是程序的主函数
+def main():    
+    k = 1
+    #当需要生成一个2k+1形式的奇数时
+    i = getOddNumber(k, double)
+    print(i)
+    #当需要一个4k+1形式的奇数时
+    i = getOddNumber(k, quadruple)
+    print(i)
+    #当需要一个8k+1形式的奇数时
+    i = getOddNumber(k, lambda x: x * 8)
+    print(i)
+    
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<p>可以发现，其实我们只需要知道回调函数是<strong>传入什么参数，有什么功能即可</strong>，而不能自己去定义传入参数，<strong>所以我们去写回调函数的时候要按照中间函数传入的参数去写</strong>。</p>
+<h2 id="2-keras中的回调函数">2 keras中的回调函数</h2>
+<p>这里我们不讲那些keras中已经定义的回调函数，这里说一下如何创建自己的回调函数。
+keras中定义了一个回调函数的抽象类，这个类包含多个回调函数（即一个类里面有很多方法，这些方法是不同的时期被中间函数调用的）。我们继承这个类，然后重新其中的回调函数即可。
+下面看一下这个基类：
+https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
+<pre><code class="language-python">class Callback(object):
+			 &quot;&quot;&quot;Abstract base class used to build new callbacks.
+    # Properties
+        params: dict. Training parameters
+            (eg. verbosity, batch size, number of epochs...).
+        model: instance of `keras.models.Model`.
+            Reference of the model being trained.
+    The `logs` dictionary that callback methods
+    take as argument will contain keys for quantities relevant to
+    the current batch or epoch.
+    Currently, the `.fit()` method of the `Sequential` model class
+    will include the following quantities in the `logs` that
+    it passes to its callbacks:
+        on_epoch_end: logs include `acc` and `loss`, and
+            optionally include `val_loss`
+            (if validation is enabled in `fit`), and `val_acc`
+            (if validation and accuracy monitoring are enabled).
+        on_batch_begin: logs include `size`,
+            the number of samples in the current batch.
+        on_batch_end: logs include `loss`, and optionally `acc`
+            (if accuracy monitoring is enabled).
+    &quot;&quot;&quot;
+		
+		def __init__(self):
+        self.validation_data = None
+        self.model = None
+		
+		## 注意：set params和 set_model是已经定义好的，也就是说继承这个类以后回调函数本身就会有self.params 和self.model，不需要我们去关心有没有或者怎么得到这两个变量。
+		# 既然是回调函数，那么params这个参数是中间函数传给它的，不需要我们去传。
+    def set_params(self, params): 
+        self.params = params
+
+    def set_model(self, model):
+        self.model = model
+		
+		## 什么时候会调用，直接可以看方法名。
+		# Arguments
+    #        logs: 具体可以看上面链接中给出的注释，每个都不一样。
+		def on_batch_begin(self, batch, logs=None)
+		def on_batch_end(self, batch, logs=None)
+		def on_epoch_begin(self, epoch, logs=None)
+		def on_epoch_end(self, epoch, logs=None)
+		def on_train_batch_begin(self, batch, logs=None)
+		def on_train_batch_end(self, batch, logs=None)
+		def on_test_batch_begin(self, batch, logs=None)
+		def on_test_batch_end(self, batch, logs=None)
+		def on_predict_batch_begin(self, batch, logs=None)
+		def on_predict_batch_end(self, batch, logs=None)
+		def on_train_begin(self, logs=None)
+		def on_train_end(self, logs=None)
+		def on_test_begin(self, logs=None)
+		def on_test_end(self, logs=None)
+		def on_predict_begin(self, logs=None)
+		def on_predict_end(self, logs=None)	
+</code></pre>
+<p>在回调函数中可以使用这两个参数。</p>
+<ul>
+<li>
+<pre><code>    self.params = params： 字典。训练参数， (例如，verbosity, batch size, number of epochs...)。可以打印出来看看。
+</code></pre>
+</li>
+<li>
+<pre><code>    self.model = model：keras.models.Model 的实例。 指代被训练模型。
+</code></pre>
+</li>
+</ul>
+<p>通过类的属性 self.model，回调函数可以获得它所联系的模型。</p>
+<h3 id="keras自定义回调函数的例子">keras自定义回调函数的例子</h3>
+<p>回调函数使用以后，还可以通过类实例来访问实例变量。</p>
+<pre><code class="language-python">class LossHistory(keras.callbacks.Callback):
+		def __init__(self):
+				super(LossHistory, self).__init__()
+				self.losses = []
+				
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
+model = Sequential()
+model.add(Dense(10, input_dim=784, kernel_initializer='uniform'))
+model.add(Activation('softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+
+history = LossHistory()
+model.fit(x_train, y_train, batch_size=128, epochs=20, verbose=0, callbacks=[history])
+
+print(history.losses)
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://github.com/chensvm/Keras-Callback-F1/blob/master/roc_auc_score_Metrics</li>
+<li>https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CV-Paper-超分辨率-Image super-resolution using a dilated convolutional neural network]]></title>
+        <id>https://jzq6520.github.io/post/cv-paper-chao-fen-bian-lu-image-super-resolution-using-a-dilated-convolutional-neural-network</id>
+        <link href="https://jzq6520.github.io/post/cv-paper-chao-fen-bian-lu-image-super-resolution-using-a-dilated-convolutional-neural-network">
+        </link>
+        <updated>2019-05-07T09:02:24.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="image-super-resolution-using-a-dilated-convolutional-neural-network">Image super-resolution using a dilated convolutional neural network</h1>
+<p>这是一篇很有意思的文章，首先他的应用场景是超分辨率，然后他用到的网络结合了很多优秀的结构，通过这些优秀的结构解决了很多超分辨中的问题。</p>
+<p>而且这个网络非常简单，并且很优雅，让人流连忘返。</p>
+<p>文章提出的网络主要有以下几个部件组成：</p>
+<ol>
+<li><strong>空洞卷积</strong>（或叫扩张卷积，dilated convolutional);</li>
+<li><strong>跨越连接</strong>（skip connect）；</li>
+<li><strong>不下采样</strong>，保留分辨率。</li>
+</ol>
+<h2 id="1-网络">1 网络</h2>
+<p><img src="https://jzq6520.github.io/post-images/1557220077383.png" alt=""></p>
+<p>从上图可以看到以下几点：</p>
+<ul>
+<li>网络的<strong>输入输出大小是一样的</strong>，那么如何获得超分辨率的图像的，是这样的，首先将图像插值放大到2倍，然后输入到这个网络中，网络输出的是分辨率一样，但是细节更加清晰的图像。</li>
+<li><strong>网络只有7层</strong>，是一个非常小的网络，因为在使用空洞卷积的到时候，网络并没有进行下采样，所以造成显存和计算量会占用很大，所以文章采用了较小的网络，实现了节省计算资源和显存的作用。</li>
+<li>使用了<strong>skip连接</strong>，使用skip连接是将<strong>低维信息和高维相结合</strong>，低维信息往往代表一些<strong>图像的细节</strong>，而高维信息往往表示一些高维的<strong>语义特征</strong>，所以通过skip连接然网络的数据具有更多的细节，从而这个超分辨率网络才会更好。</li>
+<li>使用了<strong>空洞卷积</strong>（dilated conv），空洞卷积具有<strong>保留信息</strong>而<strong>增加感受野</strong>的作用，所以空洞卷积在分割和检测中也常常使用。</li>
+</ul>
+<h2 id="2-放大超过两倍">2 放大超过两倍</h2>
+<p>如果想将图像放大4倍、5倍或者跟大，那要怎么实现呢？ 文章利用联机的方式来进行放大，只需要将图像多次经过超分辨率网络就可以实现，如果放大倍数不是2的倍数，那么怎么办呢？ 这时候我们可以先放大，再缩小。例如想放大3倍，我们可以先放大4倍，然后再进行下采样即可。</p>
+<p><img src="https://jzq6520.github.io/post-images/1557220626079.png" alt=""></p>
+<h2 id="3-引用">3 引用</h2>
+<ul>
+<li>Image super-resolution using a dilated convolutional neural network</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CV-Paper-文字检测-Character Region Awareness for Text Detection]]></title>
+        <id>https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection</id>
+        <link href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection">
+        </link>
+        <updated>2019-05-06T11:46:34.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="character-region-awareness-for-text-detection-基于字符识别的文字检测">Character Region Awareness for Text Detection 基于字符识别的文字检测</h1>
+<p>这篇文章是利用关键点检测的思想来进行文字检测。检测单个<strong>字符</strong>，并且识别出哪些字符是组成<strong>文字</strong>的，这样就可以检测出一组组文字。</p>
+<p>以前的一些方法都是检测word-level的bounding box，但是这样会遇到一些难点，例如文字是弯曲的，不规则的，或则是特别长的。如果是基于character-level的话就没用这些难点了，因为是检测单个字符，所以没有文字形状的规定，并且，只需要小的感受野即可以了， 但是以前的检测包围框的方法就需要很大的感受野才行。</p>
+<p><strong>那么，基于单个字符区域的文字检测存在两个难点</strong>：</p>
+<ol>
+<li>如何确定哪些字符是连接在一起组成文字的，而哪些字符是分离的；</li>
+<li>数据标注问题，因为当前的数据集都是文字级别（word-level）的标注。</li>
+</ol>
+<p>下面分别来说明解决这两个难点的方法。</p>
+<h2 id="1-确定哪些字符是连接的">1 确定哪些字符是连接的</h2>
+<p><strong>字符检测</strong>：本文使用的网络使用了目前关键点检测中常用的网络结构，即采用预测热图的方式来进行检测关键点，那么在这里我们就可以把每个<strong>字符</strong>当做一个关键点，所以每个<strong>字符</strong>其实对应着一个<strong>热点</strong>，只要预测每个文字所对应的热点那么就可检测出每个字符。</p>
+<p><strong>字符连接的识别</strong>：那么，现在字符的检测方法有了，我们要怎么知道哪些字符是组成一个文字的。这里我觉得作者特别聪明，作者也使用热图的方式来表示文字的连接，如果两个字符是相连接的，那么这两个字符之间就有一个<strong>热点</strong>。很高明的做法，利用热点图来确定两个字符是不是一组的。</p>
+<p>热点就代表着一个响应，如果图片中的某个地方有热点响应，那么表示这个地方存在我们需要的信息，热点的值的大小就代表着置信度，如果置信度越高，那么越确定。</p>
+<h3 id="11-ground-truth-构造">1.1 ground truth 构造</h3>
+<p>如何构造我们的监督信息，可以看下面这幅图。
+<img src="https://jzq6520.github.io/post-images/1557144607556.png" alt=""></p>
+<p>从上图可以看出，我们的监督信息（或者说网络的预测）有两个，一个是Region Score GT（区域分数），这个是预测字符位置的热图，另外一个是Affinity Score GT（关联分数），这个是预测两个字符是否<strong>关联</strong>的热图。</p>
+<p>region score其实就是单个字符的包围框的一个二维高斯图，他是通过对<strong>二维正态分布的高斯图</strong>进行仿射变换得到的。
+Affinity Score 通过画对角线来连接每个字符框的对角，我们可以生成两个三角形——我们将其称为上字符三角形和下字符三角形。然后，对于每个相邻的字符框对，通过将上三角形和下三角形的中心设置为框的角，生成一个关联框。然后将<strong>二维正态分布的高斯图</strong>进行仿射变换到关联框来获得对应的热图。</p>
+<h2 id="2-数据标注问题-获得字符级别character-level的标注">2 数据标注问题-获得字符级别（Character-level）的标注</h2>
+<p>如果想通过人工进行对字符进行标注，那么可想而知是非常耗时的。所以本文使用<strong>人工生成数据和弱监督</strong>结合的方式来解决这个问题。</p>
+<h3 id="21-人工生成数据">2.1 人工生成数据</h3>
+<p><img src="https://jzq6520.github.io/post-images/1557145267677.png" alt="">
+人工生成就是将文字黏贴到一下图片上，这时候因为是自己的文字，所以我们可以有字符级别的包围框，所以我们就有了字符级别的标注。</p>
+<h3 id="22-弱监督">2.2 弱监督</h3>
+<p><img src="https://jzq6520.github.io/post-images/1557145261386.png" alt=""></p>
+<p>上图就是一个弱监督的网络框架，作者将人工生成的数据和我们word-level标注数据一起进行训练。红色箭头预测的是region score，然后经过字符检测的热图来得到每个字符的框，这样进一步又可以得到affinity score的热图。这样就间接获得了文字的affinity score的热图。然后将预测得到的两个score热图作为ground truth进一步监督网络的训练。</p>
+<p>当使用弱监督训练模型时，我们被迫训练不完整的伪GT。 如果使用不准确的区域分数训练模型，则输出可能在字符区域内模糊。 为了防止这种情况，我们测量模型生成的每个伪GT的质量。 幸运的是，文本注释中有一个非常强大的提示，即单词长度。 在大多数数据集中，提供了单词的转录，并且单词的长度可用于评估伪GT的置信度。</p>
+<p>所以我们在训练的时候要根据<strong>伪GT</strong>的置信度来计算loss，如果生成的GT和真实情况很接近，那么这个loss就是有用的，如果生成的GT都很假，我们肯定是不接受这个loss。所以loss的计算方式如下：
+<img src="https://jzq6520.github.io/post-images/1557145511065.png" alt=""></p>
+<p>那么如何计算这个置信度呢，我们可以通过计算伪GT的字符长度和真实的GT的字符长度比较来得到：
+<img src="https://jzq6520.github.io/post-images/1557145731860.png" alt=""></p>
+<p>L(w)表示单词的长度，右上角加c的表示预测的得到的长度，取min得到的是不大于L(w)的值，这样Sconf的值就不会是负数，并且Sconf的值是0~1之间的。</p>
+<p>并且预测的热图在这个单词的包围框外面则权重为1，其实简单的理解就是只在word的包围框内的时候它的loss需要加权，因为word（所有的单词区域）包围框外面是没有文字的，所以只要预测出来有字符那么都是假阳。
+<img src="https://jzq6520.github.io/post-images/1557146064702.png" alt=""></p>
+<h3 id="23-弱监督gt的生成过程">2.3 弱监督GT的生成过程</h3>
+<p><img src="https://jzq6520.github.io/post-images/1557146113840.png" alt="">
+如图所示，就是先根据word-level标注的数据，将单词切出来，然后再进行预测，得到热图以后再进行处理。</p>
+<h2 id="3-热图预测网络">3 热图预测网络</h2>
+<p>最后热图预测的网络是一个类U-net的网络。
+<img src="https://jzq6520.github.io/post-images/1557146202867.png" alt=""></p>
+<h2 id="4-网络收敛过程">4 网络收敛过程</h2>
+<p><img src="https://jzq6520.github.io/post-images/1557146285216.png" alt=""></p>
+<h2 id="5-网络预测性能">5 网络预测性能</h2>
+<p><img src="https://jzq6520.github.io/post-images/1557146323704.png" alt=""></p>
+<h2 id="6-引用">6 引用</h2>
+<p>论文：Character Region Awareness for Text Detection</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CV-Paper-文字检测-Shape Robust Text Detection PSENet]]></title>
+        <id>https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-shape-robust-text-detection-psenet</id>
+        <link href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-shape-robust-text-detection-psenet">
+        </link>
+        <updated>2019-04-30T06:39:38.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="shape-robust-text-detection-with-progressive-scale-expansion-network">Shape Robust Text Detection with Progressive Scale Expansion Network</h1>
+<p>这篇文章是利用分割方法来做文字检测，主要克服了弯曲的文字区域检测问题。所以这篇文章叫做形状鲁棒性的文字检测。</p>
+<p>主要有以下几个重点思想：</p>
+<ol>
+<li>利用分割方法来做检测，提高了对非矩形文字区域检测的鲁棒性；</li>
+<li>利用Progressive Scale Expansion方法实现了instance segment（实例分割）；</li>
+<li>多尺度分割。</li>
+</ol>
+<p>当然这篇文章的方法对于矩形区域的文字检测也是相当准确的。</p>
+<h2 id="1-网络">1 网络</h2>
+<p>首先来看一下这篇文章使用的网络结构，如下图所示。
+<img src="https://jzq6520.github.io/post-images/1556608333773.png" alt="network"></p>
+<p>作者是将这个网络分成两个部分来讲述，左边是一个FPN结构，右边是一个特征融合部分和progressive scale expansion部分。</p>
+<p>其实我个人是把这个网络看做分割网络和后处理两个部分。</p>
+<p>首先从网络输入到mask预测输出看做分割部分，后面将多个分割结果整合成一个最终的结果看做是progressive scale expansion后处理部分。</p>
+<h3 id="11-分割网络">1.1 分割网络</h3>
+<p>分割网络由FPN, 特征融合，加上一个预测组成。</p>
+<p>首先分割网络采用了几个技术：</p>
+<ol>
+<li>FPN： FPN是一个解决多尺度的常用的解决方案，上采样的不同层的feature map大小不一样，从大到小，这样在小的featuremap上检测相对大的目标，在大的featuremap上可以检测相对小的目标（因为分辨率更高），实现了一个多尺度检测；</li>
+<li>concat：concat在图像处理中也经常遇到，经常用来融合不同尺度或不同层级特征的信息，在这里就是将各个不同尺度的特征图（feature map）的特征进行融合，实现一个多尺度的识别。</li>
+<li>concat后面的卷积：concat只是简单的将特征堆叠起来，后面一般会接一个conv层来融合特征。</li>
+<li>concat后的卷积还用了一次upsample，即上采样，这是因为FPN最后一层的数据是原图的一半，所以这里特征融合一个又进行了一次上采样来让预测结果和原图一样大小。</li>
+<li>sigmoid来预测n个mask。</li>
+</ol>
+<h3 id="12-后处理">1.2 后处理</h3>
+<p>后处理采用的是一个简单的像素点划分，有点类似区域生长，只是说在一个范围内进行区域生长。</p>
+<p>mask最小的预测结果实现了instance分割，即每个文字块是相互分离的。最大的mask就是最终的分割结果（但是没有进行instance分割），但有时候文字块区域是相互黏连的，所以需要通过最小的mask的信息来讲这些黏连的区域分离。</p>
+<p>具体过程就如下所示：
+<img src="https://jzq6520.github.io/post-images/1556609357492.png" alt="scale expansen"></p>
+<p>扩展基于广度优先搜索算法，该算法从多个内核的像素开始，迭代地合并相邻的文本像素。对于冲突的像素，只能被一个kernel合并，通过先到先得的规则合并。由于是这种根据下一个mask的边界来扩展区域的，所以不会影响最后的结果。</p>
+<h2 id="2-构建数据集">2 构建数据集</h2>
+<p><img src="https://jzq6520.github.io/post-images/1556610390720.png" alt=""></p>
+<p>需要创建多个不同目标大小（经过不同尺度的缩小）的mask。文章中是使用图形学的方法来进行创建的。但是我决定也可以使用形态学腐蚀的方法创建。</p>
+<p>文章使用Vatti clipping algorithm方法来进行mask的腐蚀。
+腐蚀的边界距离是通过这个公式计算得到的：
+<img src="https://jzq6520.github.io/post-images/1556610096797.png" alt=""></p>
+<p>并且缩小的倍数是计算得到的，其实就是一个插值得到中间的倍数，例如从0.4-1倍，总共5个mask，那么就不是完整的从0.4，0.5，0.6，...这样下去，所以还是要计算一下的。公式如下：
+<img src="https://jzq6520.github.io/post-images/1556610255688.png" alt=""></p>
+<p>m表示最低是多少倍，n表示有几个mask，r就是倍数，d是边界到腐蚀以后边界的距离，p表示mask区域。</p>
+<p>代码：</p>
+<pre><code class="language-python">import pyclipper
+import Polygon as plg
+def get_bboxes(img, gt_path):
+    h, w = img.shape[0:2]
+    lines = util.io.read_lines(gt_path)
+    bboxes = []
+    tags = []
+    for line in lines:
+        line = util.str.remove_all(line, '\xef\xbb\xbf')
+        gt = util.str.split(line, ',')
+
+        x1 = np.int(gt[0])
+        y1 = np.int(gt[1])
+
+        bbox = [np.int(gt[i]) for i in range(4, 32)]
+        bbox = np.asarray(bbox) + ([x1 * 1.0, y1 * 1.0] * 14)
+        bbox = np.asarray(bbox) / ([w * 1.0, h * 1.0] * 14)
+        
+        bboxes.append(bbox)
+        tags.append(True)
+    return np.array(bboxes), tags
+		
+def dist(a, b):
+    return np.sqrt(np.sum((a - b) ** 2))
+
+def perimeter(bbox):
+    peri = 0.0
+    for i in range(bbox.shape[0]):
+        peri += dist(bbox[i], bbox[(i + 1) % bbox.shape[0]])
+    return peri
+
+def shrink(bboxes, rate, max_shr=20):
+    rate = rate * rate
+    shrinked_bboxes = []
+    for bbox in bboxes:
+        area = plg.Polygon(bbox).area()
+        peri = perimeter(bbox)
+
+        pco = pyclipper.PyclipperOffset()
+        pco.AddPath(bbox, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        offset = min((int)(area * (1 - rate) / (peri + 0.001) + 0.5), max_shr)
+        
+        shrinked_bbox = pco.Execute(-offset)
+        if len(shrinked_bbox) == 0:
+            shrinked_bboxes.append(bbox)
+            continue
+        
+        shrinked_bbox = np.array(shrinked_bbox[0])
+        if shrinked_bbox.shape[0] &lt;= 2:
+            shrinked_bboxes.append(bbox)
+            continue
+        
+        shrinked_bboxes.append(shrinked_bbox)
+    
+    return np.array(shrinked_bboxes)
+</code></pre>
+<h2 id="3-损失函数-loss">3 损失函数 LOSS</h2>
+<p>损失由完整的mask的loss加上腐蚀以后mask的loss，其中两项是加权相加：
+<img src="https://jzq6520.github.io/post-images/1556610560713.png" alt="">
+c表示完整的（complete），s表示（腐蚀后的，shrunk），Ls是所以腐蚀后的mask loss相加得到的。
+使用1-dice coefﬁcient作为loss，来避免样本不平衡（前景和背景）的影响。dice coefﬁcient计算如下：
+<img src="https://jzq6520.github.io/post-images/1556610778071.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1556610842164.png" alt="">
+并且腐蚀后的mask的loss是在预测区域（注意不是标注区域内）内计算的，这个和之前我其他任务中在G里面计算loss不一样，这个是在预测的区域内计算loss，这样的一个好处可能是假阳会少，因为如果在G里面计算，那么G外面预测的假阳就没用计算在loss里面。</p>
+<p>最后还使用了在线难例挖掘。</p>
+<h2 id="4-augment">4 augment</h2>
+<p>数据增强使用了，水平翻转，随机旋转，随机缩放，随机剪裁640x640大小。
+代码：</p>
+<pre><code class="language-python">import pyclipper
+import Polygon as plg
+def random_horizontal_flip(imgs):
+    if random.random() &lt; 0.5:
+        for i in range(len(imgs)):
+            imgs[i] = np.flip(imgs[i], axis=1).copy()
+    return imgs
+
+def random_rotate(imgs):
+    max_angle = 10
+    angle = random.random() * 2 * max_angle - max_angle
+    for i in range(len(imgs)):
+        img = imgs[i]
+        w, h = img.shape[:2]
+        rotation_matrix = cv2.getRotationMatrix2D((h / 2, w / 2), angle, 1)
+        img_rotation = cv2.warpAffine(img, rotation_matrix, (h, w))
+        imgs[i] = img_rotation
+    return imgs
+
+def scale(img, long_size=2240):
+    h, w = img.shape[0:2]
+    scale = long_size * 1.0 / max(h, w)
+    img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
+    return img
+
+def random_scale(img, min_size):
+    h, w = img.shape[0:2]
+    if max(h, w) &gt; 1280:
+        scale = 1280.0 / max(h, w)
+        img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
+
+    h, w = img.shape[0:2]
+    random_scale = np.array([0.5, 1.0, 2.0, 3.0])
+    scale = np.random.choice(random_scale)
+    if min(h, w) * scale &lt;= min_size:
+        scale = (min_size + 10) * 1.0 / min(h, w)
+    img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
+    return img
+
+def random_crop(imgs, img_size):
+    h, w = imgs[0].shape[0:2]
+    th, tw = img_size
+    if w == tw and h == th:
+        return imgs
+    
+    if random.random() &gt; 3.0 / 8.0 and np.max(imgs[1]) &gt; 0:
+        tl = np.min(np.where(imgs[1] &gt; 0), axis = 1) - img_size
+        tl[tl &lt; 0] = 0
+        br = np.max(np.where(imgs[1] &gt; 0), axis = 1) - img_size
+        br[br &lt; 0] = 0
+        br[0] = min(br[0], h - th)
+        br[1] = min(br[1], w - tw)
+        
+        i = random.randint(tl[0], br[0])
+        j = random.randint(tl[1], br[1])
+    else:
+        i = random.randint(0, h - th)
+        j = random.randint(0, w - tw)
+    
+    # return i, j, th, tw
+    for idx in range(len(imgs)):
+        if len(imgs[idx].shape) == 3:
+            imgs[idx] = imgs[idx][i:i + th, j:j + tw, :]
+        else:
+            imgs[idx] = imgs[idx][i:i + th, j:j + tw]
+    return imgs
+</code></pre>
+<h2 id="5-最后">5 最后</h2>
+<p>细节可看论文，这里只介绍了文章的主要思想和内容。</p>
+<h2 id="6-引用">6 引用</h2>
+<ul>
+<li>Shape Robust Text Detection with Progressive Scale Expansion Network</li>
+<li>https://github.com/whai362/PSENet</li>
+<li>https://github.com/whai362/PSENet/blob/master/dataset/ctw1500_loader.py#L40</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[LeetCode-sql]]></title>
+        <id>https://jzq6520.github.io/post/leetcode-sql</id>
+        <link href="https://jzq6520.github.io/post/leetcode-sql">
+        </link>
+        <updated>2019-04-29T06:34:50.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="leetcode-sql-刷题">LeetCode sql 刷题</h1>
+<h2 id="自身和自身比较">自身和自身比较</h2>
+<pre><code>mysql&gt; select * from salary;
++------+------+
+| id   | sala |
++------+------+
+|    1 |  200 |
+|    2 |  300 |
+|    3 |  400 |
+|    4 |  500 |
++------+------+
+4 rows in set (0.00 sec)
+
+</code></pre>
+<pre><code>mysql&gt; select a.id as a_id,a.sala as a_sala,b.id as b_id,b.sala as b_sala from salary a,salary b where a.sala&gt;b.sala
+    -&gt; ;
++------+--------+------+--------+
+| a_id | a_sala | b_id | b_sala |
++------+--------+------+--------+
+|    2 |    300 |    1 |    200 |
+|    3 |    400 |    1 |    200 |
+|    4 |    500 |    1 |    200 |
+|    3 |    400 |    2 |    300 |
+|    4 |    500 |    2 |    300 |
+|    4 |    500 |    3 |    400 |
++------+--------+------+--------+
+6 rows in set (0.01 sec)
+</code></pre>
+<p>下面这个一直想不通，是否是b 表满足子查询总的b的条件</p>
+<pre><code>mysql&gt; select b.* from salary b where 2 &gt; (select count(distinct a.sala) from salary a where a.sala&gt;b.sala)
+    -&gt; ;
++------+------+
+| id   | sala |
++------+------+
+|    3 |  400 |
+|    4 |  500 |
++------+------+
+2 rows in set (0.00 sec)
+</code></pre>
+<h2 id="184-department-highest-salar">184. Department Highest Salar</h2>
+<p>问题：</p>
+<pre><code>The Employee table holds all employees. Every employee has an Id, a salary, and there is also a column for the department Id.
+
++----+-------+--------+--------------+
+| Id | Name  | Salary | DepartmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 70000  | 1            |
+| 2  | Henry | 80000  | 2            |
+| 3  | Sam   | 60000  | 2            |
+| 4  | Max   | 90000  | 1            |
++----+-------+--------+--------------+
+The Department table holds all departments of the company.
+
++----+----------+
+| Id | Name     |
++----+----------+
+| 1  | IT       |
+| 2  | Sales    |
++----+----------+
+Write a SQL query to find employees who have the highest salary in each of the departments. For the above tables, Max has the highest salary in the IT department and Henry has the highest salary in the Sales department.
+
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| Sales      | Henry    | 80000  |
++------------+----------+--------+
+</code></pre>
+<p>解：可以使用多个条件进行一起过滤，但是e.DepartmentId, e.Salary这个顺序，要和in里面的字段的顺序要一样。</p>
+<pre><code># Write your MySQL query statement below
+
+select 
+    d.Name as 'Department',
+    e.Name as 'Employee',
+    e.Salary as 'Salary'
+from
+Employee e
+join 
+Department d on e.DepartmentId = d.Id
+where 
+(e.DepartmentId, e.Salary) in
+(
+    select a.DepartmentId,
+            max(a.Salary) 
+    from Employee a
+    group by a.DepartmentId
+)
+;
+
+</code></pre>
+<h2 id="177-nth-highest-salary">177. Nth Highest Salary</h2>
+<p>LIMIT 来定位数据。</p>
+<pre><code>Write a SQL query to get the nth highest salary from the Employee table.
+
++----+--------+
+| Id | Salary |
++----+--------+
+| 1  | 100    |
+| 2  | 200    |
+| 3  | 300    |
++----+--------+
+For example, given the above Employee table, the nth highest salary where n = 2 is 200. If there is no nth highest salary, then the query should return null.
+
++------------------------+
+| getNthHighestSalary(2) |
++------------------------+
+| 200                    |
++------------------------+
+</code></pre>
+<p>解：mysql还是要再看看。</p>
+<pre><code>CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+    DECLARE M INT;
+    set M = N-1;
+  RETURN (
+      # Write your MySQL query statement below.
+      #初始记录行的偏移量是 0,第n个，就是包括第n个，那么索引就是N-1
+     SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT M, 1
+     
+  );
+END
+</code></pre>
+<h2 id="601-human-traffic-of-stadium">601. Human Traffic of Stadium</h2>
+<p>难度很高的一道题</p>
+<pre><code>X city built a new stadium, each day many people visit it and the stats are saved as these columns: id, date, people
+
+Please write a query to display the records which have 3 or more consecutive rows and the amount of people more than 100(inclusive).
+
+For example, the table stadium:
++------+------------+-----------+
+| id   | date       | people    |
++------+------------+-----------+
+| 1    | 2017-01-01 | 10        |
+| 2    | 2017-01-02 | 109       |
+| 3    | 2017-01-03 | 150       |
+| 4    | 2017-01-04 | 99        |
+| 5    | 2017-01-05 | 145       |
+| 6    | 2017-01-06 | 1455      |
+| 7    | 2017-01-07 | 199       |
+| 8    | 2017-01-08 | 188       |
++------+------------+-----------+
+For the sample data above, the output is:
+
++------+------------+-----------+
+| id   | date       | people    |
++------+------------+-----------+
+| 5    | 2017-01-05 | 145       |
+| 6    | 2017-01-06 | 1455      |
+| 7    | 2017-01-07 | 199       |
+| 8    | 2017-01-08 | 188       |
++------+------------+-----------+
+</code></pre>
+<p>解：几个点，首先考察如何判断三个连续的值，建立三个原表的引用，where三个引用，那么形成的是一个笛卡尔积。</p>
+<pre><code>select distinct t1.*
+from stadium t1, stadium t2, stadium t3
+where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
+;
+</code></pre>
+<p>这个结果出来的是满足大于100的值。
+Considering t1, t2 and t3 are identical, we can take one of them to consider what conditions we should add to filter the data and get the final result. Taking t1 for example, it could exist in the beginning of the consecutive 3 days, or the middle, or the last.</p>
+<ul>
+<li>t1 in the beginning: (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1) -- t1, t2, t3</li>
+<li>t1 in the middle: (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3</li>
+<li>t1 in the end: (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1</li>
+</ul>
+<pre><code>select t1.*
+from stadium t1, stadium t2, stadium t3
+where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
+and
+(
+      (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1)  -- t1, t2, t3
+    or
+    (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3
+    or
+    (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1
+)
+;
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[SQL学习笔记-sql内建函数]]></title>
+        <id>https://jzq6520.github.io/post/sql-xue-xi-bi-ji-sql-nei-jian-han-shu</id>
+        <link href="https://jzq6520.github.io/post/sql-xue-xi-bi-ji-sql-nei-jian-han-shu">
+        </link>
+        <updated>2019-04-29T06:30:51.000Z</updated>
+        <content type="html"><![CDATA[<p>这里只记录了一点重要的语句，其他的可以用到的时候百度。</p>
+<h1 id="sql-内建函数">sql 内建函数</h1>
+<p>SQL 拥有很多可用于计数和计算的<a href="http://www.w3school.com.cn/sql/sql_functions.asp">内建函数</a>。
+函数的语法
+内建 SQL 函数的语法是：</p>
+<pre><code class="language-sql">SELECT function(列) FROM 表
+</code></pre>
+<h2 id="函数的类型">函数的类型</h2>
+<p>在 SQL 中，基本的函数类型和种类有若干种。函数的基本类型是：</p>
+<ul>
+<li>Aggregate 合计函数：Aggregate 函数的操作面向一系列的值，并返回一个单一的值。</li>
+<li>Scalar 纯量函数：Scalar 函数的操作面向某个单一的值，并返回基于输入值的一个单一的值。</li>
+</ul>
+<h2 id="group-by-分组语句">GROUP BY 分组语句</h2>
+<p>GROUP BY 语句用于结合合计函数，根据一个或多个列对结果集进行分组。
+例如可以对人进行分组，再使用sum函数，对每个人计算他的工资。</p>
+<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
+FROM table_name
+WHERE column_name operator value
+GROUP BY column_name
+</code></pre>
+<h2 id="having-子句">HAVING 子句</h2>
+<p>在 SQL 中增加 HAVING 子句原因是，WHERE 关键字无法与合计函数一起使用。就相当于普通语句中的where。</p>
+<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
+FROM table_name
+WHERE column_name operator value
+GROUP BY column_name
+HAVING aggregate_function(column_name) operator value
+</code></pre>
+<p>例如可以这么写：</p>
+<pre><code class="language-sql">SELECT Customer,SUM(OrderPrice) FROM Orders
+GROUP BY Customer
+HAVING SUM(OrderPrice)&lt;2000
+</code></pre>
+<h2 id="format-函数">FORMAT() 函数</h2>
+<p>FORMAT 函数用于对字段的显示进行格式化。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySQL学习笔记-pymysql]]></title>
+        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql</id>
+        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql">
+        </link>
+        <updated>2019-04-29T06:28:24.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="pymysql">pymysql</h1>
+<p>pymysql 是在py3和py2上都可以使用的连接 MySQL 服务器的一个库。</p>
+<h2 id="事务">事务</h2>
+<p>事务机制可以确保数据一致性。
+事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。</p>
+<ul>
+<li>原子性（atomicity）。一个事务是一个不可分割的工作单位，事务中包括的诸操作要么都做，要么都不做。</li>
+<li>一致性（consistency）。事务必须是使数据库从一个一致性状态变到另一个一致性状态。一致性与原子性是密切相关的。</li>
+<li>隔离性（isolation）。一个事务的执行不能被其他事务干扰。即一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务之间不能互相干扰。</li>
+<li>持久性（durability）。持续性也称永久性（permanence），指一个事务一旦提交，它对数据库中数据的改变就应该是永久性的。接下来的其他操作或故障不应该对其有任何影响。
+Python DB API 2.0 的事务提供了两个方法 commit 或 rollback。</li>
+</ul>
+<h2 id="安装">安装</h2>
+<p>首先查看了conda库中是否有这个包<code>conda search pymysql</code>，发现是有的并且有py2.7版本，直接安装<code>conda install pymysql</code></p>
+<h2 id="cursor游标">cursor游标</h2>
+<p>游标就像一辆货车，把指令带过去执行(execute)，然后运回来值(fetch*)。</p>
+<h2 id="fetch">fetch</h2>
+<ul>
+<li>fetchone(): 该方法获取下一个查询结果集。结果集是一个对象</li>
+<li>fetchall(): 接收全部的返回结果行.</li>
+<li>rowcount: 这是一个只读属性，并返回执行execute()方法后影响的行数。</li>
+</ul>
+<h2 id="使用">使用</h2>
+<pre><code class="language-python">## 建立数据库连接
+conn = pymysql.Connect(host='127.0.0.1',
+							user='root',
+							passwd='123456',
+							db='python_mysql',
+							charset='utf8')
+# 使用 cursor() 方法创建一个游标对象 cursor
+# 每一个游标对象传送一条sql
+cursor = conn.cursor()
+# 使用 execute()  方法执行 SQL 查询 
+cursor.execute(&quot;SELECT VERSION()&quot;)
+# 使用 fetchone() 方法获取单条数据.两个单词tetch one
+# fetchall() 所有
+conn.commit()
+data = cursor.fetchone()
+print (&quot;Database version : %s &quot; % data)
+# 关闭数据库连接
+db.close()
+</code></pre>
+<h2 id="代码">代码</h2>
+<p>转账：</p>
+<pre><code class="language-python"># -*- coding: UTF-8 -*-
+import sys
+import pymysql
+
+class TransferMoney(object):
+	def __init__(self, conn):
+		self.conn = conn
+
+	def check_acct_available(self, acctid):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;select * from account where acctid=%s&quot; % acctid
+			cursor.execute(sql)
+			print &quot;check_acct_available: &quot; + sql
+			rs = cursor.fetchall()
+			if len(rs) !=1:
+				raise Exception(&quot;账号%s不存在&quot; % acctid)
+		finally:
+		#关闭cursor
+			cursor.close()
+	
+	def has_enough_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;select money from account where acctid=%s and money &gt;= %s &quot; % (acctid, money)
+			cursor.execute(sql)
+			print &quot;has_enough_money: &quot; + sql
+			rs = cursor.fetchall()
+			if len(rs) != 1:
+				raise Exception(&quot;账号%s金额不足,剩余金额为%s&quot;%(acctid, money))
+		finally:
+			cursor.close()
+
+	def reduce_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;update account set money = money - %s where acctid=%s&quot;%(money, acctid)
+			cursor.execute(sql)
+			print &quot;reduce_money: &quot; + sql
+
+			if cursor.rowcount !=1 :
+				raise Exception(&quot;账号%s减款失败&quot;%(acctid))
+		finally:
+			cursor.close()
+
+	def add_money(self, acctid, money):
+		cursor = self.conn.cursor()
+		try:
+			sql = &quot;update account set money = money + %s where acctid=%s&quot;%(money, acctid)
+			cursor.execute(sql)
+			print &quot;add_money: &quot; + sql
+
+			if cursor.rowcount !=1 : #判断被影响的行数：cursor.rowcount
+				raise Exception(&quot;账号%s加款失败&quot;%(acctid))
+		finally:
+			cursor.close()
+
+
+	def transfer(self, source_acctid, target_acctid, money):
+		try:
+			self.check_acct_available(source_acctid)
+			self.check_acct_available(target_acctid)
+			self.has_enough_money(source_acctid, money)
+			self.reduce_money(source_acctid, money)
+			self.add_money(target_acctid, money)
+			# 向数据库提交，不开启自动提交
+			self.conn.commit()
+		except Exception as e:
+		# 发生错误时回滚
+			self.conn.rollback()
+			raise e
+
+
+
+if __name__ == &quot;__main__&quot;:
+	source_acctid = sys.argv[1]
+	target_acctid = sys.argv[2]
+	money = sys.argv[3]
+
+	conn = pymysql.Connect(host='127.0.0.1',
+							user='root',
+							passwd='123456',
+							db='python_mysql',
+							charset='utf8'
+							)
+	tr_money = TransferMoney(conn)
+
+	try:
+		tr_money.transfer(source_acctid, target_acctid, money)
+	except Exception as e:
+		print &quot;出现问题：&quot; + str(e)
+	finally:
+	# 关闭连接
+		conn.close()
+
+</code></pre>
+<h2 id="引用">引用</h2>
+<p><a href="http://www.runoob.com/python3/python3-mysql.html">1. http://www.runoob.com/python3/python3-mysql.html</a>
+<a href="http://pymysql.readthedocs.io/en/latest/index.html">2. PyMySQL’s documentation</a>
+<a href="https://github.com/PyMySQL/PyMySQL">3. https://github.com/PyMySQL/PyMySQL</a>
+<a href="https://www.python.org/dev/peps/pep-0249/">4. https://www.python.org/dev/peps/pep-0249/</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySQL学习笔记-4安全管理&维护&改善性能]]></title>
+        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-4-an-quan-guan-li-andwei-hu-andgai-shan-xing-neng</id>
+        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-4-an-quan-guan-li-andwei-hu-andgai-shan-xing-neng">
+        </link>
+        <updated>2019-04-29T06:22:00.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="mysql安全管理数据库维护改善性能">MySQL安全管理&amp;数据库维护&amp;改善性能</h1>
+<h2 id="管理用户">管理用户</h2>
+<p>MySQL用户账号和信息存储在名为mysql的Mysql数据库中。
+查看有哪些用户：<code>select user from user;</code></p>
+<h3 id="账号操作">账号操作</h3>
+<ul>
+<li>创建用户：<code>create user ben identified by 'password';</code></li>
+<li>mysql在保存之前会对其密码加密。</li>
+<li>为了安全起见不建议直接插入行到user表来增加用户，<strong>最好用标记和函数来处理这些表</strong>。</li>
+<li>rename use 重命名: <code>RENAME USER ben TO bforta;</code></li>
+<li>删除用户：<code>DROP USER bforta;</code></li>
+</ul>
+<h3 id="访问权限操作">访问权限操作</h3>
+<ul>
+<li>查看访问权限: <code>show grants for bforta;</code></li>
+</ul>
+<pre><code class="language-sql">mysql&gt; show grants for changshan;
++---------------------------------------+
+| Grants for changshan@%                |
++---------------------------------------+
+| GRANT USAGE ON *.* TO 'changshan'@'%' |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+</code></pre>
+<p><code>USAGE ON *.*</code> 表示根本没有权限。</p>
+<ul>
+<li>
+<p>设置权限： 使用GRANT语句。至少给出下列信息:</p>
+<ul>
+<li>要授予的权限；</li>
+<li>被授予访问权限的数据库或表；</li>
+<li>用户名。</li>
+<li>格式：grant 权限 数据库/表/字段 TO 用户；</li>
+<li><code>GRANT SELECT ON crashcourse.* TO changshan</code>
+<code>crashcourse.*</code> 表示 crashcourse数据库的所有表。</li>
+</ul>
+</li>
+<li>
+<p>撤销特定的权限：
+GRANT 的反操作为REVOKE.
+<code>REVOKE SELECT ON crashcourse.* FROM changshan</code></p>
+</li>
+</ul>
+<h3 id="grant和revoke可在几个层次上控制访问权限">GRANT和REVOKE可在几个层次上控制访问权限：</h3>
+<ul>
+<li>整个服务器，使用GRANT ALL和REVOKE ALL;</li>
+<li>整个数据库，使用ON database.*;</li>
+<li>特定的表，使用ON database.table;</li>
+<li>特点的列。</li>
+<li>特点的存储过程。</li>
+</ul>
+<h3 id="更改密码">更改密码</h3>
+<ul>
+<li>设置指定用户的密码：<code>set password for changshan = Password('password')</code></li>
+<li>设置当前用户的密码： <code>set password = Password('password')</code></li>
+</ul>
+<h2 id="数据库维护">数据库维护</h2>
+<p>包括以下几部分：</p>
+<ul>
+<li>数据库备份</li>
+<li>数据库维护：
+<ul>
+<li>检测表键是否正确：<code>analyze table orders;</code></li>
+<li>check table: 针对问题表进行检查。</li>
+<li>从一个表删除大量数据，应该使用optimize table 来收回所用的空间，从而优化表的性能。</li>
+</ul>
+</li>
+<li>诊断启动问题：在排除系统启动问题时，首先应该尽量手动启动服务器。mysql服务器自身通过在命令行上执行mysqld启动。</li>
+<li>查看日志文件，分为以下几种：
+<ul>
+<li>错误日志</li>
+<li>查询日志</li>
+<li>二进制日志</li>
+<li>缓慢查询日志</li>
+</ul>
+</li>
+</ul>
+<p>注： - mysqld是用来启动mysql数据库的命令
+- mysql是打开并执行sql语句的命令</p>
+<h2 id="附录权限表">附录权限表：</h2>
+<p><img src="https://jzq6520.github.io/post-images/1556519058906.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1556519066562.png" alt=""></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySQL学习笔记-3事务处理]]></title>
+        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-3-shi-wu-chu-li</id>
+        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-3-shi-wu-chu-li">
+        </link>
+        <updated>2019-04-29T06:20:28.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="mysql事务处理">MySQL事务处理</h1>
+<ul>
+<li>MyISAM和 InnoDB是mysql常用的引擎，前者不支持事务处理后者支持。</li>
+<li>事务处理用来维护数据库的完整性，它保证成批的Mysql操作要么执行，要么都不执行。</li>
+<li>关系型数据库设计把数据存储在多个表里，使数据更容易操纵、维护和重用。</li>
+<li>关键：事务处理的关键在于，将SQL语句分解为逻辑块，并明确规定数据何时退回何时不应该退回。</li>
+</ul>
+<h2 id="控制事务处理">控制事务处理</h2>
+<ul>
+<li>开始：start transaction</li>
+<li>回滚：rollback</li>
+<li>commit：平时的Mysql语句都是隐式提交，<strong>但在事务处理的时候需要显示提交</strong>，commit语句只有在不出错时提交。</li>
+<li>保留点：可以指定回退到指定的点，这个点使用**savepoint pointname;**给出保留点。<strong>注：可以多设置保留点，以方便后面回滚</strong>。release savepoint 删除保留点。</li>
+</ul>
+<h3 id="更改默认提交行为">更改默认提交行为</h3>
+<p>设置： autocommit = 0;
+autocommit是针对每个连接的，不是服务器的。</p>
+<h2 id="字符集合校对顺序">字符集合校对顺序</h2>
+<p>不同的语言和字符集需要以不同的方式存储和检索。因此，MySQL需要<strong>适应不同的字符集</strong>，适应不同的<strong>排序和检索</strong>数据的方法。</p>
+<ul>
+<li>字符集：为字母和符号的集合</li>
+<li>编码：某个字符集的内部表示</li>
+<li>校对：规定字符如何比较,例如区分大小写还是不区分。</li>
+</ul>
+<p><code>show CHARACTER SET</code>
+<code>SHOW COLLATION</code></p>
+<p>可以在创建数据库，表，或者定义列的时候指定默认的校对。</p>
+<pre><code class="language-sql">--表指定
+CREATE TABLE mytable
+(
+columnn1 INT,
+columnn2 VARCHAR(10) CHARACTER SET latin1 COLLATE --列指定
+) DEFAULT CHARACTER SET hebrew
+  COLLATE hebrew_general_ri;
+</code></pre>
+<p>校对在对用ORDER BY 子句检索出来的数据排序时起重要作用。</p>
+<pre><code class="language-sql">--或者排列的时候指定
+SELECT * FROM customers
+ORDER BY lastname, firstname COLLATE latin1_general_cs;
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[MySQL学习笔记-2进阶]]></title>
+        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-2-jin-jie</id>
+        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-2-jin-jie">
+        </link>
+        <updated>2019-04-29T06:19:01.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="mysql-进阶">MySQL 进阶</h1>
+<h2 id="以多列排序">以多列排序</h2>
+<ul>
+<li>
+<p>排序的先后顺序和order by的顺序一样，降序（大的在前面）desc关键字，可以只指定一个列。</p>
+</li>
+<li>
+<p>使用ORDER BY和LIMIT的组合，能够找出一个列中最高或最低的值。</p>
+</li>
+</ul>
+<h2 id="操作符">操作符</h2>
+<p>and的优先级更高，所以在where语句中有and和or，最好加括号。</p>
+<h2 id="group-by">group by</h2>
+<ul>
+<li>除聚集计算语句外，SELECT语句中的每个列都必须在GROUP BY子句中给出。</li>
+<li>如果分组列中具有NULL值，则NULL将作为一个分组返回。如果列中有多行NULL值，它们将分为一组。</li>
+</ul>
+<h2 id="having">having</h2>
+<ul>
+<li>除了能用GROUP BY分组数据外，MySQL还允许过滤分组，规定包括 哪些分组，排除哪些分组。</li>
+<li>WHERE在数据分组前进行过滤，HAVING在数据分组后进行过滤。</li>
+</ul>
+<h2 id="相关子查询">相关子查询</h2>
+<ul>
+<li>定义：涉及外部查询的子查询。</li>
+<li>首先，建立和测试最内层的查询。然后，用硬编码数据建立和测试外层查询，并且仅在确认它正常后才嵌入子查询。这时，再次测试它。对于要增加的每个查询，重复这些步骤。这样做仅给构造查询增加了一点点时间，但节省了以后（找出查询为什么不正常）的大量时间，并且极大地提高了查询一开始就正常工作的可能性。</li>
+</ul>
+<h2 id="关系表">关系表</h2>
+<ul>
+<li>关系表的设计就是要保证把信息分解成多个表，一类数据 一个表。各表通过某些常用的值（即关系设计中的关系（relational））互 相关联。</li>
+<li>分解数据为多个表能更有效地存储，更方便地处理，并 且具有更大的可伸缩性。</li>
+</ul>
+<h2 id="主键">主键</h2>
+<ul>
+<li>vendors表包含所有供应商信息，每个供应商占一行，每个供 应商具有唯一的标识。此标识称为主键（primary key）</li>
+</ul>
+<h2 id="外键">外键</h2>
+<ul>
+<li>外键为某个表中的一列，它包含另一个表 的主键值，定义了两个表之间的关系。</li>
+</ul>
+<h2 id="可伸缩性">可伸缩性</h2>
+<ul>
+<li>能够适应不断增加的工作量而不失败。设 计良好的数据库或应用程序称之为可伸缩性好（scale well）</li>
+</ul>
+<h2 id="笛卡尔积">笛卡尔积</h2>
+<ul>
+<li>由没有联结条件的表关系返回 的结果为笛卡儿积。检索出的行的数目将是第一个表中的行数乘 以第二个表中的行数。</li>
+<li>相应的笛卡儿积不是我们所想要 的。这里返回的数据用每个供应商匹配了每个产品，它包括了 供应商不正确的产品。实际上有的供应商根本就没有产品。</li>
+</ul>
+<h2 id="索引">索引</h2>
+<p>MySQL索引的建立对于MySQL的高效运行是很重要的，索引可以大大提高MySQL的检索速度。
+创建索引时，你需要确保该索引是应用在SQL 查询语句的条件(一般作为 WHERE 子句的条件)。</p>
+<h2 id="primary-key-约束">PRIMARY KEY 约束</h2>
+<p>PRIMARY KEY 约束唯一标识数据库表中的每条记录。
+主键必须包含唯一的值。
+主键列不能包含 NULL 值。
+每个表都应该有一个主键，并且每个表只能有一个主键。</p>
+<h2 id="key">KEY</h2>
+<p>KEY wh_logrecord_user_name (user_name)
+本表的user_name字段与wh_logrecord_user_name表user_name字段建立外键
+括号外是建立外键的对应表，括号内是对应字段
+类似还有 KEY user(userid)
+当然，key未必都是外键</p>
+]]></content>
+    </entry>
+</feed>
