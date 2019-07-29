@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1564383709978">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1564384147777">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1564383709978" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1564384147777" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -167,7 +167,7 @@ https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
             (if accuracy monitoring is enabled).
     &quot;&quot;&quot;
 		
-		def __init__(self):
+     def __init__(self):
         self.validation_data = None
         self.model = None
 		
@@ -181,23 +181,23 @@ https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
 		
 		## 什么时候会调用，直接可以看方法名。
 		# Arguments
-    #        logs: 具体可以看上面链接中给出的注释，每个都不一样。
-		def on_batch_begin(self, batch, logs=None)
-		def on_batch_end(self, batch, logs=None)
-		def on_epoch_begin(self, epoch, logs=None)
-		def on_epoch_end(self, epoch, logs=None)
-		def on_train_batch_begin(self, batch, logs=None)
-		def on_train_batch_end(self, batch, logs=None)
-		def on_test_batch_begin(self, batch, logs=None)
-		def on_test_batch_end(self, batch, logs=None)
-		def on_predict_batch_begin(self, batch, logs=None)
-		def on_predict_batch_end(self, batch, logs=None)
-		def on_train_begin(self, logs=None)
-		def on_train_end(self, logs=None)
-		def on_test_begin(self, logs=None)
-		def on_test_end(self, logs=None)
-		def on_predict_begin(self, logs=None)
-		def on_predict_end(self, logs=None)	
+    #       logs: 具体可以看上面链接中给出的注释，每个都不一样。
+	def on_batch_begin(self, batch, logs=None)
+	def on_batch_end(self, batch, logs=None)
+	def on_epoch_begin(self, epoch, logs=None)
+	def on_epoch_end(self, epoch, logs=None)
+	def on_train_batch_begin(self, batch, logs=None)
+	def on_train_batch_end(self, batch, logs=None)
+	def on_test_batch_begin(self, batch, logs=None)
+	def on_test_batch_end(self, batch, logs=None)
+	def on_predict_batch_begin(self, batch, logs=None)
+	def on_predict_batch_end(self, batch, logs=None)
+	def on_train_begin(self, logs=None)
+	def on_train_end(self, logs=None)
+	def on_test_begin(self, logs=None)
+	def on_test_end(self, logs=None)
+	def on_predict_begin(self, logs=None)
+	def on_predict_end(self, logs=None)	
 </code></pre>
 <p>在回调函数中可以使用这两个参数。</p>
 <ul>
@@ -214,7 +214,7 @@ https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
 <h3 id="keras自定义回调函数的例子">keras自定义回调函数的例子</h3>
 <p>回调函数使用以后，还可以通过类实例来访问实例变量。</p>
 <pre><code class="language-python">class LossHistory(keras.callbacks.Callback):
-		def __init__(self):
+    def __init__(self):
 				super(LossHistory, self).__init__()
 				self.losses = []
 				
