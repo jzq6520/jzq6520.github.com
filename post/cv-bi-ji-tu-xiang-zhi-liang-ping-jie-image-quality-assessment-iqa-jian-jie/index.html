@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CV-笔记-图像质量评价Image quality assessment IQA简介 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1570679042523">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1570679042523" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CV-笔记-图像质量评价Image quality assessment IQA简介</h2>
+            <div class="post-date">2019-10-10</div>
+            
+              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie.png')">
+              </div>
+            
+            <div class="post-content">
+              <p>2019年10月10日</p>
+<h2 id="1-简介">1 简介</h2>
+<p>图像质量评价（Image quality assessment，IQA）按照是否有参考图像可以分为三种：1. 有参IQA，2.半参IQA，3. 无参IQA。</p>
+<p>有参图像质量评价虽然效果很好，但是前提是要有一个参考图像，也就是说一张质量好的图像作为参考，然后给评价的图像进行打分，而且参考图像和被打分的图像是要同一个图。但是在某些场景下参考图像是比较难获得的。</p>
+<p>在测试图像压缩、图像传输效果时候或许可以有一个原始图像作为参考，然后测试被压缩或被传输后的图像知道。但是在很多场景是无法获得参考图像的，例如你拍摄一张图像，如果你没有拍摄一个绝对清晰的图像，那就无法拿到参考图像。比还有一些实时的场景下我们是不好获得参考图像的。</p>
+<p><strong>所以这时候无参图像质量评价就出来了。</strong></p>
+<h2 id="2-基于深度学习的图像质量评价">2 基于深度学习的图像质量评价</h2>
+<p>废话不多说直接进入正题，这里我们主要讨论利用深度学习来解决图像质量评价问题。传统方法可以自行谷歌。</p>
+<p>在我看来基于深度学习的图像质量评价主要有两种：</p>
+<ol>
+<li>直接利用回归，输入为图像，输出为质量评价分数。那么训练数据集就是 图像和label。</li>
+<li>利用伪参考图像，然后将待评价图像和伪参考图像一起输入到回归网络中，输出质量评价分数。那么训练数据要包含：待评价图像、参考图像和label。注：伪参考图像这个说法是我自己想的。</li>
+</ol>
+<p>接下来对这两种基于深度学习的方法进行简单介绍，并且附上论文。</p>
+<h2 id="21-直接利用回归">2.1 直接利用回归</h2>
+<p>直接利用回归进行质量评价。这个思路比较简单，就是我们输入一张待评价图像然后输出的是一个值（score）。</p>
+<p>网络就可以设计为一个卷积神经网络，例如我们可以选用VGG网络进行回归。</p>
+<p><strong>但是由于图像质量评价的数据往往难以获得，且存在很大的主观性，所以说数据量是不大的。所以Xialei Liu等人就提出了RankIQA来解决数据量小的问题。</strong></p>
+<h3 id="211-rankiqa">2.1.1 RankIQA</h3>
+<p>别看名字这么玄乎，其实本身思想其实很简单，就是利用迁移学习。那么从哪里迁移网络参数呢？是从参数共享的网络得到。<strong>这个参数共享又不能说是孪生网络（注：论文中说是孪生网络），因为这个网络不像孪生网络一样有连接在一块，所以应该只能算是参数共享的网络</strong>。</p>
+<p>首先构建两个参数共享的网络，这时候将两张图分别从两个网络输入，网络输出的是一个质量评价分数，这时候我们是知道两张输入图像哪张好哪张坏的，所以这时候就可以比较两个网络输出的质量评价分数来进行计算loss。如果输出的质量评价分数的大小关系和实际一样，那么就不计算loss。</p>
+<p><img src="https://jzq6520.github.io/post-images/1570677420978.png" alt=""></p>
+<p>那么输入的图像是哪里来的呢？是我们自己构造的，利用高斯核对图像进行模糊，这样我们就可以生成一组不同模糊程度的图像。因为我们不知道模糊程度该打几分，所以在训练参数共享网络的时候，loss是通过比较两个网络的数据来进行计算的，而不是和传统的一样计算均方差。</p>
+<p>LOSS:
+<img src="https://jzq6520.github.io/post-images/1570677513453.png" alt=""></p>
+<p>这里有个假设，就是x1是大于x2的，所以从这个公式1的Loss公式可以看出，当网络输出x1大于x2时不计算loss，反之则计算一个loss。</p>
+<p>最后，由于我们自己生成了许多可以指定图像质量相对好坏的数据，所以可以训练更深的网络，克服了一部分数据量的问题。然后利用在人工标注的groundtruth上进行finetune（微调）得到最终的回归网络（质量评价网络）。</p>
+<p><strong>总结：数据上只需要图像和对应的质量分数，网络相对简单。利用了迁移学习和很聪明的学习技巧和损失函数</strong></p>
+<h2 id="22-利用伪参考图像">2.2  利用伪参考图像</h2>
+<p>为什么我说这个是伪参考图像，因为这里面<strong>训练的时候是需要参考图像</strong>的，并且<strong>网络会生成一个假的参考图像</strong>，这个参考图像是通过网络对质量差的图像<strong>修复得到</strong>，例如一种模糊图像，然后由网络对其进行修复生成一张清晰的图像。然后利用这个清晰的图像作为参考图像对图像进行质量评价。</p>
+<p>这里介绍两篇文章：RAN4IQA和Hallucinated-IQA，这两篇文章都是这样的思路，都是利用GAN（对抗生成网络）修复质量差的图像，然后将得到的修复后的图像（伪参考图像）作为参考图像对待评价图像进行打分。</p>
+<p>所以这两个网络可以分解成三部分：<strong>伪参考图像评价网络 = GAN + 评价网络 = 修复网络（生成网络）+ 判别网络 + 评价网络</strong></p>
+<p><strong>其实我们可以发现，当我们抛开评价网络，剩下的GAN就成了一个图像修复网络了</strong>。</p>
+<p>再说一下这两个网络的区别：</p>
+<ul>
+<li>RAN4IQA是将修复后的图像和待参考图像输入到<strong>孪生网络</strong>中去回归得到分数。当然这里是基于patch的，所以还会有一个patch的权重，最后将所有patch的权重加权平均得到最后整张图像的分数。</li>
+<li>Hallucinated-IQA是将<strong>差值图像</strong>（修复后的和待评价图像相减后得到的图）和待参考图像输入到一个<strong>双输入网络</strong>中，回归得到一个分数。并且使用了修复网络的下采样输出的特征。</li>
+</ul>
+<h3 id="221-ran4iqa">2.2.1 RAN4IQA</h3>
+<p><img src="https://jzq6520.github.io/post-images/1570678849786.png" alt=""></p>
+<h3 id="222-hallucinated-iqa">2.2.2 Hallucinated-IQA</h3>
+<p><img src="https://jzq6520.github.io/post-images/1570678886713.png" alt=""></p>
+<h2 id="3-总结">3 总结</h2>
+<p>当有参考图像的时候可以训练一个伪参考图像网络，当没有参考图像的时候可以训练一个RankIQA网络。</p>
+<h2 id="4-参考">4 参考</h2>
+<ul>
+<li>Hallucinated-IQA: No-Reference Image Quality Assessment via Adversarial Learning</li>
+<li>RAN4IQA: Restorative Adversarial Nets for No-Reference Image Quality Assessment</li>
+<li>RankIQA: Learning from Rankings for No-reference Image Quality Assessment</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/mK6wfi0Yn" class="tag">
+                    机器视觉
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/qlO2vbBYb" class="tag">
+                    检测
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/keras-callback-hui-diao-han-shu">
+                  <h3 class="post-title">
+                    keras-Callback回调函数
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
