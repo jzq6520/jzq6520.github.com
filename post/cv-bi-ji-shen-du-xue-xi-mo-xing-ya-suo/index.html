@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>检测 | chuck</title>
+<title>CV-笔记-深度学习模型压缩 | chuck</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -12,6 +12,12 @@
 <link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1571118467536">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -90,73 +96,40 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: 检测</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie">
-                  <h2 class="post-title">CV-笔记-图像质量评价Image quality assessment IQA简介</h2>
-                </a>
-                <div class="post-date">
-                  2019-10-10
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie">
-                  <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection">
-                  <h2 class="post-title">CV-Paper-文字检测-Character Region Awareness for Text Detection</h2>
-                </a>
-                <div class="post-date">
-                  2019-05-06
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection">
-                  <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/cv-paper-wen-zi-jian-ce-character-region-awareness-for-text-detection.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-shape-robust-text-detection-psenet">
-                  <h2 class="post-title">CV-Paper-文字检测-Shape Robust Text Detection PSENet</h2>
-                </a>
-                <div class="post-date">
-                  2019-04-30
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://jzq6520.github.io/post/cv-paper-wen-zi-jian-ce-shape-robust-text-detection-psenet">
-                  <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/cv-paper-wen-zi-jian-ce-shape-robust-text-detection-psenet.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
+          <div class="post-detail">
+            <h2 class="post-title">CV-笔记-深度学习模型压缩</h2>
+            <div class="post-date">2019-10-11</div>
+            
+            <div class="post-content">
+              <p>在不降低或者是不大幅度减少精度的条件下，目前的模型压缩方式有：</p>
+<ul>
+<li>知识蒸馏；</li>
+<li>量化</li>
+<li>稀疏</li>
+</ul>
 
-          <div class="pagination-container">
-  
-  
-</div>
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie">
+                  <h3 class="post-title">
+                    CV-笔记-图像质量评价Image quality assessment IQA简介
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
 
         </div>
       </div>
@@ -178,6 +151,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 

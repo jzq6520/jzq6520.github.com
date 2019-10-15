@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-10T03:44:40.717Z</updated>
+    <updated>2019-10-15T05:47:58.821Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,257 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[web-flask-入门1]]></title>
+        <id>https://jzq6520.github.io/post/web-flask-ru-men-1</id>
+        <link href="https://jzq6520.github.io/post/web-flask-ru-men-1">
+        </link>
+        <updated>2019-10-12T08:10:28.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="运行hello-world">运行hello world：</h2>
+<pre><code>from flask import Flask
+
+app = Flask(__name__) ## 创建一个web程序
+@app.route('/') #用来绑定网页和对应的程序，这里表示主页
+def hello(): # 网页对应的程序
+		print(&quot;teminal print&quot;) # print会在终端输出，return才会在网页上输出
+    return 'hello world!' #返回值是传给浏览器的，浏览器将这个显示到网页上。
+</code></pre>
+<p>然后执行 <code>$ flask run</code> .</p>
+<p>当执行flask run的时候是使用内置服务器来运行程序，<strong>内置服务器只适合开发的时候使用</strong>，真正线上运行的时候要使用另外稳定的服务器。</p>
+<h3 id="设置运行的环境变量">设置运行的环境变量</h3>
+<ul>
+<li>FLASK_APP, 设置运行web程序的py文件，默认是app.py</li>
+<li>FLASK_ENV, 设置是否开启调试模型（默认是关闭的），调试模式可以在线debug, FLASK_ENV=development。</li>
+</ul>
+<p>首先安装python-dotenv，然后创建 <code>.flaskenv</code>在里面配置环境变量.</p>
+<pre><code> * Environment: development
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 365-912-119
+
+</code></pre>
+<h2 id="2-模板">2 模板</h2>
+<p><strong>模板即html页面。</strong>
+<strong>模板要放在templates目录下面，要自己新建一个目录。</strong>
+模板是动态的，里面有一些是变量的内容。
+也就是网页模板，flask是使用jinjia2的语法，和python语法有点类似。</p>
+<ul>
+<li>{{ ... }}</li>
+<li>{% ... %}</li>
+<li>{# ... #}</li>
+<li>{{ 变量|过滤器 }}， 为了方便对变量进行处理，Jinja2 提供了一些过滤器，过滤器是一个函数, 用来标记变量。 用来标记语句，比如 if 语句，for 语句等。 用来写注释。</li>
+</ul>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;title&gt;{{ name }}'s Watchlist&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h2&gt;{{ name }}'s Watchlist&lt;/h2&gt;
+    &lt;p&gt;{{ movies|length }} Titles&lt;/p&gt;
+    &lt;ul&gt;
+        {% for movie in movies %}
+        &lt;li&gt;{{ movie.title }} - {{ movie.year }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+    &lt;footer&gt;
+        &lt;small&gt;&amp;copy; 2018 &lt;a href=&quot;http://helloflask.com/tutorial&quot;&gt;HelloFlask&lt;/a&gt;&lt;/small&gt;
+	&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>使用 <strong>render_template() 函数</strong> 可以把模板渲染出来，必须传入的参数为模板文件名，然后模板里面的变量通过render_template() 关键字参数传入。<code>from flask import render_template</code></p>
+<pre><code>
+name = 'Grey Li'
+
+movies = [
+
+    {'title': 'My Neighbor Totoro', 'year': '1988'},
+
+    {'title': 'Dead Poets Society', 'year': '1989'},
+
+
+@app.route('/')
+def index():
+    print(os.path.exists(&quot;index.html&quot;))
+    return render_template('index.html', name=name, movies=movies)
+
+</code></pre>
+<h2 id="3-静态文件">3 静态文件</h2>
+<p>例如图片，音频，css等文件。
+模板里面的静态文件路径可以自动通过url_for()函数自动生成(其实直接给路径更方便。。。)，第一个传入的 参数是文件夹名字。</p>
+<p>还可以再模板里面，即html文件，引入css。</p>
+<pre><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for('static', filename='style.css') }}&quot; type=&quot;text/css&quot;&gt;
+</code></pre>
+<h2 id="4-使用-sqlite数据库">4 使用 SQLite数据库</h2>
+<p>SQLite是一个不用安装，直接存储一个简单的文件的数据库。</p>
+<pre><code># 配置数据库
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db') # 数据库地址，项目目录下
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # 关闭对模型修改的监控
+
+db = SQLAlchemy(app)
+
+# 数据库模型
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(60))
+    year = db.Column(db.String(4))
+
+@app.cli.command()
+def forge():
+    db.create_all()
+
+    name = 'Grey Li'
+    movies = [
+        {'title': 'My Neighbor Totoro', 'year': '1988'},
+        {'title': 'Dead Poets Society', 'year': '1989'},
+        {'title': 'A Perfect World', 'year': '1993'},
+        {'title': 'Leon', 'year': '1994'},
+        {'title': 'Mahjong', 'year': '1996'},
+        {'title': 'Swallowtail Butterfly', 'year': '1996'},
+        {'title': 'King of Comedy', 'year': '1999'},
+        {'title': 'Devils on the Doorstep', 'year': '1999'},
+        {'title': 'WALL-E', 'year': '2008'},
+        {'title': 'The Pork of Music', 'year': '2012'},
+    ]
+
+    user = User(name=name)
+    db.session.add(user)
+    for m in movies:
+        movie = Movie(title=m['title'], year=m['year'])
+        db.session.add(movie)
+
+    db.session.commit()
+    click.echo('Done.')
+
+
+
+@app.route('/')
+def index():
+
+    user = User.query.first()
+    movies = Movie.query.all()
+    return render_template('index.html', user=user, movies=movies)
+
+</code></pre>
+<h2 id="5模板优化">5模板优化</h2>
+<ul>
+<li>模板上下文处理函数：定义一个全局变量可以在不同模板都一起使用。 定义这种全局变量的函数在这里叫做<strong>模板上下文处理函数</strong>。</li>
+<li>模板继承：模板继承就像是类的继承一样，这里是先<strong>用一个block块在基模板上占个坑</strong>，继承后再修改或填充。</li>
+</ul>
+<h2 id="6表单">6表单</h2>
+<ul>
+<li>表单是用来获取用户输入的。</li>
+<li>设置为post</li>
+<li>name是必须指定的</li>
+</ul>
+<h3 id="61-创建表单">6.1 创建表单</h3>
+<pre><code>&lt;p&gt;{{ movies|length }} Titles&lt;/p&gt;
+&lt;form method=&quot;post&quot;&gt;
+Name &lt;input type=&quot;text&quot; name=&quot;title&quot; autocomplete=&quot;off&quot; required&gt;
+Year &lt;input type=&quot;text&quot; name=&quot;year&quot; autocomplete=&quot;off&quot; required&gt;
+&lt;input class=&quot;btn&quot; type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Add&quot;&gt;
+&lt;/form&gt;
+</code></pre>
+<h3 id="62-获取表单数据">6.2 获取表单数据</h3>
+<ul>
+<li>在http中，get和post是两种常用请求，其中：
+<ul>
+<li>get是用来获取数据</li>
+<li>post是用来创建或更新资源</li>
+</ul>
+</li>
+<li>当我们访问链接是发送get请求</li>
+<li>当我们提交表单是发送post请求</li>
+</ul>
+<p>为了让服务器可以接受post请求，我们要在路由的修饰器上修改一下：</p>
+<pre><code>@app.route('/', methods=['GET', 'POST'])
+</code></pre>
+<p>对于get和post请求，<strong>处理函数应该有不同的处理逻辑</strong>，<strong>对于get请求函数返回渲染后的页面，对于post请求函数获取提交的表单数据并保存</strong>。<strong>我们需要在函数里面加个判断，看是post请求还是get请求</strong>。</p>
+<pre><code>from flask import request
+if request.method == 'POST'：
+	....
+</code></pre>
+<h4 id="重定向-from-flask-import-redirect">重定向 ： <code>from flask import redirect</code></h4>
+<pre><code>if not title or not year or len(year) &gt; 4 or len(title) &gt; 60:
+		flash('Invalid title or year!')
+		return redirect(url_for('index'))# 重定向回主页
+		flash('Item created.')
+		return redirect(url_for('index'))# 重定向回主页
+</code></pre>
+<p>报错，需要设置key：</p>
+<pre><code>RuntimeError: The session is unavailable because no secret key was set. 
+
+app.config['SECRET_KEY'] = '123456'
+</code></pre>
+<p>完整例子：</p>
+<pre><code>
+@app.route('/', methods=[&quot;POST&quot;, &quot;GET&quot;])
+def index():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        year = request.form.get('year')
+        # 验证数据
+
+        if not title or not year or len(year) &gt; 4 or len(title) &gt; 60:
+            flash('Invalid input.')
+            # 显示错误提示
+            return redirect(url_for('index'))
+        # 保存表单数据到数据库
+        movie = Movie(title=title, year=year)
+        # 创建记录
+        db.session.add(movie)
+        # 添加到数据库会话
+        db.session.commit()
+        # 提交数据库会话
+        flash('Item created.')
+        # 显成功创建的提示
+        return redirect(url_for('index'))
+
+    # 重定向回主页
+    # 重定向回主页
+    # user = User.query.first()
+    movies = Movie.query.all()
+    return render_template('index.html',  movies=movies)
+</code></pre>
+<p>解释：</p>
+<ul>
+<li>flask会在请求触发后把消息放在request对象里面。它包含请求相关的所有信 息，比如请求的路径（ request.path ）、请求的方法（ request.method ）、<strong>表单数据</strong> （ request.form ）、查询字符串（ request.args ）等等。</li>
+<li>flash 消息：flash() 函数用来在视图函数里向模板传递提示消 息， get_flashed_messages() 函数则用来在模板中获取提示消息。</li>
+</ul>
+<pre><code>{% for message in get_flashed_messages() %}
+		&lt;div class=&quot;alert&quot;&gt;{{ message }}&lt;/div&gt;
+{% endfor %}
+</code></pre>
+<ul>
+<li>session 对象：flash函数在内部会把消息存储到 Flask 提供的 session 对象里。 session 用来在请求间存 储数据，它会把数据签名后存储到浏览器的 Cookie 中，所以我们需要设置签名所需的密钥：</li>
+</ul>
+<pre><code>app.config['SECRET_KEY'] = 'dev' # 等同于 app.secret_key = 'dev'
+</code></pre>
+<p>这个密钥的值在开发时可以随便设置。基于安全的考虑，在部署时应该设置为随机字符，且 不应该明文写在代码里</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CV-笔记-深度学习模型压缩]]></title>
+        <id>https://jzq6520.github.io/post/cv-bi-ji-shen-du-xue-xi-mo-xing-ya-suo</id>
+        <link href="https://jzq6520.github.io/post/cv-bi-ji-shen-du-xue-xi-mo-xing-ya-suo">
+        </link>
+        <updated>2019-10-11T09:03:34.000Z</updated>
+        <content type="html"><![CDATA[<p>在不降低或者是不大幅度减少精度的条件下，目前的模型压缩方式有：</p>
+<ul>
+<li>知识蒸馏；</li>
+<li>量化</li>
+<li>稀疏</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CV-笔记-图像质量评价Image quality assessment IQA简介]]></title>
         <id>https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie</id>
@@ -875,145 +1126,6 @@ if __name__ == &quot;__main__&quot;:
 <a href="http://pymysql.readthedocs.io/en/latest/index.html">2. PyMySQL’s documentation</a>
 <a href="https://github.com/PyMySQL/PyMySQL">3. https://github.com/PyMySQL/PyMySQL</a>
 <a href="https://www.python.org/dev/peps/pep-0249/">4. https://www.python.org/dev/peps/pep-0249/</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[MySQL学习笔记-4安全管理&维护&改善性能]]></title>
-        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-4-an-quan-guan-li-andwei-hu-andgai-shan-xing-neng</id>
-        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-4-an-quan-guan-li-andwei-hu-andgai-shan-xing-neng">
-        </link>
-        <updated>2019-04-29T06:22:00.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="mysql安全管理数据库维护改善性能">MySQL安全管理&amp;数据库维护&amp;改善性能</h1>
-<h2 id="管理用户">管理用户</h2>
-<p>MySQL用户账号和信息存储在名为mysql的Mysql数据库中。
-查看有哪些用户：<code>select user from user;</code></p>
-<h3 id="账号操作">账号操作</h3>
-<ul>
-<li>创建用户：<code>create user ben identified by 'password';</code></li>
-<li>mysql在保存之前会对其密码加密。</li>
-<li>为了安全起见不建议直接插入行到user表来增加用户，<strong>最好用标记和函数来处理这些表</strong>。</li>
-<li>rename use 重命名: <code>RENAME USER ben TO bforta;</code></li>
-<li>删除用户：<code>DROP USER bforta;</code></li>
-</ul>
-<h3 id="访问权限操作">访问权限操作</h3>
-<ul>
-<li>查看访问权限: <code>show grants for bforta;</code></li>
-</ul>
-<pre><code class="language-sql">mysql&gt; show grants for changshan;
-+---------------------------------------+
-| Grants for changshan@%                |
-+---------------------------------------+
-| GRANT USAGE ON *.* TO 'changshan'@'%' |
-+---------------------------------------+
-1 row in set (0.00 sec)
-
-</code></pre>
-<p><code>USAGE ON *.*</code> 表示根本没有权限。</p>
-<ul>
-<li>
-<p>设置权限： 使用GRANT语句。至少给出下列信息:</p>
-<ul>
-<li>要授予的权限；</li>
-<li>被授予访问权限的数据库或表；</li>
-<li>用户名。</li>
-<li>格式：grant 权限 数据库/表/字段 TO 用户；</li>
-<li><code>GRANT SELECT ON crashcourse.* TO changshan</code>
-<code>crashcourse.*</code> 表示 crashcourse数据库的所有表。</li>
-</ul>
-</li>
-<li>
-<p>撤销特定的权限：
-GRANT 的反操作为REVOKE.
-<code>REVOKE SELECT ON crashcourse.* FROM changshan</code></p>
-</li>
-</ul>
-<h3 id="grant和revoke可在几个层次上控制访问权限">GRANT和REVOKE可在几个层次上控制访问权限：</h3>
-<ul>
-<li>整个服务器，使用GRANT ALL和REVOKE ALL;</li>
-<li>整个数据库，使用ON database.*;</li>
-<li>特定的表，使用ON database.table;</li>
-<li>特点的列。</li>
-<li>特点的存储过程。</li>
-</ul>
-<h3 id="更改密码">更改密码</h3>
-<ul>
-<li>设置指定用户的密码：<code>set password for changshan = Password('password')</code></li>
-<li>设置当前用户的密码： <code>set password = Password('password')</code></li>
-</ul>
-<h2 id="数据库维护">数据库维护</h2>
-<p>包括以下几部分：</p>
-<ul>
-<li>数据库备份</li>
-<li>数据库维护：
-<ul>
-<li>检测表键是否正确：<code>analyze table orders;</code></li>
-<li>check table: 针对问题表进行检查。</li>
-<li>从一个表删除大量数据，应该使用optimize table 来收回所用的空间，从而优化表的性能。</li>
-</ul>
-</li>
-<li>诊断启动问题：在排除系统启动问题时，首先应该尽量手动启动服务器。mysql服务器自身通过在命令行上执行mysqld启动。</li>
-<li>查看日志文件，分为以下几种：
-<ul>
-<li>错误日志</li>
-<li>查询日志</li>
-<li>二进制日志</li>
-<li>缓慢查询日志</li>
-</ul>
-</li>
-</ul>
-<p>注： - mysqld是用来启动mysql数据库的命令
-- mysql是打开并执行sql语句的命令</p>
-<h2 id="附录权限表">附录权限表：</h2>
-<p><img src="https://jzq6520.github.io/post-images/1556519058906.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1556519066562.png" alt=""></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[MySQL学习笔记-3事务处理]]></title>
-        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-3-shi-wu-chu-li</id>
-        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-3-shi-wu-chu-li">
-        </link>
-        <updated>2019-04-29T06:20:28.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="mysql事务处理">MySQL事务处理</h1>
-<ul>
-<li>MyISAM和 InnoDB是mysql常用的引擎，前者不支持事务处理后者支持。</li>
-<li>事务处理用来维护数据库的完整性，它保证成批的Mysql操作要么执行，要么都不执行。</li>
-<li>关系型数据库设计把数据存储在多个表里，使数据更容易操纵、维护和重用。</li>
-<li>关键：事务处理的关键在于，将SQL语句分解为逻辑块，并明确规定数据何时退回何时不应该退回。</li>
-</ul>
-<h2 id="控制事务处理">控制事务处理</h2>
-<ul>
-<li>开始：start transaction</li>
-<li>回滚：rollback</li>
-<li>commit：平时的Mysql语句都是隐式提交，<strong>但在事务处理的时候需要显示提交</strong>，commit语句只有在不出错时提交。</li>
-<li>保留点：可以指定回退到指定的点，这个点使用**savepoint pointname;**给出保留点。<strong>注：可以多设置保留点，以方便后面回滚</strong>。release savepoint 删除保留点。</li>
-</ul>
-<h3 id="更改默认提交行为">更改默认提交行为</h3>
-<p>设置： autocommit = 0;
-autocommit是针对每个连接的，不是服务器的。</p>
-<h2 id="字符集合校对顺序">字符集合校对顺序</h2>
-<p>不同的语言和字符集需要以不同的方式存储和检索。因此，MySQL需要<strong>适应不同的字符集</strong>，适应不同的<strong>排序和检索</strong>数据的方法。</p>
-<ul>
-<li>字符集：为字母和符号的集合</li>
-<li>编码：某个字符集的内部表示</li>
-<li>校对：规定字符如何比较,例如区分大小写还是不区分。</li>
-</ul>
-<p><code>show CHARACTER SET</code>
-<code>SHOW COLLATION</code></p>
-<p>可以在创建数据库，表，或者定义列的时候指定默认的校对。</p>
-<pre><code class="language-sql">--表指定
-CREATE TABLE mytable
-(
-columnn1 INT,
-columnn2 VARCHAR(10) CHARACTER SET latin1 COLLATE --列指定
-) DEFAULT CHARACTER SET hebrew
-  COLLATE hebrew_general_ri;
-</code></pre>
-<p>校对在对用ORDER BY 子句检索出来的数据排序时起重要作用。</p>
-<pre><code class="language-sql">--或者排列的时候指定
-SELECT * FROM customers
-ORDER BY lastname, firstname COLLATE latin1_general_cs;
-</code></pre>
 ]]></content>
     </entry>
 </feed>

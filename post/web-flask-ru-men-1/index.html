@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>web-flask-入门1 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1571118467536">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1571118467536" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">web-flask-入门1</h2>
+            <div class="post-date">2019-10-12</div>
+            
+            <div class="post-content">
+              <h2 id="运行hello-world">运行hello world：</h2>
+<pre><code>from flask import Flask
+
+app = Flask(__name__) ## 创建一个web程序
+@app.route('/') #用来绑定网页和对应的程序，这里表示主页
+def hello(): # 网页对应的程序
+		print(&quot;teminal print&quot;) # print会在终端输出，return才会在网页上输出
+    return 'hello world!' #返回值是传给浏览器的，浏览器将这个显示到网页上。
+</code></pre>
+<p>然后执行 <code>$ flask run</code> .</p>
+<p>当执行flask run的时候是使用内置服务器来运行程序，<strong>内置服务器只适合开发的时候使用</strong>，真正线上运行的时候要使用另外稳定的服务器。</p>
+<h3 id="设置运行的环境变量">设置运行的环境变量</h3>
+<ul>
+<li>FLASK_APP, 设置运行web程序的py文件，默认是app.py</li>
+<li>FLASK_ENV, 设置是否开启调试模型（默认是关闭的），调试模式可以在线debug, FLASK_ENV=development。</li>
+</ul>
+<p>首先安装python-dotenv，然后创建 <code>.flaskenv</code>在里面配置环境变量.</p>
+<pre><code> * Environment: development
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 365-912-119
+
+</code></pre>
+<h2 id="2-模板">2 模板</h2>
+<p><strong>模板即html页面。</strong>
+<strong>模板要放在templates目录下面，要自己新建一个目录。</strong>
+模板是动态的，里面有一些是变量的内容。
+也就是网页模板，flask是使用jinjia2的语法，和python语法有点类似。</p>
+<ul>
+<li>{{ ... }}</li>
+<li>{% ... %}</li>
+<li>{# ... #}</li>
+<li>{{ 变量|过滤器 }}， 为了方便对变量进行处理，Jinja2 提供了一些过滤器，过滤器是一个函数, 用来标记变量。 用来标记语句，比如 if 语句，for 语句等。 用来写注释。</li>
+</ul>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;title&gt;{{ name }}'s Watchlist&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h2&gt;{{ name }}'s Watchlist&lt;/h2&gt;
+    &lt;p&gt;{{ movies|length }} Titles&lt;/p&gt;
+    &lt;ul&gt;
+        {% for movie in movies %}
+        &lt;li&gt;{{ movie.title }} - {{ movie.year }}&lt;/li&gt;
+        {% endfor %}
+    &lt;/ul&gt;
+    &lt;footer&gt;
+        &lt;small&gt;&amp;copy; 2018 &lt;a href=&quot;http://helloflask.com/tutorial&quot;&gt;HelloFlask&lt;/a&gt;&lt;/small&gt;
+	&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>使用 <strong>render_template() 函数</strong> 可以把模板渲染出来，必须传入的参数为模板文件名，然后模板里面的变量通过render_template() 关键字参数传入。<code>from flask import render_template</code></p>
+<pre><code>
+name = 'Grey Li'
+
+movies = [
+
+    {'title': 'My Neighbor Totoro', 'year': '1988'},
+
+    {'title': 'Dead Poets Society', 'year': '1989'},
+
+
+@app.route('/')
+def index():
+    print(os.path.exists(&quot;index.html&quot;))
+    return render_template('index.html', name=name, movies=movies)
+
+</code></pre>
+<h2 id="3-静态文件">3 静态文件</h2>
+<p>例如图片，音频，css等文件。
+模板里面的静态文件路径可以自动通过url_for()函数自动生成(其实直接给路径更方便。。。)，第一个传入的 参数是文件夹名字。</p>
+<p>还可以再模板里面，即html文件，引入css。</p>
+<pre><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;{{ url_for('static', filename='style.css') }}&quot; type=&quot;text/css&quot;&gt;
+</code></pre>
+<h2 id="4-使用-sqlite数据库">4 使用 SQLite数据库</h2>
+<p>SQLite是一个不用安装，直接存储一个简单的文件的数据库。</p>
+<pre><code># 配置数据库
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////' + os.path.join(app.root_path, 'data.db') # 数据库地址，项目目录下
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # 关闭对模型修改的监控
+
+db = SQLAlchemy(app)
+
+# 数据库模型
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(60))
+    year = db.Column(db.String(4))
+
+@app.cli.command()
+def forge():
+    db.create_all()
+
+    name = 'Grey Li'
+    movies = [
+        {'title': 'My Neighbor Totoro', 'year': '1988'},
+        {'title': 'Dead Poets Society', 'year': '1989'},
+        {'title': 'A Perfect World', 'year': '1993'},
+        {'title': 'Leon', 'year': '1994'},
+        {'title': 'Mahjong', 'year': '1996'},
+        {'title': 'Swallowtail Butterfly', 'year': '1996'},
+        {'title': 'King of Comedy', 'year': '1999'},
+        {'title': 'Devils on the Doorstep', 'year': '1999'},
+        {'title': 'WALL-E', 'year': '2008'},
+        {'title': 'The Pork of Music', 'year': '2012'},
+    ]
+
+    user = User(name=name)
+    db.session.add(user)
+    for m in movies:
+        movie = Movie(title=m['title'], year=m['year'])
+        db.session.add(movie)
+
+    db.session.commit()
+    click.echo('Done.')
+
+
+
+@app.route('/')
+def index():
+
+    user = User.query.first()
+    movies = Movie.query.all()
+    return render_template('index.html', user=user, movies=movies)
+
+</code></pre>
+<h2 id="5模板优化">5模板优化</h2>
+<ul>
+<li>模板上下文处理函数：定义一个全局变量可以在不同模板都一起使用。 定义这种全局变量的函数在这里叫做<strong>模板上下文处理函数</strong>。</li>
+<li>模板继承：模板继承就像是类的继承一样，这里是先<strong>用一个block块在基模板上占个坑</strong>，继承后再修改或填充。</li>
+</ul>
+<h2 id="6表单">6表单</h2>
+<ul>
+<li>表单是用来获取用户输入的。</li>
+<li>设置为post</li>
+<li>name是必须指定的</li>
+</ul>
+<h3 id="61-创建表单">6.1 创建表单</h3>
+<pre><code>&lt;p&gt;{{ movies|length }} Titles&lt;/p&gt;
+&lt;form method=&quot;post&quot;&gt;
+Name &lt;input type=&quot;text&quot; name=&quot;title&quot; autocomplete=&quot;off&quot; required&gt;
+Year &lt;input type=&quot;text&quot; name=&quot;year&quot; autocomplete=&quot;off&quot; required&gt;
+&lt;input class=&quot;btn&quot; type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Add&quot;&gt;
+&lt;/form&gt;
+</code></pre>
+<h3 id="62-获取表单数据">6.2 获取表单数据</h3>
+<ul>
+<li>在http中，get和post是两种常用请求，其中：
+<ul>
+<li>get是用来获取数据</li>
+<li>post是用来创建或更新资源</li>
+</ul>
+</li>
+<li>当我们访问链接是发送get请求</li>
+<li>当我们提交表单是发送post请求</li>
+</ul>
+<p>为了让服务器可以接受post请求，我们要在路由的修饰器上修改一下：</p>
+<pre><code>@app.route('/', methods=['GET', 'POST'])
+</code></pre>
+<p>对于get和post请求，<strong>处理函数应该有不同的处理逻辑</strong>，<strong>对于get请求函数返回渲染后的页面，对于post请求函数获取提交的表单数据并保存</strong>。<strong>我们需要在函数里面加个判断，看是post请求还是get请求</strong>。</p>
+<pre><code>from flask import request
+if request.method == 'POST'：
+	....
+</code></pre>
+<h4 id="重定向-from-flask-import-redirect">重定向 ： <code>from flask import redirect</code></h4>
+<pre><code>if not title or not year or len(year) &gt; 4 or len(title) &gt; 60:
+		flash('Invalid title or year!')
+		return redirect(url_for('index'))# 重定向回主页
+		flash('Item created.')
+		return redirect(url_for('index'))# 重定向回主页
+</code></pre>
+<p>报错，需要设置key：</p>
+<pre><code>RuntimeError: The session is unavailable because no secret key was set. 
+
+app.config['SECRET_KEY'] = '123456'
+</code></pre>
+<p>完整例子：</p>
+<pre><code>
+@app.route('/', methods=[&quot;POST&quot;, &quot;GET&quot;])
+def index():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        year = request.form.get('year')
+        # 验证数据
+
+        if not title or not year or len(year) &gt; 4 or len(title) &gt; 60:
+            flash('Invalid input.')
+            # 显示错误提示
+            return redirect(url_for('index'))
+        # 保存表单数据到数据库
+        movie = Movie(title=title, year=year)
+        # 创建记录
+        db.session.add(movie)
+        # 添加到数据库会话
+        db.session.commit()
+        # 提交数据库会话
+        flash('Item created.')
+        # 显成功创建的提示
+        return redirect(url_for('index'))
+
+    # 重定向回主页
+    # 重定向回主页
+    # user = User.query.first()
+    movies = Movie.query.all()
+    return render_template('index.html',  movies=movies)
+</code></pre>
+<p>解释：</p>
+<ul>
+<li>flask会在请求触发后把消息放在request对象里面。它包含请求相关的所有信 息，比如请求的路径（ request.path ）、请求的方法（ request.method ）、<strong>表单数据</strong> （ request.form ）、查询字符串（ request.args ）等等。</li>
+<li>flash 消息：flash() 函数用来在视图函数里向模板传递提示消 息， get_flashed_messages() 函数则用来在模板中获取提示消息。</li>
+</ul>
+<pre><code>{% for message in get_flashed_messages() %}
+		&lt;div class=&quot;alert&quot;&gt;{{ message }}&lt;/div&gt;
+{% endfor %}
+</code></pre>
+<ul>
+<li>session 对象：flash函数在内部会把消息存储到 Flask 提供的 session 对象里。 session 用来在请求间存 储数据，它会把数据签名后存储到浏览器的 Cookie 中，所以我们需要设置签名所需的密钥：</li>
+</ul>
+<pre><code>app.config['SECRET_KEY'] = 'dev' # 等同于 app.secret_key = 'dev'
+</code></pre>
+<p>这个密钥的值在开发时可以随便设置。基于安全的考虑，在部署时应该设置为随机字符，且 不应该明文写在代码里</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/IFflaSaXs" class="tag">
+                    flask
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/goaqvq9mq" class="tag">
+                    web
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-bi-ji-shen-du-xue-xi-mo-xing-ya-suo">
+                  <h3 class="post-title">
+                    CV-笔记-深度学习模型压缩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
