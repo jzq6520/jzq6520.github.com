@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-17T09:35:36.916Z</updated>
+    <updated>2019-10-17T10:16:23.498Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,41 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[CV-Paper-主动学习-Learning Loss for Active Learning]]></title>
+        <id>https://jzq6520.github.io/post/cv-paper-zhu-dong-xue-xi-learning-loss-for-active-learning</id>
+        <link href="https://jzq6520.github.io/post/cv-paper-zhu-dong-xue-xi-learning-loss-for-active-learning">
+        </link>
+        <updated>2019-10-17T09:36:24.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="1-简介">1 简介</h2>
+<p>主动学习，即在拥有少部分监督数据的情况下，主动的去选择一部分对训练模型<strong>有较大提高的</strong>未标注数据，然后对选择出来的数据进行标注，标注后加入到训练集进行训练。为什么这么做的，我们把数据都标注一下不行吗？当然可以，但是标注是要时间和金钱的，我们希望选择更有助于模型提高的数据先进行标注。如下图所示：
+<img src="https://jzq6520.github.io/post-images/1571305200850.png" alt="主动学习流程图"></p>
+<p>以往的研究结果表明，主动学习实际上降低了标注成本。最开始提出主动学习的方法是选择出不确信的数据进行标注。主动学习的核心思想是信息量最大的数据比随机选择的数据更有利于模型的改进。无论任务是什么、有多少任务以及体系结构有多复杂，深度网络都是通过最小化单个损失来学习的。</p>
+<h2 id="2-学习loss">2 学习Loss</h2>
+<p>这个方法可以归为不确定度方法，但不同之处在于<strong>它是根据输入内容来预测“损失”</strong>，而不是根据输出来统计估计不确定度。这类似于各种难例挖掘，因为他们认为损失较大的训练数据点对模型的改进意义重大</p>
+<p>去学习损失，这是一个很有创新的想法，但有用。既然我们选择数据的时候没有标签（未打标签），那么是不是可以先选择出预测较差的数据进行打标签。这时候loss确实是一个可以用来做这种选择的东西。当loss较大的时候说明和真实标签的差异性很大，loss较小则差异较小。其实最终我们是要对未打标签的数据进行<strong>排序</strong>，先是模型较难预测的，然后再是较好预测的。</p>
+<p>作者就很聪明，没有label那么我们可以去预测一个loss啊。利用损失来进行排序。其实这个loss的得到也是很悬，可能是有某个隐藏的特征空间进行映射，<strong>或者说这里说是loss，但是网络本身学习到的并不是loss呢，而是一个排序</strong>。但是文章这里就把这个学习到的东西叫做loss，<strong>其实不然，我觉得更侧重于一个排序的信息</strong>。这里的思想和一篇图像质量评价的论文很像，学习怎么去排序，见之前的图像评价论文RankIQA。</p>
+<p>那么这个loss如何学习呢？第一时间我们可以想到的是用回归的方法学习，即MSE，利用我们训练分类器或者检测或则定位的loss来作为label（见图）。作者也是这么想的，但是实验下来效果很差，还不如没用来的好。<strong>所以作者解释是由于在梯度下降的时候loss也是下降的，所以学习loss是不稳定的，无法学习</strong>。所以作者想到了用一个<strong>排序的loss</strong>（也可以认为是<strong>比较大小的</strong>loss）来作为损失函数，这样即使作为label的loss一直在变，但是loss的相对大小是不会变的，难的样本的loss就是比容易样本的loss来的大（和RankIQA中的思想一毛一样）。</p>
+<p>这里计算排序的loss和RankIQA中的思想一毛一样，但是网络架构不一样，RankIQA中是使用参数共享的两个网络进行排序，这里是将一个batch分为两部分。但是仔细想想是一毛一样的，都是同一个端到端的网络，只是说一个是分开的 一个是画到一块。</p>
+<p>这里的排序loss（不行叫他学习loss的loss，因为容易混 还不太准确）：
+<img src="https://jzq6520.github.io/post-images/1571306285061.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571306940422.png" alt=""></p>
+<p>最终端到端loss：
+<img src="https://jzq6520.github.io/post-images/1571307032943.png" alt=""></p>
+<h2 id="3-网络结构">3 网络结构</h2>
+<p><img src="https://jzq6520.github.io/post-images/1571307076883.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571307093582.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571307115680.png" alt=""></p>
+<h2 id="4-结果">4 结果</h2>
+<p>如果为标注数据多的时候，这个方法选择样本是这样的：首先对所有未标注的进行随机采样，然后在选择前k个最不确信的样本，这样可以避免都选择出相同类别的。因为可能会出现前k个最不确信的样本中大部分都是一个类别的。</p>
+<p>这个主动学习的方法比之前的几个要好,learn loss表示现在这个方法：
+<img src="https://jzq6520.github.io/post-images/1571307198541.png" alt=""></p>
+<p>mse损失和排序损失的效果比较：
+<img src="https://jzq6520.github.io/post-images/1571307238951.png" alt=""></p>
+<h2 id="5-总结">5 总结</h2>
+<p>一个是通过排序的损失，一个是mse损失。排序损失会更好。其实这里更重要的是得到一个损失的相对大小，而不是损失本身，因为最后的目的是根据损失对未标注的样本进行挑选，所以排序准确才是最终目的。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[cv-笔记-主动学习active learning的思想]]></title>
         <id>https://jzq6520.github.io/post/cv-bi-ji-zhu-dong-xue-xi-active-learning</id>
@@ -766,159 +801,6 @@ HAVING SUM(OrderPrice)&lt;2000
 </code></pre>
 <h2 id="format-函数">FORMAT() 函数</h2>
 <p>FORMAT 函数用于对字段的显示进行格式化。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[MySQL学习笔记-pymysql]]></title>
-        <id>https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql</id>
-        <link href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql">
-        </link>
-        <updated>2019-04-29T06:28:24.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="pymysql">pymysql</h1>
-<p>pymysql 是在py3和py2上都可以使用的连接 MySQL 服务器的一个库。</p>
-<h2 id="事务">事务</h2>
-<p>事务机制可以确保数据一致性。
-事务应该具有4个属性：原子性、一致性、隔离性、持久性。这四个属性通常称为ACID特性。</p>
-<ul>
-<li>原子性（atomicity）。一个事务是一个不可分割的工作单位，事务中包括的诸操作要么都做，要么都不做。</li>
-<li>一致性（consistency）。事务必须是使数据库从一个一致性状态变到另一个一致性状态。一致性与原子性是密切相关的。</li>
-<li>隔离性（isolation）。一个事务的执行不能被其他事务干扰。即一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务之间不能互相干扰。</li>
-<li>持久性（durability）。持续性也称永久性（permanence），指一个事务一旦提交，它对数据库中数据的改变就应该是永久性的。接下来的其他操作或故障不应该对其有任何影响。
-Python DB API 2.0 的事务提供了两个方法 commit 或 rollback。</li>
-</ul>
-<h2 id="安装">安装</h2>
-<p>首先查看了conda库中是否有这个包<code>conda search pymysql</code>，发现是有的并且有py2.7版本，直接安装<code>conda install pymysql</code></p>
-<h2 id="cursor游标">cursor游标</h2>
-<p>游标就像一辆货车，把指令带过去执行(execute)，然后运回来值(fetch*)。</p>
-<h2 id="fetch">fetch</h2>
-<ul>
-<li>fetchone(): 该方法获取下一个查询结果集。结果集是一个对象</li>
-<li>fetchall(): 接收全部的返回结果行.</li>
-<li>rowcount: 这是一个只读属性，并返回执行execute()方法后影响的行数。</li>
-</ul>
-<h2 id="使用">使用</h2>
-<pre><code class="language-python">## 建立数据库连接
-conn = pymysql.Connect(host='127.0.0.1',
-							user='root',
-							passwd='123456',
-							db='python_mysql',
-							charset='utf8')
-# 使用 cursor() 方法创建一个游标对象 cursor
-# 每一个游标对象传送一条sql
-cursor = conn.cursor()
-# 使用 execute()  方法执行 SQL 查询 
-cursor.execute(&quot;SELECT VERSION()&quot;)
-# 使用 fetchone() 方法获取单条数据.两个单词tetch one
-# fetchall() 所有
-conn.commit()
-data = cursor.fetchone()
-print (&quot;Database version : %s &quot; % data)
-# 关闭数据库连接
-db.close()
-</code></pre>
-<h2 id="代码">代码</h2>
-<p>转账：</p>
-<pre><code class="language-python"># -*- coding: UTF-8 -*-
-import sys
-import pymysql
-
-class TransferMoney(object):
-	def __init__(self, conn):
-		self.conn = conn
-
-	def check_acct_available(self, acctid):
-		cursor = self.conn.cursor()
-		try:
-			sql = &quot;select * from account where acctid=%s&quot; % acctid
-			cursor.execute(sql)
-			print &quot;check_acct_available: &quot; + sql
-			rs = cursor.fetchall()
-			if len(rs) !=1:
-				raise Exception(&quot;账号%s不存在&quot; % acctid)
-		finally:
-		#关闭cursor
-			cursor.close()
-	
-	def has_enough_money(self, acctid, money):
-		cursor = self.conn.cursor()
-		try:
-			sql = &quot;select money from account where acctid=%s and money &gt;= %s &quot; % (acctid, money)
-			cursor.execute(sql)
-			print &quot;has_enough_money: &quot; + sql
-			rs = cursor.fetchall()
-			if len(rs) != 1:
-				raise Exception(&quot;账号%s金额不足,剩余金额为%s&quot;%(acctid, money))
-		finally:
-			cursor.close()
-
-	def reduce_money(self, acctid, money):
-		cursor = self.conn.cursor()
-		try:
-			sql = &quot;update account set money = money - %s where acctid=%s&quot;%(money, acctid)
-			cursor.execute(sql)
-			print &quot;reduce_money: &quot; + sql
-
-			if cursor.rowcount !=1 :
-				raise Exception(&quot;账号%s减款失败&quot;%(acctid))
-		finally:
-			cursor.close()
-
-	def add_money(self, acctid, money):
-		cursor = self.conn.cursor()
-		try:
-			sql = &quot;update account set money = money + %s where acctid=%s&quot;%(money, acctid)
-			cursor.execute(sql)
-			print &quot;add_money: &quot; + sql
-
-			if cursor.rowcount !=1 : #判断被影响的行数：cursor.rowcount
-				raise Exception(&quot;账号%s加款失败&quot;%(acctid))
-		finally:
-			cursor.close()
-
-
-	def transfer(self, source_acctid, target_acctid, money):
-		try:
-			self.check_acct_available(source_acctid)
-			self.check_acct_available(target_acctid)
-			self.has_enough_money(source_acctid, money)
-			self.reduce_money(source_acctid, money)
-			self.add_money(target_acctid, money)
-			# 向数据库提交，不开启自动提交
-			self.conn.commit()
-		except Exception as e:
-		# 发生错误时回滚
-			self.conn.rollback()
-			raise e
-
-
-
-if __name__ == &quot;__main__&quot;:
-	source_acctid = sys.argv[1]
-	target_acctid = sys.argv[2]
-	money = sys.argv[3]
-
-	conn = pymysql.Connect(host='127.0.0.1',
-							user='root',
-							passwd='123456',
-							db='python_mysql',
-							charset='utf8'
-							)
-	tr_money = TransferMoney(conn)
-
-	try:
-		tr_money.transfer(source_acctid, target_acctid, money)
-	except Exception as e:
-		print &quot;出现问题：&quot; + str(e)
-	finally:
-	# 关闭连接
-		conn.close()
-
-</code></pre>
-<h2 id="引用">引用</h2>
-<p><a href="http://www.runoob.com/python3/python3-mysql.html">1. http://www.runoob.com/python3/python3-mysql.html</a>
-<a href="http://pymysql.readthedocs.io/en/latest/index.html">2. PyMySQL’s documentation</a>
-<a href="https://github.com/PyMySQL/PyMySQL">3. https://github.com/PyMySQL/PyMySQL</a>
-<a href="https://www.python.org/dev/peps/pep-0249/">4. https://www.python.org/dev/peps/pep-0249/</a></p>
 ]]></content>
     </entry>
 </feed>
