@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-17T02:46:28.027Z</updated>
+    <updated>2019-10-17T09:35:36.916Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -16,17 +16,27 @@
         <link href="https://jzq6520.github.io/post/cv-bi-ji-zhu-dong-xue-xi-active-learning">
         </link>
         <updated>2019-10-17T02:27:00.000Z</updated>
-        <content type="html"><![CDATA[<ul>
+        <content type="html"><![CDATA[<p>数据不断涌入，但深度神经网络仍然对数据如饥似渴。实证分析表明，就训练数据的规模而言，近期深度网络的表现尚未达到饱和。因此，从半监督学习到非监督学习的学习方法，以及弱标记或未标记的大规模数据都受到关注。</p>
+<p>但是，在数据量一定的情况下，半监督或无监督学习的性能仍然与全监督学习的性能有一定的差距。标注数据的比例越高，性能越好。这就是为什么我们要忍受注释的劳动和时间成本。</p>
+<ul>
 <li><strong>主动学习通过一定的算法查询最有用的未标记样本，并交由专家进行标记，然后用查询到的样本训练分类模型来提高模型的精确度。</strong></li>
 <li>那么被动学习就是说别人标注了什么数据我们就拿什么数据进行训练，而不是主动的去挖掘一些模型需要的数据去标注。</li>
-<li>查询函数（就是从未标注数据中挖掘需要进行标注的数据的方法）的设计最常用的策略是：不确定性准则（uncertainty）和差异性准则（diversity）。</li>
+<li>查询函数（就是从未标注数据中挖掘需要进行标注的数据的方法）的设计最常用的策略是：不确定性准则（uncertainty）和差异性准则（diversity）。
+<ul>
+<li>不确定性：对于分类选择出那些概率解决于0.5，或者是不确定的数据进行标注，对于分割可选择出那些分割错误较大的数据进行标注。</li>
+<li>差异性：可以建立多个不同的模型，然后挑选出那些预测不一致的数据进行标注。</li>
 </ul>
-<p>其实最简单的做法就是选择出模型预测误差较大的数据进行标注。
-<img src="https://jzq6520.github.io/post-images/1571280110452.png" alt=""></p>
+</li>
+</ul>
+<p><img src="https://jzq6520.github.io/post-images/1571280110452.png" alt=""></p>
 <h2 id="引用">引用</h2>
 <ul>
 <li>https://www.cnblogs.com/hust-yingjie/p/8522165.html</li>
 <li>https://www.jianshu.com/p/e908c3595fc0</li>
+<li>learn loss:《Learning Loss for Active Learning》</li>
+<li>entropy-based sampling：《Latent structured active learning》</li>
+<li>random sampling:《An analysis of active learning strategies for sequence labeling tasks》</li>
+<li>core-set:《Active learning for convolutional neural networks: A core-set approach.》</li>
 </ul>
 ]]></content>
     </entry>
