@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>python | chuck</title>
+<title>cv-笔记-主动学习active learning的思想 | chuck</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -12,6 +12,12 @@
 <link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1571280358967">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -90,48 +96,54 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: python</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/mysql-xue-xi-bi-ji-pymysql">
-                  <h2 class="post-title">MySQL学习笔记-pymysql</h2>
-                </a>
-                <div class="post-date">
-                  2019-04-29
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-            </article>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/python-jin-du-tiao-gong-ju-tqdm">
-                  <h2 class="post-title">进度条工具tqdm</h2>
-                </a>
-                <div class="post-date">
-                  2019-04-29
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-                <a class="right" href="https://jzq6520.github.io/post/python-jin-du-tiao-gong-ju-tqdm">
-                  <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/python-jin-du-tiao-gong-ju-tqdm.png')">
-                  </div>
-                </a>
-              
-            </article>
-          
+          <div class="post-detail">
+            <h2 class="post-title">cv-笔记-主动学习active learning的思想</h2>
+            <div class="post-date">2019-10-17</div>
+            
+            <div class="post-content">
+              <ul>
+<li><strong>主动学习通过一定的算法查询最有用的未标记样本，并交由专家进行标记，然后用查询到的样本训练分类模型来提高模型的精确度。</strong></li>
+<li>那么被动学习就是说别人标注了什么数据我们就拿什么数据进行训练，而不是主动的去挖掘一些模型需要的数据去标注。</li>
+<li>查询函数（就是从未标注数据中挖掘需要进行标注的数据的方法）的设计最常用的策略是：不确定性准则（uncertainty）和差异性准则（diversity）。</li>
+</ul>
+<p>其实最简单的做法就是选择出模型预测误差较大的数据进行标注。
+<img src="https://jzq6520.github.io/post-images/1571280110452.png" alt=""></p>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://www.cnblogs.com/hust-yingjie/p/8522165.html</li>
+<li>https://www.jianshu.com/p/e908c3595fc0</li>
+</ul>
 
-          <div class="pagination-container">
-  
-  
-</div>
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/mK6wfi0Yn" class="tag">
+                    机器视觉
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-bi-ji-shen-du-xue-xi-mo-xing-ya-suo">
+                  <h3 class="post-title">
+                    CV-笔记-深度学习模型压缩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
 
         </div>
       </div>
@@ -153,6 +165,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 
