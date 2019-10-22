@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-17T10:16:23.498Z</updated>
+    <updated>2019-10-22T02:16:48.279Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,41 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[CV-Paper-增量学习-Large Scale Incremental Learning]]></title>
+        <id>https://jzq6520.github.io/post/cv-paper-zeng-liang-xue-xi-large-scale-incremental-learning</id>
+        <link href="https://jzq6520.github.io/post/cv-paper-zeng-liang-xue-xi-large-scale-incremental-learning">
+        </link>
+        <updated>2019-10-21T09:54:46.000Z</updated>
+        <content type="html"><![CDATA[<p>就简单的说明一下好了，首先是使用蒸馏学习，然后再利用验证集来学习一个简单的线性变换 ax + b 来减少偏差。</p>
+<p>这里是把验证集也拿过来训练了，虽然只是学习一个简单的线性变换，因为这个线性变换只有两个参数，所以需要的数据量非常少，虽然这个变换很简单，但是非常有效的提高精度。</p>
+<p>文章中说的偏差指的是增量学习的精度和全部数据一起训练的精度的差距。</p>
+<h2 id="网络">网络</h2>
+<p><img src="https://jzq6520.github.io/post-images/1571710167211.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571710183774.png" alt=""></p>
+<p>这里蒸馏学习的一个loss是logit之间的loss（即没有softmax激活的）。</p>
+<p>结合蒸馏学习和普通分类loss来进行学习。</p>
+<h2 id="loss">loss</h2>
+<p>蒸馏学习的时候，新数据和老数据的蒸馏loss都是要计算的，无论是新的类别还是老的类别，这里其实是计算一个特征提取器的loss，让新的特征提取器提取的特征和老的一样。</p>
+<p><img src="https://jzq6520.github.io/post-images/1571710427789.png" alt=""></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CV-笔记-增量学习incremental learning]]></title>
+        <id>https://jzq6520.github.io/post/cv-bi-ji-zeng-liang-xue-xi-incremental-learning</id>
+        <link href="https://jzq6520.github.io/post/cv-bi-ji-zeng-liang-xue-xi-incremental-learning">
+        </link>
+        <updated>2019-10-21T09:49:24.000Z</updated>
+        <content type="html"><![CDATA[<p>又是一种深度学习的学习策略。</p>
+<p>自然学习（Natural learning）系统本质上是<strong>渐进的</strong>，新知识是随着时间的推移而不断学习的，而现有的知识是保持不变的。现实世界中的许多计算机视觉应用程序都需要<strong>增量学习</strong>能力。例如，人脸识别系统应该能够在不忘记已学过的面孔的情况下添加新面孔。然而，大多数深度学习方法都存在灾难性的遗忘——<strong>当无法获得过去的数据时</strong>，性能会显著下降。</p>
+<p><strong>旧类数据的缺失带来了两个挑战</strong>:(a)维护旧类的分类性能; (b)平衡旧类和新类。<strong>知识蒸馏</strong>已被用来有效地解决前一个挑战。最近的研究也表明，从旧的类中<strong>选择几个样本(抽样)</strong> 可以缓解不平衡问题。这些方法在小数据集上运行良好。然而，<strong>当类的数量变得很大</strong>(例如，成千上万个类)时，它们的性能会显著下降。图1显示了以非增量分类器为参考的这些最先进算法的性能退化情况。当类的数量从100增加到1000时，iCaRL和EEIL都有更多的精度下降。</p>
+<p>为什么处理大量的类进行增量学习更具挑战性? 我们认为这是由于两个因素的耦合。首先，<strong>训练数据不平衡</strong>。其次，随着类数量的增加，在不同的增量步骤中更<strong>可能出现类似的类</strong>(例如ImageNet中的多个dog类)。在数据不平衡的增量约束下，视觉上相似的类数量的增加尤其具有挑战性，因为类之间边界的<strong>小边界</strong>对数据不平衡过于敏感。边界被推到支持具有更多示例的类。</p>
+<h2 id="引用">引用</h2>
+<ul>
+<li>Large Scale Incremental Learning</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CV-Paper-主动学习-Learning Loss for Active Learning]]></title>
         <id>https://jzq6520.github.io/post/cv-paper-zhu-dong-xue-xi-learning-loss-for-active-learning</id>
@@ -571,236 +606,6 @@ def random_crop(imgs, img_size):
 <li>https://github.com/whai362/PSENet</li>
 <li>https://github.com/whai362/PSENet/blob/master/dataset/ctw1500_loader.py#L40</li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[LeetCode-sql]]></title>
-        <id>https://jzq6520.github.io/post/leetcode-sql</id>
-        <link href="https://jzq6520.github.io/post/leetcode-sql">
-        </link>
-        <updated>2019-04-29T06:34:50.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="leetcode-sql-刷题">LeetCode sql 刷题</h1>
-<h2 id="自身和自身比较">自身和自身比较</h2>
-<pre><code>mysql&gt; select * from salary;
-+------+------+
-| id   | sala |
-+------+------+
-|    1 |  200 |
-|    2 |  300 |
-|    3 |  400 |
-|    4 |  500 |
-+------+------+
-4 rows in set (0.00 sec)
-
-</code></pre>
-<pre><code>mysql&gt; select a.id as a_id,a.sala as a_sala,b.id as b_id,b.sala as b_sala from salary a,salary b where a.sala&gt;b.sala
-    -&gt; ;
-+------+--------+------+--------+
-| a_id | a_sala | b_id | b_sala |
-+------+--------+------+--------+
-|    2 |    300 |    1 |    200 |
-|    3 |    400 |    1 |    200 |
-|    4 |    500 |    1 |    200 |
-|    3 |    400 |    2 |    300 |
-|    4 |    500 |    2 |    300 |
-|    4 |    500 |    3 |    400 |
-+------+--------+------+--------+
-6 rows in set (0.01 sec)
-</code></pre>
-<p>下面这个一直想不通，是否是b 表满足子查询总的b的条件</p>
-<pre><code>mysql&gt; select b.* from salary b where 2 &gt; (select count(distinct a.sala) from salary a where a.sala&gt;b.sala)
-    -&gt; ;
-+------+------+
-| id   | sala |
-+------+------+
-|    3 |  400 |
-|    4 |  500 |
-+------+------+
-2 rows in set (0.00 sec)
-</code></pre>
-<h2 id="184-department-highest-salar">184. Department Highest Salar</h2>
-<p>问题：</p>
-<pre><code>The Employee table holds all employees. Every employee has an Id, a salary, and there is also a column for the department Id.
-
-+----+-------+--------+--------------+
-| Id | Name  | Salary | DepartmentId |
-+----+-------+--------+--------------+
-| 1  | Joe   | 70000  | 1            |
-| 2  | Henry | 80000  | 2            |
-| 3  | Sam   | 60000  | 2            |
-| 4  | Max   | 90000  | 1            |
-+----+-------+--------+--------------+
-The Department table holds all departments of the company.
-
-+----+----------+
-| Id | Name     |
-+----+----------+
-| 1  | IT       |
-| 2  | Sales    |
-+----+----------+
-Write a SQL query to find employees who have the highest salary in each of the departments. For the above tables, Max has the highest salary in the IT department and Henry has the highest salary in the Sales department.
-
-+------------+----------+--------+
-| Department | Employee | Salary |
-+------------+----------+--------+
-| IT         | Max      | 90000  |
-| Sales      | Henry    | 80000  |
-+------------+----------+--------+
-</code></pre>
-<p>解：可以使用多个条件进行一起过滤，但是e.DepartmentId, e.Salary这个顺序，要和in里面的字段的顺序要一样。</p>
-<pre><code># Write your MySQL query statement below
-
-select 
-    d.Name as 'Department',
-    e.Name as 'Employee',
-    e.Salary as 'Salary'
-from
-Employee e
-join 
-Department d on e.DepartmentId = d.Id
-where 
-(e.DepartmentId, e.Salary) in
-(
-    select a.DepartmentId,
-            max(a.Salary) 
-    from Employee a
-    group by a.DepartmentId
-)
-;
-
-</code></pre>
-<h2 id="177-nth-highest-salary">177. Nth Highest Salary</h2>
-<p>LIMIT 来定位数据。</p>
-<pre><code>Write a SQL query to get the nth highest salary from the Employee table.
-
-+----+--------+
-| Id | Salary |
-+----+--------+
-| 1  | 100    |
-| 2  | 200    |
-| 3  | 300    |
-+----+--------+
-For example, given the above Employee table, the nth highest salary where n = 2 is 200. If there is no nth highest salary, then the query should return null.
-
-+------------------------+
-| getNthHighestSalary(2) |
-+------------------------+
-| 200                    |
-+------------------------+
-</code></pre>
-<p>解：mysql还是要再看看。</p>
-<pre><code>CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
-BEGIN
-    DECLARE M INT;
-    set M = N-1;
-  RETURN (
-      # Write your MySQL query statement below.
-      #初始记录行的偏移量是 0,第n个，就是包括第n个，那么索引就是N-1
-     SELECT DISTINCT Salary FROM Employee ORDER BY Salary DESC LIMIT M, 1
-     
-  );
-END
-</code></pre>
-<h2 id="601-human-traffic-of-stadium">601. Human Traffic of Stadium</h2>
-<p>难度很高的一道题</p>
-<pre><code>X city built a new stadium, each day many people visit it and the stats are saved as these columns: id, date, people
-
-Please write a query to display the records which have 3 or more consecutive rows and the amount of people more than 100(inclusive).
-
-For example, the table stadium:
-+------+------------+-----------+
-| id   | date       | people    |
-+------+------------+-----------+
-| 1    | 2017-01-01 | 10        |
-| 2    | 2017-01-02 | 109       |
-| 3    | 2017-01-03 | 150       |
-| 4    | 2017-01-04 | 99        |
-| 5    | 2017-01-05 | 145       |
-| 6    | 2017-01-06 | 1455      |
-| 7    | 2017-01-07 | 199       |
-| 8    | 2017-01-08 | 188       |
-+------+------------+-----------+
-For the sample data above, the output is:
-
-+------+------------+-----------+
-| id   | date       | people    |
-+------+------------+-----------+
-| 5    | 2017-01-05 | 145       |
-| 6    | 2017-01-06 | 1455      |
-| 7    | 2017-01-07 | 199       |
-| 8    | 2017-01-08 | 188       |
-+------+------------+-----------+
-</code></pre>
-<p>解：几个点，首先考察如何判断三个连续的值，建立三个原表的引用，where三个引用，那么形成的是一个笛卡尔积。</p>
-<pre><code>select distinct t1.*
-from stadium t1, stadium t2, stadium t3
-where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
-;
-</code></pre>
-<p>这个结果出来的是满足大于100的值。
-Considering t1, t2 and t3 are identical, we can take one of them to consider what conditions we should add to filter the data and get the final result. Taking t1 for example, it could exist in the beginning of the consecutive 3 days, or the middle, or the last.</p>
-<ul>
-<li>t1 in the beginning: (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1) -- t1, t2, t3</li>
-<li>t1 in the middle: (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3</li>
-<li>t1 in the end: (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1</li>
-</ul>
-<pre><code>select t1.*
-from stadium t1, stadium t2, stadium t3
-where t1.people &gt;= 100 and t2.people &gt;= 100 and t3.people &gt;= 100
-and
-(
-      (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1)  -- t1, t2, t3
-    or
-    (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3
-    or
-    (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1
-)
-;
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[SQL学习笔记-sql内建函数]]></title>
-        <id>https://jzq6520.github.io/post/sql-xue-xi-bi-ji-sql-nei-jian-han-shu</id>
-        <link href="https://jzq6520.github.io/post/sql-xue-xi-bi-ji-sql-nei-jian-han-shu">
-        </link>
-        <updated>2019-04-29T06:30:51.000Z</updated>
-        <content type="html"><![CDATA[<p>这里只记录了一点重要的语句，其他的可以用到的时候百度。</p>
-<h1 id="sql-内建函数">sql 内建函数</h1>
-<p>SQL 拥有很多可用于计数和计算的<a href="http://www.w3school.com.cn/sql/sql_functions.asp">内建函数</a>。
-函数的语法
-内建 SQL 函数的语法是：</p>
-<pre><code class="language-sql">SELECT function(列) FROM 表
-</code></pre>
-<h2 id="函数的类型">函数的类型</h2>
-<p>在 SQL 中，基本的函数类型和种类有若干种。函数的基本类型是：</p>
-<ul>
-<li>Aggregate 合计函数：Aggregate 函数的操作面向一系列的值，并返回一个单一的值。</li>
-<li>Scalar 纯量函数：Scalar 函数的操作面向某个单一的值，并返回基于输入值的一个单一的值。</li>
-</ul>
-<h2 id="group-by-分组语句">GROUP BY 分组语句</h2>
-<p>GROUP BY 语句用于结合合计函数，根据一个或多个列对结果集进行分组。
-例如可以对人进行分组，再使用sum函数，对每个人计算他的工资。</p>
-<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
-FROM table_name
-WHERE column_name operator value
-GROUP BY column_name
-</code></pre>
-<h2 id="having-子句">HAVING 子句</h2>
-<p>在 SQL 中增加 HAVING 子句原因是，WHERE 关键字无法与合计函数一起使用。就相当于普通语句中的where。</p>
-<pre><code class="language-sql">SELECT column_name, aggregate_function(column_name)
-FROM table_name
-WHERE column_name operator value
-GROUP BY column_name
-HAVING aggregate_function(column_name) operator value
-</code></pre>
-<p>例如可以这么写：</p>
-<pre><code class="language-sql">SELECT Customer,SUM(OrderPrice) FROM Orders
-GROUP BY Customer
-HAVING SUM(OrderPrice)&lt;2000
-</code></pre>
-<h2 id="format-函数">FORMAT() 函数</h2>
-<p>FORMAT 函数用于对字段的显示进行格式化。</p>
 ]]></content>
     </entry>
 </feed>
