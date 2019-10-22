@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-22T02:21:34.164Z</updated>
+    <updated>2019-10-22T02:23:37.005Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -19,15 +19,18 @@
         <content type="html"><![CDATA[<p>就简单的说明一下好了，首先是使用蒸馏学习，然后再利用验证集来学习一个简单的线性变换 ax + b 来减少偏差。</p>
 <p>这里是把验证集也拿过来训练了，虽然只是学习一个简单的线性变换，因为这个线性变换只有两个参数，所以需要的数据量非常少，虽然这个变换很简单，但是非常有效的提高精度。</p>
 <p>文章中说的偏差指的是增量学习的精度和全部数据一起训练的精度的差距。</p>
-<h2 id="网络">网络</h2>
+<h2 id="1-什么是偏差">1 什么是偏差</h2>
+<p>偏差就是增量学习的精度和用全部数据训练的精度的差。
+<img src="https://jzq6520.github.io/post-images/1571711000642.png" alt=""></p>
+<h2 id="2-网络">2 网络</h2>
 <p><img src="https://jzq6520.github.io/post-images/1571710167211.png" alt=""></p>
 <p><img src="https://jzq6520.github.io/post-images/1571710183774.png" alt=""></p>
 <p>这里蒸馏学习的一个loss是logit之间的loss（即没有softmax激活的）。</p>
 <p>结合蒸馏学习和普通分类loss来进行学习。</p>
-<h2 id="loss">loss</h2>
+<h2 id="3-loss">3 loss</h2>
 <p>蒸馏学习的时候，新数据和老数据的蒸馏loss都是要计算的，无论是新的类别还是老的类别，这里其实是计算一个特征提取器的loss，让新的特征提取器提取的特征和老的一样。</p>
 <p><img src="https://jzq6520.github.io/post-images/1571710427789.png" alt=""></p>
-<h2 id="偏差矫正层">偏差矫正层</h2>
+<h2 id="4-偏差矫正层">4 偏差矫正层</h2>
 <p><img src="https://jzq6520.github.io/post-images/1571710889389.png" alt=""></p>
 ]]></content>
     </entry>
