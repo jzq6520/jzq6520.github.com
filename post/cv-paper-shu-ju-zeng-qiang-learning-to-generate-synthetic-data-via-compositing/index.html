@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CV-Paper-数据增强-Learning to Generate Synthetic Data via Compositing | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1571980143454">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1571980143454" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CV-Paper-数据增强-Learning to Generate Synthetic Data via Compositing</h2>
+            <div class="post-date">2019-10-24</div>
+            
+            <div class="post-content">
+              <p>20191024，今天是程序员日，天气不错。</p>
+<p>这是一篇做数据增强的文章。</p>
+<h2 id="1-简介">1 简介</h2>
+<p>传统的图像增强方法一般是对图像做一些转换，另外一种较新的方法就是合成数据。</p>
+<p>主要思想是合成一些图片，加入到训练中，从而提高检测和分类的精度。这里的合成是指将目标和背景结合。例如我把另外一张图片里面的人抠出来，放到另外一个背景图片里面去，就好像本来是在室内的人，抠出来放到一个室外的照片里面去。这样做的好处是增加了图片的多样性。增加一个上下文的多样性。</p>
+<p>例如，我们真实世界里面的人是在什么地方都会出现的，马路上、车里、草坪上、床上，都会有，但是我们作为训练集的图像中可能只出现了一个马路上的人的照片，那么当测试集中出现了一个人在室内的照片，可能模型就不认识。</p>
+<p>由于我们的数据只是真实世界分布的一个采样，所以数据永远是不够了。这就涉及到了泛化能力，一个好的模型就具有更好的泛化能力，但是有时候数据不够往往是一些其他的网络上的技巧（dropout这种）弥补不了的。</p>
+<p>所以这篇文章做的就是生成一些样本来弥补数据过少，数据多样性小的问题。这篇文章的主要一点是提出了我们生成的样本要<strong>符合真实世界的分布</strong>，例如一个人不可能就是没有借助的飞在天上。所以文章的框架增加了一个<strong>判别器</strong>来判断生成的数据是不是符合真实世界的分布，也就是说是不是符合常理的数据(真不真实)。这样来大家也都可以看出，这其实就是一个GAN网络。</p>
+<p>这篇文章是基于<strong>Cut-Paste-Learn</strong>是基于这篇文章之上的一篇文章。主要就是加了一个判别器来判断生成的数据是否是符合真实世界的分布。<strong>当然因为是通过GAN训练，那么生成器生成的就是以假乱真的数据了，而不是有监督的学习</strong>。因为作者说，如果引入了一些不符合真实场景的数据那么会造成<strong>过拟合</strong>。简单的理解就是这部分不符合常理的数据其实就是噪声，大家都知道噪声是会给模型带来负担的。</p>
+<p>一般来说生成数据的方式主要有三种：1)图像合成，2)对抗生成，3)渲染。本文应该是结合了图像合成和对抗这两种方法。</p>
+<h2 id="2-数据合成">2 数据合成</h2>
+<h3 id="21-合成网络synthesizer-network">2.1 合成网络Synthesizer Network</h3>
+<p>文章中的核心思想就是这个网络。里面还有一个小技巧来<strong>避免过拟合这种合成的数据</strong>。</p>
+<p>首先，合成网络<strong>不是</strong>我们想的那样输入两个图形然后自动输出一个图片，其实这个网络是输入两张图片然后预测一个2D affine transformations（二维刚性变换）的矩阵，这个矩阵是一个<strong>维度为6的向量</strong>，如下图所示（文章中没给，见Spatial Transformer Networks论文）：
+<img src="https://jzq6520.github.io/post-images/1571909222916.png" alt="">
+<img src="https://jzq6520.github.io/post-images/1571909211491.png" alt=""></p>
+<p>这个网络结构如下：
+<img src="https://jzq6520.github.io/post-images/1571910057977.png" alt=""></p>
+<p>感觉文章的图片画的不是很清晰，且参数共享那一块容易给人造成误解，所以重新画了一幅图，网络有部分是参数共享，但是又有部分是不进行参数共享的，结构和孪生网络相似。最终预测的就是一个变换矩阵的参数。具体设置如下：
+<img src="https://jzq6520.github.io/post-images/1571910821669.png" alt=""></p>
+<h3 id="22-合成数据">2.2 合成数据</h3>
+<p>那么怎么将前景和背景合为一体呢呢，其实和Cut-Paste-Learn一样，把背景扣掉一块然后将前景放进去，其实<strong>说白了就是把前景贴到背景上</strong>，但是文章中给了一个<em>故弄玄虚的公式</em>说是叫做alpha-blending，其实就是贴图的方式。<strong>但是多了对图像做一个仿射变换以后叠加</strong>，再加上有一个判别网络来保证合成的网络是真实的。</p>
+<p>如下图所示，上一行就是不真实（不符合真实世界的分布）的数据，下一行就是合成的符合真实世界的分布的数据：
+<img src="https://jzq6520.github.io/post-images/1571911885967.png" alt=""></p>
+<h3 id="23-防止过拟合贴图数据">2.3 防止过拟合贴图数据</h3>
+<p>为了防止过拟合这些合成的数据，本身将一些和目标形状一样的背景图像贴到一些训练的图像中去（其实就是目标的mask乘以一些背景区域，这样就取出和目标一样形状的背景图片，然后贴到其他图片中去）。如图所示：
+<img src="https://jzq6520.github.io/post-images/1571910704686.png" alt=""></p>
+<h2 id="3-loss">3 loss</h2>
+<p>判别网络loss，就是个交叉熵：
+<img src="https://jzq6520.github.io/post-images/1571910918644.png" alt=""></p>
+<p>GAN的 loss：
+<img src="https://jzq6520.github.io/post-images/1571910951399.png" alt=""></p>
+<p>生成仿射变换的6维向量的适合是没有监督的，是通过对抗学习来学习合成网络的参数的。</p>
+<h2 id="4-result">4 result</h2>
+<p>只贴了少部分实验数据，具体可以看论文。
+<img src="https://jzq6520.github.io/post-images/1571911142039.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571911157597.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571911183410.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571911212706.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1571911278459.png" alt=""></p>
+<h2 id="引用">引用</h2>
+<ul>
+<li>Learning to Generate Synthetic Data via Compositing</li>
+<li>Cut, paste and learn: Surprisingly easy synthesis for instance detection.</li>
+<li>Spatial Transformer Networks</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-paper-zeng-liang-xue-xi-large-scale-incremental-learning">
+                  <h3 class="post-title">
+                    CV-Paper-增量学习-Large Scale Incremental Learning
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
