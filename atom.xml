@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-29T07:40:32.296Z</updated>
+    <updated>2019-10-29T12:51:13.343Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,62 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[CV-笔记-重读YOLO目标检测系列 v1]]></title>
+        <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v1</id>
+        <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v1">
+        </link>
+        <updated>2019-10-29T07:46:45.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>将对象检测定义为一个<strong>回归问题</strong>，回归到空间分离的边界框和相关的类概率。</li>
+<li>与最先进的检测系统相比，YOLO会产生更多的定位错误，但不太可能预测背景上的误报<em>less likely to predict false positives on background</em>（假阳少）</li>
+<li>都看做一个回归问题，所以不需要复杂的pipeline。</li>
+<li>titan x gpu实现每秒150帧。</li>
+<li>yolo是看<strong>整张图片</strong>进行预测的，相对来说区域建议网络第二阶段是是看roi。</li>
+<li>yolo的背景的假阳少，因为他可以看到更大的信息（现在Faster R-CNN的第一个RPN模块其实也是看整个上下文的，这里对比的只是Fast R-CNN）。原文：<em>Fast R-CNN, a top detection method， mistakes back-ground patches in an image for objects because it can’t see the larger context. YOLO makes less than half the number of background errors compared to Fast R-CNN.</em></li>
+</ul>
+<h2 id="如何检测">如何检测</h2>
+<ol>
+<li>将图片分成SxS个格子；</li>
+<li>如果目标落在哪个格子上，哪个格子就负责整个目标。简单的说就是做数据的时候，这个格子的class label是1，在yolo里面是使用置信度来计算的。</li>
+</ol>
+<p>有些博客不懂乱说，例如知乎上的一篇文章，上来就说最后一层的featuremap对应的就是前面分好的网格里面的格子的特征，可见对感受野的概念不是很理解，其实这里的想法和Faster R-CNN里面的概念比较像，anchor其实也是在原图上滑动的呀，只是说这里没有anchor，而是这里的featuremap上的像素对应的是一个格子，也不能说是格子，因为格子的作用和anchor也是非常类似的，<strong>作用都是来进行分配任务，教网络怎么预测，网络学的是什么，那么预测的也是什么了</strong>。只是说这里是根据中心点是不是落在网络里面来选择正样本，而RPN里面是根据和anchor的IOU的大小来规定哪个是正样本哪个是负样本。</p>
+<p>只是这里说的比较明确，说是把原图分割成最后一层feature map大小的个数，feature map是多少个像素，那么就分成几个格子。</p>
+<p>只是说<strong>Faster R-CNN里面好像没有明确提到anchor的中心点在原图的哪个地方</strong>。其实这也是我们规定哪个点就是哪个点，<strong>但是按照感受野的概念，感受野中心的区域的权重往往会高一点</strong>，所以anchor的中心点可以设置成格子的中心。所以anchor的中心点在原图的坐标经过换算一下也是很简单的。应该就是<code>(x*stride + stride/2, y*stride + stride/2)</code>,这里的x和y表示在feature map上的坐标，计算出来的表示原图上的坐标，这也是我自己推测的（<strong>代码还没看过</strong>）。</p>
+<h2 id="定义label">定义label</h2>
+<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：
+* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。
+* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。
+* 类别：是哪个类别</p>
+<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：
+<img src="https://jzq6520.github.io/post-images/1572353048785.png" alt=""></p>
+<p>Fast R-CNN最后只是有一个类别和坐标，但是他的类别里面是包含背景的，yolo的类别里面是不包含背景。</p>
+<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。
+这个应该是预测时候的示意图。
+<img src="https://jzq6520.github.io/post-images/1572338771015.png" alt=""></p>
+<h2 id="训练的时候">训练的时候</h2>
+<ul>
+<li>训练的时候只预测一个目标，选择iou高的。原文：<em>YOLO predicts multiple bounding boxes per grid cell. At training time we only want one bounding box predictor to be responsible for each object. We assign one predictor to be “responsible” for predicting an object based on which prediction has the highest current IOU with the ground truth.</em></li>
+</ul>
+<h2 id="损失函数">损失函数</h2>
+<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。
+<img src="https://jzq6520.github.io/post-images/1572341526648.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></p>
+<p>这个长的像1的系数表示有目标的适合是1，没有的适合是0。那头上写的是noobj的时候就反一下。这里大写的C表示confidence置信度。p那个表示类别。计算不是目标的置信度的适合权重设置为0.5 。</p>
+<p>根号的作用：
+<img src="https://jzq6520.github.io/post-images/1572352978309.png" alt=""></p>
+<h2 id="缺点">缺点</h2>
+<ul>
+<li>不能同时检测两个中心点在同一个网格的物体。</li>
+<li>对于不常见的长宽比的物体效果较差</li>
+<li>对于多尺度效果较差</li>
+</ul>
+<h2 id="引用">引用</h2>
+<ul>
+<li>图解YOLO - 晓雷的文章 - 知乎 https://zhuanlan.zhihu.com/p/24916786</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CV-笔记-重读Fast R-CNN的ROI pooling]]></title>
         <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-fast-r-cnn-ji-roi-pooling</id>
@@ -405,152 +461,6 @@
 <li>Hallucinated-IQA: No-Reference Image Quality Assessment via Adversarial Learning</li>
 <li>RAN4IQA: Restorative Adversarial Nets for No-Reference Image Quality Assessment</li>
 <li>RankIQA: Learning from Rankings for No-reference Image Quality Assessment</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[keras-Callback回调函数]]></title>
-        <id>https://jzq6520.github.io/post/keras-callback-hui-diao-han-shu</id>
-        <link href="https://jzq6520.github.io/post/keras-callback-hui-diao-han-shu">
-        </link>
-        <updated>2019-07-29T06:30:07.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="1-回调函数的定义">1 回调函数的定义</h2>
-<p>当程序跑起来时，一般情况下，应用程序（application program）会时常通过API调用库里所预先备好的函数。但是有些库函数（library function）却要求应用先传给它一个函数，好在合适的时候调用，以完成目标任务。这个被传入的、后又被调用的函数就称为回调函数（callback function）。</p>
-<h4 id="回调函数的例子">回调函数的例子</h4>
-<pre><code class="language-python">### 回调函数
-#回调函数1
-#生成一个2k形式的偶数
-def double(x):
-    return x * 2
-    
-#回调函数2
-#生成一个4k形式的偶数
-def quadruple(x):
-    return x * 4
-
-## 使用回调函数的中间函数，也就是回调函数的使用者
-#中间函数
-#接受一个生成偶数的函数作为参数
-#返回一个奇数
-def getOddNumber(k, getEvenNumber):
-    return 1 + getEvenNumber(k)
-    
-#起始函数，这里是程序的主函数
-def main():    
-    k = 1
-    #当需要生成一个2k+1形式的奇数时
-    i = getOddNumber(k, double)
-    print(i)
-    #当需要一个4k+1形式的奇数时
-    i = getOddNumber(k, quadruple)
-    print(i)
-    #当需要一个8k+1形式的奇数时
-    i = getOddNumber(k, lambda x: x * 8)
-    print(i)
-    
-if __name__ == &quot;__main__&quot;:
-    main()
-</code></pre>
-<p>可以发现，其实我们只需要知道回调函数是<strong>传入什么参数，有什么功能即可</strong>，而不能自己去定义传入参数，<strong>所以我们去写回调函数的时候要按照中间函数传入的参数去写</strong>。</p>
-<h2 id="2-keras中的回调函数">2 keras中的回调函数</h2>
-<p>这里我们不讲那些keras中已经定义的回调函数，这里说一下如何创建自己的回调函数。
-keras中定义了一个回调函数的抽象类，这个类包含多个回调函数（即一个类里面有很多方法，这些方法是不同的时期被中间函数调用的）。我们继承这个类，然后重新其中的回调函数即可。
-下面看一下这个基类：
-https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
-<pre><code class="language-python">class Callback(object):
-			 &quot;&quot;&quot;Abstract base class used to build new callbacks.
-    # Properties
-        params: dict. Training parameters
-            (eg. verbosity, batch size, number of epochs...).
-        model: instance of `keras.models.Model`.
-            Reference of the model being trained.
-    The `logs` dictionary that callback methods
-    take as argument will contain keys for quantities relevant to
-    the current batch or epoch.
-    Currently, the `.fit()` method of the `Sequential` model class
-    will include the following quantities in the `logs` that
-    it passes to its callbacks:
-        on_epoch_end: logs include `acc` and `loss`, and
-            optionally include `val_loss`
-            (if validation is enabled in `fit`), and `val_acc`
-            (if validation and accuracy monitoring are enabled).
-        on_batch_begin: logs include `size`,
-            the number of samples in the current batch.
-        on_batch_end: logs include `loss`, and optionally `acc`
-            (if accuracy monitoring is enabled).
-    &quot;&quot;&quot;
-		
-     def __init__(self):
-        self.validation_data = None
-        self.model = None
-		
-		## 注意：set params和 set_model是已经定义好的，也就是说继承这个类以后回调函数本身就会有self.params 和self.model，不需要我们去关心有没有或者怎么得到这两个变量。
-		# 既然是回调函数，那么params这个参数是中间函数传给它的，不需要我们去传。
-    def set_params(self, params): 
-        self.params = params
-
-    def set_model(self, model):
-        self.model = model
-		
-		## 什么时候会调用，直接可以看方法名。
-		# Arguments
-    #       logs: 具体可以看上面链接中给出的注释，每个都不一样。
-	def on_batch_begin(self, batch, logs=None)
-	def on_batch_end(self, batch, logs=None)
-	def on_epoch_begin(self, epoch, logs=None)
-	def on_epoch_end(self, epoch, logs=None)
-	def on_train_batch_begin(self, batch, logs=None)
-	def on_train_batch_end(self, batch, logs=None)
-	def on_test_batch_begin(self, batch, logs=None)
-	def on_test_batch_end(self, batch, logs=None)
-	def on_predict_batch_begin(self, batch, logs=None)
-	def on_predict_batch_end(self, batch, logs=None)
-	def on_train_begin(self, logs=None)
-	def on_train_end(self, logs=None)
-	def on_test_begin(self, logs=None)
-	def on_test_end(self, logs=None)
-	def on_predict_begin(self, logs=None)
-	def on_predict_end(self, logs=None)	
-</code></pre>
-<p>在回调函数中可以使用这两个参数。</p>
-<ul>
-<li>
-<pre><code>    self.params = params： 字典。训练参数， (例如，verbosity, batch size, number of epochs...)。可以打印出来看看。
-</code></pre>
-</li>
-<li>
-<pre><code>    self.model = model：keras.models.Model 的实例。 指代被训练模型。
-</code></pre>
-</li>
-</ul>
-<p>通过类的属性 self.model，回调函数可以获得它所联系的模型。</p>
-<h3 id="keras自定义回调函数的例子">keras自定义回调函数的例子</h3>
-<p>回调函数使用以后，还可以通过类实例来访问实例变量。</p>
-<pre><code class="language-python">class LossHistory(keras.callbacks.Callback):
-    def __init__(self):
-				super(LossHistory, self).__init__()
-				self.losses = []
-				
-    def on_train_begin(self, logs={}):
-        self.losses = []
-
-    def on_batch_end(self, batch, logs={}):
-        self.losses.append(logs.get('loss'))
-
-model = Sequential()
-model.add(Dense(10, input_dim=784, kernel_initializer='uniform'))
-model.add(Activation('softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
-
-history = LossHistory()
-model.fit(x_train, y_train, batch_size=128, epochs=20, verbose=0, callbacks=[history])
-
-print(history.losses)
-</code></pre>
-<h2 id="引用">引用</h2>
-<ul>
-<li>https://github.com/chensvm/Keras-Callback-F1/blob/master/roc_auc_score_Metrics</li>
-<li>https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</li>
 </ul>
 ]]></content>
     </entry>
