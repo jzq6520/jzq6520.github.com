@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-10-29T12:51:13.343Z</updated>
+    <updated>2019-10-30T07:45:43.140Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,78 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[CV-笔记-重读YOLO目标检测系列 v2]]></title>
+        <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v2</id>
+        <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v2">
+        </link>
+        <updated>2019-10-30T02:59:08.000Z</updated>
+        <content type="html"><![CDATA[<p>哎，看下来 yolo v1 v2总感觉作者写文章一般般，写的不清晰。</p>
+<h2 id="anchor尺寸设置">anchor尺寸设置</h2>
+<p>不像Faster R-CNN里面一样使用手动设置anchor的尺寸，这里使用k-means来进行聚类，例如我们要五种类型的anchor，那么就聚为5类，那么聚类中心的尺寸就是我们的anchor尺寸。</p>
+<p>但是这里的聚类距离选择的不是欧式距离，而是<code>1-IOU(box, centroid)</code>作为<strong>距离度量函数</strong>。这里说明一下怎么聚类，因为一个anchor是有两个值（RPN中提到的），一个是像素个数，还有一个长宽比，所以这里应该<strong>将长宽的大小作为聚类特征</strong>（因为长宽大小就决定了有多少像素和长宽比了），论文中说在做目标检测的时候主要是想要一个较高的IOU，但是k-means在聚类的时候是计算一个较近的距离，所以这里是1减去IOU（因为iou越大，1减去iou就越小了）。所以这里用<code>1-IOU</code>衡量，那怎么计算iou呢，我们可以假设box的中心点是<code>（0，0）</code>，因为是对现在所有的目标的box进行聚类找出我们的anchor的尺寸，所以我们的数据就是所有目标的box的长宽，然后假设中心点是<code>（0，0）</code>，这样我们就可以计算两个box之间的iou了。</p>
+<p>其实RPN中是想要多种尺寸的anchor，也就是不同长宽的box，但不是说一定要像RPN中说的一样要指定几种面积，然后每种面积有几种长宽比。所以YOLO V2中就使用聚类来得到不同长宽的anchor（box）。</p>
+<h2 id="label制作">label制作</h2>
+<p>置信度：应该也是一个1和0，落在网格里面就是算有目标，这个和RPN不一样，RPN是通过iou计算正负样本的，这里是看是不是落在网格里面，如果不是这个区别那么就变成了普通的RPN了。原文：The network predicts 5 coordinates for each bounding box, t x , t y , t w , t h , and t o 。to就是置信度。</p>
+<p>但是，需要注意的是，每个cell中实际上有5个anchor，并不是每个anchor的会预测这个物体，我们只会选择一个长宽和这个bbox最匹配的anchor来负责预测这个物体。那么什么叫长宽最为匹配？这个实际上就是将anchor移动到图像的右上角，bbox也移动到图像的左上角，然后去计算它们的iou，iou最大的其中一个anchor负责预测这个物体。这点和RPN中不一样，RPN只需要iou符合大于某个阈值就可以了。感觉yolo复杂多了。</p>
+<p>和RPN还有个不同的是，RPN的是目标和不是目标是两个神经元预测，也就是softmax，这里是一个预测 sigmoid。</p>
+<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：
+<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt="">
+原文中符号写错了：
+<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt="">
+这样回归其实是有缺点的，这个公式回归出来的中心点是不受约束的，它的<strong>活动范围是全图</strong>，可以想象其实我们回归出t以后然后计算出的<strong>x,y的值可以是图像中的任意位置</strong>，<strong>在随机初始化的情况下，模型需要很长时间才能稳定地预测出合理的偏移量</strong>。</p>
+<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。
+即<code>tx = bx - cx, ty = by - cy</code>，</p>
+<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。
+<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt="">
+宽高和RPN一样：
+<img src="https://jzq6520.github.io/post-images/1572413551539.png" alt=""></p>
+<h2 id="输入图像的大小">输入图像的大小</h2>
+<p>为了使得目标占很大，或者是中心点在图的中间的目标在预测的适合更加准确，所以最好让输出的特征图的像素是个奇数，也就是说把图像隔成奇数个网格，这样就不会像偶数格一样把图像中心分成两部分了，大家可以想象一下3格和4格的区别，4格就把图的中心分割成一半了，如果目标中心点正好在中心区域的周围，那么偏移一点误差也很大了。</p>
+<h2 id="其他一些加入的改进">其他一些加入的改进</h2>
+<ol>
+<li>加入了一个不同层特征的融合。concat连接</li>
+<li>多尺度训练，Every 10 batches our network randomly chooses a new image dimension size. Since our model downsamples by a factor of 32, we pull from the following multiples of 32: {320, 352, ..., 608}. Thus the smallest option is 320 × 320 and the largest is 608 × 608. We resize the network to that dimension and continue training.</li>
+</ol>
+<h2 id="网络">网络</h2>
+<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：
+<img src="https://jzq6520.github.io/post-images/1572415768870.png" alt=""></p>
+<p>网上的图：
+<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt="">
+这是在imagenet上进行预训练的结构，训练检测的时候去掉最后一个卷积层，然后增加一个3x3的卷积层和一个1x1的卷积层。原文：<em>We modify this network for detection by removing the last convolutional layer and instead adding on three 3 × 3 convolutional layers with 1024 ﬁlters each followed by a ﬁnal 1 × 1 convolutional layer with the number of outputs we need for detection。</em></p>
+<p>并且，还增加了一个从最后的3×3×512层到第二个到最后一个卷积层的透传层，这样我们的模型可以使用细粒度的特征。原文（看的不是很清晰）：We also add a passthrough layer from the ﬁnal 3 × 3 × 512 layer to the second to last convolutional layer so that our model can use ﬁne grain features.</p>
+<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。
+<img src="https://jzq6520.github.io/post-images/1572416170928.png" alt=""></p>
+<h3 id="网络的预测输出">网络的预测输出</h3>
+<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：
+<img src="https://jzq6520.github.io/post-images/1572419086667.png" alt=""></p>
+<p>对比YOLO1的输出张量，YOLO2的主要变化就是会输出5个先验框，且每个先验框都会尝试预测一个对象。输出的 <code>13*13*5*25</code> 张量中，25维向量包含 20个对象的分类概率+4个边框坐标+1个边框置信度。</p>
+<h2 id="损失函数">损失函数</h2>
+<p>？？？？？？what？
+文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？
+<strong>应该是结合吧，既然预测宽和高用的是RPN的，预测中心点用的是yolo，预测有没有目标也是yolo的。那么应该就是结合一下了，宽高用smooth L1， 中心点用均方差，有没有目标（置信度）用均方差</strong>以上只是猜测，具体看代码。</p>
+<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：
+<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt="">
+<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt="">
+<img src="https://jzq6520.github.io/post-images/1572420619180.png" alt=""></p>
+<p><strong>卧槽 差点被坑了，文章中是把网络输出换算成x，y，w，h之后才进行计算loss的</strong>。<strong>不是直接回归t。RPN中是回归t的</strong>。</p>
+<h2 id="训练参数学习率">训练参数，学习率</h2>
+<ul>
+<li>学习率：train the network for 160 epochs with a starting learning rate of 10−3 , dividing it by 10 at 60 and 90 epochs.</li>
+<li>sgd：We use a weight decay of 0.0005 and momentum of 0.9.</li>
+<li>数据增强：We use a similar data augmentation to YOLO and SSD with random crops, color shifting, etc</li>
+</ul>
+<h2 id="实验结果">实验结果</h2>
+<p>分辨率越高效果越好：
+<img src="https://jzq6520.github.io/post-images/1572414966868.png" alt=""></p>
+<p><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></p>
+<h2 id="引用">引用</h2>
+<ul>
+<li>YOLOv2 / YOLO9000 深入理解 - X-猪的文章 - 知乎https://zhuanlan.zhihu.com/p/47575929</li>
+<li><strong>重温yolo v2</strong> - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CV-笔记-重读YOLO目标检测系列 v1]]></title>
         <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v1</id>
@@ -403,64 +475,6 @@
 <li>知识蒸馏；</li>
 <li>量化</li>
 <li>稀疏</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-笔记-图像质量评价Image quality assessment IQA简介]]></title>
-        <id>https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie</id>
-        <link href="https://jzq6520.github.io/post/cv-bi-ji-tu-xiang-zhi-liang-ping-jie-image-quality-assessment-iqa-jian-jie">
-        </link>
-        <updated>2019-10-10T02:32:14.000Z</updated>
-        <content type="html"><![CDATA[<p>2019年10月10日</p>
-<h2 id="1-简介">1 简介</h2>
-<p>图像质量评价（Image quality assessment，IQA）按照是否有参考图像可以分为三种：1. 有参IQA，2.半参IQA，3. 无参IQA。</p>
-<p>有参图像质量评价虽然效果很好，但是前提是要有一个参考图像，也就是说一张质量好的图像作为参考，然后给评价的图像进行打分，而且参考图像和被打分的图像是要同一个图。但是在某些场景下参考图像是比较难获得的。</p>
-<p>在测试图像压缩、图像传输效果时候或许可以有一个原始图像作为参考，然后测试被压缩或被传输后的图像知道。但是在很多场景是无法获得参考图像的，例如你拍摄一张图像，如果你没有拍摄一个绝对清晰的图像，那就无法拿到参考图像。比还有一些实时的场景下我们是不好获得参考图像的。</p>
-<p><strong>所以这时候无参图像质量评价就出来了。</strong></p>
-<h2 id="2-基于深度学习的图像质量评价">2 基于深度学习的图像质量评价</h2>
-<p>废话不多说直接进入正题，这里我们主要讨论利用深度学习来解决图像质量评价问题。传统方法可以自行谷歌。</p>
-<p>在我看来基于深度学习的图像质量评价主要有两种：</p>
-<ol>
-<li>直接利用回归，输入为图像，输出为质量评价分数。那么训练数据集就是 图像和label。</li>
-<li>利用伪参考图像，然后将待评价图像和伪参考图像一起输入到回归网络中，输出质量评价分数。那么训练数据要包含：待评价图像、参考图像和label。注：伪参考图像这个说法是我自己想的。</li>
-</ol>
-<p>接下来对这两种基于深度学习的方法进行简单介绍，并且附上论文。</p>
-<h2 id="21-直接利用回归">2.1 直接利用回归</h2>
-<p>直接利用回归进行质量评价。这个思路比较简单，就是我们输入一张待评价图像然后输出的是一个值（score）。</p>
-<p>网络就可以设计为一个卷积神经网络，例如我们可以选用VGG网络进行回归。</p>
-<p><strong>但是由于图像质量评价的数据往往难以获得，且存在很大的主观性，所以说数据量是不大的。所以Xialei Liu等人就提出了RankIQA来解决数据量小的问题。</strong></p>
-<h3 id="211-rankiqa">2.1.1 RankIQA</h3>
-<p>别看名字这么玄乎，其实本身思想其实很简单，就是利用迁移学习。那么从哪里迁移网络参数呢？是从参数共享的网络得到。<strong>这个参数共享又不能说是孪生网络（注：论文中说是孪生网络），因为这个网络不像孪生网络一样有连接在一块，所以应该只能算是参数共享的网络</strong>。</p>
-<p>首先构建两个参数共享的网络，这时候将两张图分别从两个网络输入，网络输出的是一个质量评价分数，这时候我们是知道两张输入图像哪张好哪张坏的，所以这时候就可以比较两个网络输出的质量评价分数来进行计算loss。如果输出的质量评价分数的大小关系和实际一样，那么就不计算loss。</p>
-<p><img src="https://jzq6520.github.io/post-images/1570677420978.png" alt=""></p>
-<p>那么输入的图像是哪里来的呢？是我们自己构造的，利用高斯核对图像进行模糊，这样我们就可以生成一组不同模糊程度的图像。因为我们不知道模糊程度该打几分，所以在训练参数共享网络的时候，loss是通过比较两个网络的数据来进行计算的，而不是和传统的一样计算均方差。</p>
-<p>LOSS:
-<img src="https://jzq6520.github.io/post-images/1570677513453.png" alt=""></p>
-<p>这里有个假设，就是x1是大于x2的，所以从这个公式1的Loss公式可以看出，当网络输出x1大于x2时不计算loss，反之则计算一个loss。</p>
-<p>最后，由于我们自己生成了许多可以指定图像质量相对好坏的数据，所以可以训练更深的网络，克服了一部分数据量的问题。然后利用在人工标注的groundtruth上进行finetune（微调）得到最终的回归网络（质量评价网络）。</p>
-<p><strong>总结：数据上只需要图像和对应的质量分数，网络相对简单。利用了迁移学习和很聪明的学习技巧和损失函数</strong></p>
-<h2 id="22-利用伪参考图像">2.2  利用伪参考图像</h2>
-<p>为什么我说这个是伪参考图像，因为这里面<strong>训练的时候是需要参考图像</strong>的，并且<strong>网络会生成一个假的参考图像</strong>，这个参考图像是通过网络对质量差的图像<strong>修复得到</strong>，例如一种模糊图像，然后由网络对其进行修复生成一张清晰的图像。然后利用这个清晰的图像作为参考图像对图像进行质量评价。</p>
-<p>这里介绍两篇文章：RAN4IQA和Hallucinated-IQA，这两篇文章都是这样的思路，都是利用GAN（对抗生成网络）修复质量差的图像，然后将得到的修复后的图像（伪参考图像）作为参考图像对待评价图像进行打分。</p>
-<p>所以这两个网络可以分解成三部分：<strong>伪参考图像评价网络 = GAN + 评价网络 = 修复网络（生成网络）+ 判别网络 + 评价网络</strong></p>
-<p><strong>其实我们可以发现，当我们抛开评价网络，剩下的GAN就成了一个图像修复网络了</strong>。</p>
-<p>再说一下这两个网络的区别：</p>
-<ul>
-<li>RAN4IQA是将修复后的图像和待参考图像输入到<strong>孪生网络</strong>中去回归得到分数。当然这里是基于patch的，所以还会有一个patch的权重，最后将所有patch的权重加权平均得到最后整张图像的分数。</li>
-<li>Hallucinated-IQA是将<strong>差值图像</strong>（修复后的和待评价图像相减后得到的图）和待参考图像输入到一个<strong>双输入网络</strong>中，回归得到一个分数。并且使用了修复网络的下采样输出的特征。</li>
-</ul>
-<h3 id="221-ran4iqa">2.2.1 RAN4IQA</h3>
-<p><img src="https://jzq6520.github.io/post-images/1570678849786.png" alt=""></p>
-<h3 id="222-hallucinated-iqa">2.2.2 Hallucinated-IQA</h3>
-<p><img src="https://jzq6520.github.io/post-images/1570678886713.png" alt=""></p>
-<h2 id="3-总结">3 总结</h2>
-<p>当有参考图像的时候可以训练一个伪参考图像网络，当没有参考图像的时候可以训练一个RankIQA网络。</p>
-<h2 id="4-参考">4 参考</h2>
-<ul>
-<li>Hallucinated-IQA: No-Reference Image Quality Assessment via Adversarial Learning</li>
-<li>RAN4IQA: Restorative Adversarial Nets for No-Reference Image Quality Assessment</li>
-<li>RankIQA: Learning from Rankings for No-reference Image Quality Assessment</li>
 </ul>
 ]]></content>
     </entry>
