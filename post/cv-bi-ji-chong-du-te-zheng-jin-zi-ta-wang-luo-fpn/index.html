@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CV-笔记-重读特征金字塔网络 (FPN) | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CV-笔记-重读特征金字塔网络 (FPN)</h2>
+            <div class="post-date">2019-10-31</div>
+            
+            <div class="post-content">
+              <p>对于网络的卷积特征的几个重要理解：</p>
+<ul>
+<li>但由于深度不同，导致了不同层较大的<strong>语义差异</strong>。高分辨率图的低层特征损害了其对目标识别的表征能力。</li>
+<li>语义差异：语义差异就说对目标的类别的识别的能力的差异，低层特征主要是一些边缘，形状等交基础的特征，对整个物体的类别识别帮助不大，而高层特征可能是更加具体的特征，已经很能反映整个是什么物体了，所以底层特征语义较差。</li>
+<li>利用卷积神经网络特征层次结构的金字塔形状，同时构建一个在所有尺度上都具有<strong>强大语义</strong>的特征金字塔，如果不看skip连接的话FPN相当于是在网络后面接了另外的很多层卷积，所以属于高层特征。</li>
+<li>所以有了另外一路<strong>上采样的卷积层</strong>以后，就具有了在<strong>每个尺度上都有高语义的特征图</strong>。即依赖于一个通过<strong>自顶向下（即上采样路径）路径和横向连接</strong>将<strong>低分辨率语义强的特征</strong>与<strong>高分辨率语义弱的特征</strong>相结合的架构。所以这也是最后特征图的channel都是一样的原因吧，这里更加注重语义特征。</li>
+<li>FPN文章中是用FPN和Faster R-CNN结合。</li>
+</ul>
+<h2 id="结构实现细节">结构实现细节</h2>
+<ul>
+<li>上采样使用最近邻插值</li>
+<li>只使用c2,c3,c4,c5尺度的特征图。</li>
+<li>中间的skip连接是用1x1卷积把channel数降到256.</li>
+<li>fpn是完全对称的
+<img src="https://jzq6520.github.io/post-images/1572492067196.png" alt=""></li>
+<li><strong>使用同样的channel的原因</strong>：因为金字塔的所有层次都使用<strong>共享的分类器/回归器</strong>，就像传统的特征图金字塔一样，我们修正了所有特征图的特征维数。Because all levels of the pyramid use shared classiﬁers/regressors as in a traditional featurized image pyramid, we ﬁx the feature dimension (numbers of channels, denoted as d) in all the feature maps. We set d = 256 in this pa- per and thus all <strong>extra convolutional</strong> layers have 256-channel outputs.There are no non-linearities in these <strong>extra layers</strong>, which we have empirically found to have minor impacts.<strong>在这些额外的层中不存在非线性，我们根据经验发现它们的影响很小</strong>。</li>
+</ul>
+<h2 id="基于特征金字塔fpn的rpn">基于特征金字塔(FPN)的RPN</h2>
+<p>虽然fpn和rpn很相似，但是这两个p意思不一样，一个是pyramid（金字塔），一个是proposal（建议）。</p>
+<ul>
+<li><strong>RPN参数共享</strong>：<strong>head</strong>：文章中把RPN的那个操作的模块叫做<strong>头部</strong>，即一个3x3的卷积，然后加两个1x1的卷积进行分类和回归。</li>
+<li>FPN中的RPN head（头部）是<strong>参数共享</strong>的。</li>
+<li><strong>每个特征图负责检查一种尺度</strong>：<strong>assign anchors of a single scale to each level</strong>.并且每层只有一个尺度的anchor，即一个层上没有多尺度，每层只负责一种大小的目标检测，这里说的大小是指物体的面积，用面积衡量大小，但是物体的宽高比是不一样的。因为RPN已经是在不同尺度的特征图上做了，所以不需要再在一个特征图上做不同尺度的anchor了。</li>
+<li>anchor设置：对于在faster R-CNN上用的anchor，<strong>在高分辨率特征图上检测小目标，在低分辨率上检测大目标</strong>。面积设置，特征图<strong>从大到小</strong>p2,p3,p4,p5分别的anchor面积是32^2 , 64^2 , 128^2 , 256^2，且每个面积有三个宽高比：{1:2, 1:1, 2:1} 。</li>
+<li>实验对比共享rpn头和不共享，共享的效果比较好。</li>
+</ul>
+<h2 id="打label">打label</h2>
+<ul>
+<li>正样本：iou大于0.7的所有anchor或和ground-truth iou最早的anchor（因为可能存在所以anchor都和ground-truth iou小于0.7，那么这个是后就取iou最大的anchor了），<em>positive label if it has the highest IoU for a given ground- truth box or an IoU over 0.7 with any ground-truth box</em>。</li>
+<li>负样本：所有iou小于0.3的anchor，a negative label if it has IoU lower than 0.3 for all ground-truth boxes。</li>
+<li>ground-truth没明确分配到哪个尺度的特征图，只要anchor分配好就可以了。原文：<strong>Note that scales of ground-truth boxes are not explicitly used to assign them to the levels of the pyramid; instead, ground-truth boxes are associated with anchors, which have been assigned to pyramid levels. As such, we introduce no extra rules in addition to those</strong>。因为iou是两个物体面积差不多大才是大的，一个大物体和一个小物体全部覆盖，那iou也是低的。所以物体会根据iou大小自动分配的。</li>
+<li></li>
+</ul>
+<h2 id="fpn的roi-pooling">FPN的ROI pooling</h2>
+<p>那么FPN的roi pooling怎么做呢，因为有这么多个的特征图。</p>
+<p>首先我们要搞清楚一个概念，<strong>RPN的作用是确定出原图上的目标ROI区域</strong>（而非特征图上的区域），这时候我们再将原图上的ROI坐标映射到特征图上，然后把特征图上的roi区域拿过来进行分类和区域的回归矫正。</p>
+<p>理解了这一点，那就清楚了，RPN确定的只是在原图上的roi区域，所以RPN做完以后，anchor就没用了，这时候就根据roi来确定我要在哪一层选择这个区域的特征来进行分类和回归。</p>
+<p>虽然我们直观上理解是哪个特征图检测出了这个目标，就由哪个特征图所roi pooling，<strong>其实不是的</strong>，文章中是对roi进行重新分配了，<strong>所以RPN做完以后预测出的候选区域就和特征图没有半毛钱关系了，后面就等着再分配了</strong>。</p>
+<p>那么分配规则是怎么样的呢，文章中是按照下面这个公式来确定分配给哪一层，那个类似于中括号的是<strong>取整</strong>，应该是向上取整，如果是5到4.1就是再第5层特征层做。。
+<img src="https://jzq6520.github.io/post-images/1572504129264.png" alt=""></p>
+<p>首先，先通俗理解一下，前面最开始分配anchor的时候就知道了，深层特征图检测大目标，浅层的检测小目标，所以这里也是一样，<strong>大目标（即大ROI）分配给低分辨率（小特征图）的特征图即P5，小目标（小ROI）分配给到的高分辨率（大特征图）的特征图</strong>。</p>
+<p>如果我们最小的特征图是P5，那么k0初始化为5，然后这里的224应该不要这样写好，应该写成输入图像的大小，如果输入是448那这里就是448了，意思就是如果roi是图像的一半，那么应该分配给P4特征图做roi pooling。以此类推。</p>
+<p>其实这个公式算出来就是，缩小一半（2倍）就是到倒数第二层，缩小4倍就是到再下一层，缩小8倍就是再下一层。那么1到2倍就是再最后一层了。因为以2为底，log二分1就是-1，log四分之一就是-2。</p>
+<p>然后做roi pooling都是7x7，最后堆叠到一个batchsize里面（这个和Fast R-CNN是一样的，见之前的博客）。然后预测分类和回归的适合连两个全连接。<em>1024-d fully-connected (fc) layers (each followed by ReLU) before the ﬁnal classiﬁcation and bounding box regression layers</em>.</p>
+<h2 id="参数细节">参数细节</h2>
+<h3 id="region-proposal-with-rpn">Region Proposal with RPN</h3>
+<p>All architectures in Table 1 are trained end-to-end. The input image is resized such that its shorter side has 800 pixels. We adopt synchronized SGD training on 8 GPUs. A mini-batch involves 2 images per GPU and 256 anchors per image. We use a weight decay of 0.0001 and a momentum of 0.9. The learning rate is 0.02 for the ﬁrst 30k mini-batches and 0.002 for the next 10k. For all RPN experiments (including baselines), we include the anchor boxes that are outside the image for training, which is unlike [29] where these anchor boxes are ignored. Other implementation details are as in [29]. Training RPN with FPN on 8 GPUs takes about 8 hours on COCO.</p>
+<h3 id="object-detection-with-fastfaster-r-cnn">Object Detection with Fast/Faster R-CNN</h3>
+<p>The input image is resized such that its shorter side has 800 pixels. Synchronized SGD is used to train the model on 8 GPUs. Each mini-batch in- volves 2 image per GPU and 512 RoIs per image. We use a weight decay of 0.0001 and a momentum of 0.9. The learning rate is 0.02 for the ﬁrst 60k mini-batches and 0.002 for the next 20k. We use 2000 RoIs per image for training and 1000 for testing. Training Fast R-CNN with FPN takes about 10 hours on the COCO dataset.</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v2">
+                  <h3 class="post-title">
+                    CV-笔记-重读YOLO目标检测系列 v2
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
