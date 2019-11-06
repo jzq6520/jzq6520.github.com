@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -122,7 +122,7 @@
 </li>
 </ul>
 </li>
-<li>为了产生region proposal，用一个<strong>小的网络进行卷积</strong>，文章中使用了<strong>一个3x3的卷积层作为小的网络</strong>如下图所示，然后文章中计算出来做了3x3的卷积以后的感受野是228，因为vgg16最后一个特征图（不算最后的maxpooling）的感受野是196，根据上面给出的公式，那最后<strong>region proposal的感受野就是</strong> <code>196+(3-1)*16=228</code> 。这里的16是之前做了4次pooling，stride累乘就是16。
+<li>为了产生region proposal，用一个<strong>小的网络进行卷积</strong>，文章中使用了<strong>一个3x3的卷积层作为小的网络</strong>如下图所示，然后文章中计算出来做了3x3的卷积以后的感受野是228，因为vgg16最后一个特征图（不算最后的maxpooling）的感受野是196，根据上面给出的公式，那最后<strong>region proposal的感受野就是</strong> <code>196+(3-1)*16=228</code> 。这里的16是之前做了4次pooling，stride累乘就是16。<br>
 <img src="https://jzq6520.github.io/post-images/1572242265100.png" alt=""></li>
 </ul>
 <h3 id="anchor">anchor</h3>
@@ -131,7 +131,7 @@
 <ul>
 <li>其实这一块<strong>不用想的特别复杂</strong>，他虽然画了一个anchor再上面，这里<strong>画出来</strong>只是表示最终anchor的特征是在这里提取的，<strong>重点不是在这个anchor上</strong>，anchor只是一个虚拟的大小的宽，用来给坐标回归提供一个相对位置的，或者<strong>说是一个参考的坐标系（类似于这个作用）</strong>，但是其实做数据还是按照规定在固定的网格中做数据就可以了，对应的<strong>坐标和置信度，主要的还是这两个分支</strong>。</li>
 <li>anchor的个数限制了feature map上每个点可以预测几个region proposal。这个其实就像平时分类一样，我可以最后输出4个神经元来预测四个类别，那我也可以输出8个神经元来预测8个类别。一个道理，这里假设规定了k个anchor，那么我们就预测k个框就好了。</li>
-<li>这里的feature map上的点可以怎么理解呢，就是说每个feature map的点是预测k组（这里的组是指坐标+置信度）目标，就像<strong>平时我们是把特征图拉直或者是做过global avg pooling，因为分类是最终分出几个类别，是根据整体的信息来的</strong> ，这里只是不再进行降维了，而是每个点我出来预测一个东西。这样其实有个好处就是，<strong>特征图上的每个点对应的感受野其实是原图上的一块区域的</strong>，而且通常来说感受野是<strong>输入中越靠感受野中间的元素对特征的贡献越大</strong>的，如下图所示，出自论文understanding-the-effective-receptive-field-in-deep-convolutional-neural-networks。所以这样来预测其实是符合计算的。
+<li>这里的feature map上的点可以怎么理解呢，就是说每个feature map的点是预测k组（这里的组是指坐标+置信度）目标，就像<strong>平时我们是把特征图拉直或者是做过global avg pooling，因为分类是最终分出几个类别，是根据整体的信息来的</strong> ，这里只是不再进行降维了，而是每个点我出来预测一个东西。这样其实有个好处就是，<strong>特征图上的每个点对应的感受野其实是原图上的一块区域的</strong>，而且通常来说感受野是<strong>输入中越靠感受野中间的元素对特征的贡献越大</strong>的，如下图所示，出自论文understanding-the-effective-receptive-field-in-deep-convolutional-neural-networks。所以这样来预测其实是符合计算的。<br>
 <img src="https://jzq6520.github.io/post-images/1572243550140.png" alt=""></li>
 <li>我靠之前怎么想不到，<strong>这个其实就是和分割差不多啊</strong>，分割的输出也是不进行降维的，也是<strong>一个像素其实对应一块区域的感受野的</strong>。</li>
 </ul>
@@ -141,7 +141,7 @@
 </ul>
 <h3 id="参数量">参数量</h3>
 <ul>
-<li>region proposal小网络（文章中说小网络，其<strong>实就是1个分支，也就是1个卷积层</strong>）提到了Each sliding window is mapped to a lower-dimensional feature (256-d for ZF and <strong>512-d</strong> for VGG, with ReLU [33] following).和our output layer has 2.8 × 10 4 parameters (<strong>512</strong> × (4 + 2) × 9 for VGG-16)，这里的<strong>512是指这个分支卷积层的channel数</strong>，就像隐藏层的参数个数一样，他这边的参数量应该不是所有的feature map上的点，因为输入图像大小不一样，featuremap大小也是不一样的。所有这里说的参数是featuremap上<strong>一个点的region proposal的参数量</strong>，所有文章又补充说明了一下，如下图：
+<li>region proposal小网络（文章中说小网络，其<strong>实就是1个分支，也就是1个卷积层</strong>）提到了Each sliding window is mapped to a lower-dimensional feature (256-d for ZF and <strong>512-d</strong> for VGG, with ReLU [33] following).和our output layer has 2.8 × 10 4 parameters (<strong>512</strong> × (4 + 2) × 9 for VGG-16)，这里的<strong>512是指这个分支卷积层的channel数</strong>，就像隐藏层的参数个数一样，他这边的参数量应该不是所有的feature map上的点，因为输入图像大小不一样，featuremap大小也是不一样的。所有这里说的参数是featuremap上<strong>一个点的region proposal的参数量</strong>，所有文章又补充说明了一下，如下图：<br>
 <img src="https://jzq6520.github.io/post-images/1572244888520.png" alt=""></li>
 </ul>
 <h2 id="正负样本选择">正负样本选择</h2>
@@ -158,7 +158,7 @@
 </ol>
 <p>这样哪个anchor是正样本和负样本分配好了就方便了，这样数据做出来就是每个anchor的分类的label就有了，1或者0 。</p>
 <h2 id="rpn的损失函数">RPN的损失函数</h2>
-<p>损失函数如下图所示：
+<p>损失函数如下图所示：<br>
 <img src="https://jzq6520.github.io/post-images/1572256564654.png" alt=""></p>
 <p>可以看出又两个损失函数组成，一个是分类loss，另外一个是坐标回归的loss：</p>
 <ul>
@@ -166,8 +166,8 @@
 <li><strong>分类</strong>为log loss，也就是交叉熵。</li>
 <li><strong>回归</strong>为smooth L1，从公式可以看出乘以一个p星，说明只计算正样本的损失，负样本是不计算损失的。</li>
 <li>乘以一个N分之一，这个是做一个归一化，分类的N为batch-size的大小，回归的N是batch-size乘以anchor数（即所有anchor的数量），这里<em>可以看到回归是除以了所以anchor的数量，而分类的只除以batch-size</em>。然后这里的lambda参数又是来平衡两个loss，这里论文中设置了一个10效果最好，<strong>那么傻逼了</strong>，因为文章anchor是9，那么乘10再除9 来平衡，tm的为什么不直接除batch-size，干嘛还乘一个anchor个数来平衡。</li>
-<li>坐标回归的loss：
-<img src="https://jzq6520.github.io/post-images/1572271188684.png" alt="">
+<li>坐标回归的loss：<br>
+<img src="https://jzq6520.github.io/post-images/1572271188684.png" alt=""><br>
 <strong>可以看出这里的label是经过转换得到的</strong>，所以预测出来的结果还需要经过变换，转换到原来的坐标和长宽。可以把回归看做是和最接近的anchor计算相对位置的，因为做label（正负样本）的时候就是选择IOU(接近)大的anchor的。</li>
 </ul>
 <h2 id="训练rpn">训练RPN</h2>
@@ -191,7 +191,7 @@
 </ul>
 <h2 id="整体的网络结构就是这样">整体的网络结构就是这样</h2>
 <p>ROI Pooling结构可以仔细看Fast R-CNN，这篇文章没有仔细介绍。</p>
-<p><img src="https://jzq6520.github.io/post-images/1572275302379.png" alt=""></p>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1572275302379.png" alt=""></figure>
 
             </div>
             

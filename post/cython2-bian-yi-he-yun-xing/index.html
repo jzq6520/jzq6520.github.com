@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Cython(2)--编译和运行 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Cython(2)--编译和运行</h2>
+            <div class="post-date">2019-11-06</div>
+            
+            <div class="post-content">
+              <ul>
+<li>和c、c++一样，Cython代码运行前也是需要编译的；</li>
+<li>Cython是python的<strong>超集</strong>，所以python编译器是不能直接import和运行Cython的；</li>
+<li>这个编译步骤可以是<strong>显式</strong>的，也可以是<strong>隐式</strong>的，即可以<strong>自动运行</strong>，不需要用户参与(让Cython感觉很像Python)，也可以由终端用户在需要更多控制时临时运行，两种都有它的作用；</li>
+<li><strong>自动编译</strong>Cython的一个很好的特性是，它使使用Cython感觉像是在使用纯Python工作；</li>
+<li>几种操作（<strong>但是没必要知道所有的编译方法，所有按需学习</strong>）：
+<ul>
+<li>Cython代码可以从IPython解释器编译并交互式地运行。</li>
+<li>可以在导入时自动编译。</li>
+<li>它可以通过Python的distutils等构建工具单独编译。</li>
+<li>它可以集成到标准构建系统中，如make、CMake或SCons。</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-cython编译流程pipeline">1 Cython编译流程（pipeline）</h2>
+<p>该管道的工作是将Cython代码转换为Python<strong>扩展模块</strong>（extension module），Python解释器可以导入并使用该模块。</p>
+<p><strong>该管道包括两个阶段</strong>：</p>
+<ol>
+<li>第一阶段由cython编译器处理，它将cython源代码转换为优化的、与<strong>平台无关</strong>的C或c++。</li>
+<li>第二阶段使用标准的C或c++编译器将生成的C或c++源代码<strong>编译成共享库</strong>（shared library）。生成的<strong>共享库</strong>是<strong>平台相关</strong>的。共享库在unix系统上是<code>.so</code>后缀。</li>
+</ol>
+<p>我们将这个<strong>编译后的模块称为扩展模块（extension module）</strong>，它可以<strong>像用纯Python编写一样导入和使用</strong>。</p>
+<p>cython编译器是一个源代码到源代码的编译器，生成代码经过了高度优化。由Cython生成的C代码比典型的手工编写的C代码要快。<strong>所以我们可以看到生成的c文件里面的代码我们都是看不太懂的，而且很长很复杂</strong>。Cython生成的C代码也具有高度可移植性，可以同时支持所有常见的C编译器和许多Python版本。</p>
+<p>编译的时候确保两个工具安装了：</p>
+<ol>
+<li>c或c++编译器； gcc</li>
+<li>cython编译器。anaconda自带或 <code>pip install cython -i https://pypi.tuna.tsinghua.edu.cn/simple/</code>安装。</li>
+</ol>
+<h3 id="安装cython">安装cython</h3>
+<ul>
+<li>anaconda自带；</li>
+<li><code>pip install cython -i https://pypi.tuna.tsinghua.edu.cn/simple/</code>安装。</li>
+</ul>
+<h2 id="2-编译方式1-using-distutils-with-cythonize标准方式">2 编译方式1 Using distutils with cythonize（标准方式）</h2>
+<p>distutils包是用于构建、打包和分发Python项目的，python再带。</p>
+<h3 id="21-一个pyx文件内">2.1 一个pyx文件内</h3>
+<p>步骤：</p>
+<ol>
+<li><code>cythonize</code>将Cython编译成c/c++语言；</li>
+<li>然后，<code>distutils</code>（distributing utils）将c/c++语言编译成可以执行代码os,即扩展模块。</li>
+</ol>
+<p>代码：</p>
+<pre><code class="language-python"># setup.py
+# cythonize在.pyx源文件上调用cython编译器，setup将生成的C或c++代码编译成Python扩展模块。
+from distutils.core import setup, Extension
+from Cython.Build import cythonize
+
+# setup(ext_modules=cythonize('fib.pyx')) #这样写的话其实没有显示知道编译以后扩展包的名字
+setup(ext_modules = cythonize(Extension(name='warp_fib', sources=[&quot;fib.pyx&quot;])) #指定扩展包名
+</code></pre>
+<p>然后命令行执行编译即可：</p>
+<pre><code class="language-c">// build_ext参数是一个命令，指示distutils构建扩展对象或cythonize调用创建的对象。可选的——inplace标志指示distutils将每个扩展模块放在其各自的Cython.pyx源文件旁边。
+$ python setup.py build_ext --inplace
+</code></pre>
+<h4 id="编译生成的文件">编译生成的文件</h4>
+<p><img src="https://jzq6520.github.io/post-images/1573020753272.png" alt=""><br>
+这里面 <code>.c .o .so</code>这几个文件都是编译生成的文件。</p>
+<h3 id="22-包含c语言文件和pyx文件">2.2 包含c语言文件和pyx文件</h3>
+<pre><code class="language-python">from distutils.core import setup, Extension from Cython.Build import cythonize
+
+# First create an Extension object with the appropriate name and sources. 
+ext = Extension(name=&quot;wrap_fib&quot;, sources=[&quot;cfib.c&quot;, &quot;wrap_fib.pyx&quot;])
+
+# Use cythonize on the extension object. 
+setup(ext_modules=cythonize(ext))
+</code></pre>
+<h3 id="23-包含预先编译好的动态库">2.3 包含预先编译好的动态库</h3>
+<pre><code class="language-python">from distutils.core import setup, Extension 
+from Cython.Build import cythonize
+
+ext = Extension(name=&quot;wrap_fib&quot;, sources=[&quot;wrap_fib.pyx&quot;], library_dirs=[&quot;/path/to/libfib.so&quot;], libraries=[&quot;fib&quot;])
+
+setup(ext_modules=cythonize(ext))
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cython1">
+                  <h3 class="post-title">
+                    Cython(1)--基本概念
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

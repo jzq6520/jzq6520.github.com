@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -114,7 +114,7 @@
 <li>上采样使用最近邻插值</li>
 <li>只使用c2,c3,c4,c5尺度的特征图。</li>
 <li>中间的skip连接是用1x1卷积把channel数降到256.</li>
-<li>fpn是完全对称的
+<li>fpn是完全对称的<br>
 <img src="https://jzq6520.github.io/post-images/1572492067196.png" alt=""></li>
 <li><strong>使用同样的channel的原因</strong>：因为金字塔的所有层次都使用<strong>共享的分类器/回归器</strong>，就像传统的特征图金字塔一样，我们修正了所有特征图的特征维数。Because all levels of the pyramid use shared classiﬁers/regressors as in a traditional featurized image pyramid, we ﬁx the feature dimension (numbers of channels, denoted as d) in all the feature maps. We set d = 256 in this pa- per and thus all <strong>extra convolutional</strong> layers have 256-channel outputs.There are no non-linearities in these <strong>extra layers</strong>, which we have empirically found to have minor impacts.<strong>在这些额外的层中不存在非线性，我们根据经验发现它们的影响很小</strong>。</li>
 </ul>
@@ -139,7 +139,7 @@
 <p>首先我们要搞清楚一个概念，<strong>RPN的作用是确定出原图上的目标ROI区域</strong>（而非特征图上的区域），这时候我们再将原图上的ROI坐标映射到特征图上，然后把特征图上的roi区域拿过来进行分类和区域的回归矫正。</p>
 <p>理解了这一点，那就清楚了，RPN确定的只是在原图上的roi区域，所以RPN做完以后，anchor就没用了，这时候就根据roi来确定我要在哪一层选择这个区域的特征来进行分类和回归。</p>
 <p>虽然我们直观上理解是哪个特征图检测出了这个目标，就由哪个特征图所roi pooling，<strong>其实不是的</strong>，文章中是对roi进行重新分配了，<strong>所以RPN做完以后预测出的候选区域就和特征图没有半毛钱关系了，后面就等着再分配了</strong>。</p>
-<p>那么分配规则是怎么样的呢，文章中是按照下面这个公式来确定分配给哪一层，那个类似于中括号的是<strong>取整</strong>，应该是向上取整，如果是5到4.1就是再第5层特征层做。。
+<p>那么分配规则是怎么样的呢，文章中是按照下面这个公式来确定分配给哪一层，那个类似于中括号的是<strong>取整</strong>，应该是向上取整，如果是5到4.1就是再第5层特征层做。。<br>
 <img src="https://jzq6520.github.io/post-images/1572504129264.png" alt=""></p>
 <p>首先，先通俗理解一下，前面最开始分配anchor的时候就知道了，深层特征图检测大目标，浅层的检测小目标，所以这里也是一样，<strong>大目标（即大ROI）分配给低分辨率（小特征图）的特征图即P5，小目标（小ROI）分配给到的高分辨率（大特征图）的特征图</strong>。</p>
 <p>如果我们最小的特征图是P5，那么k0初始化为5，然后这里的224应该不要这样写好，应该写成输入图像的大小，如果输入是448那这里就是448了，意思就是如果roi是图像的一半，那么应该分配给P4特征图做roi pooling。以此类推。</p>

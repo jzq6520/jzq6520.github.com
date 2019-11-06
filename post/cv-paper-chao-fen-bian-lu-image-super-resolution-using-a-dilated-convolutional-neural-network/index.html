@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -114,7 +114,7 @@
 <li><strong>不下采样</strong>，保留分辨率。</li>
 </ol>
 <h2 id="1-网络">1 网络</h2>
-<p><img src="https://jzq6520.github.io/post-images/1557220077383.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1557220077383.png" alt=""></figure>
 <p>从上图可以看到以下几点：</p>
 <ul>
 <li>网络的<strong>输入输出大小是一样的</strong>，那么如何获得超分辨率的图像的，是这样的，首先将图像插值放大到2倍，然后输入到这个网络中，网络输出的是分辨率一样，但是细节更加清晰的图像。</li>
@@ -124,7 +124,7 @@
 </ul>
 <h2 id="2-放大超过两倍">2 放大超过两倍</h2>
 <p>如果想将图像放大4倍、5倍或者跟大，那要怎么实现呢？ 文章利用联机的方式来进行放大，只需要将图像多次经过超分辨率网络就可以实现，如果放大倍数不是2的倍数，那么怎么办呢？ 这时候我们可以先放大，再缩小。例如想放大3倍，我们可以先放大4倍，然后再进行下采样即可。</p>
-<p><img src="https://jzq6520.github.io/post-images/1557220626079.png" alt=""></p>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1557220626079.png" alt=""></figure>
 <h2 id="3-引用">3 引用</h2>
 <ul>
 <li>Image super-resolution using a dilated convolutional neural network</li>

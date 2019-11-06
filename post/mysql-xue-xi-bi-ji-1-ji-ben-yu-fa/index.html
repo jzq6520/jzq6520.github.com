@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -102,13 +102,13 @@
             
             <div class="post-content">
               <h1 id="sql-基本语法">sql 基本语法</h1>
-<p>数据库是由许多表组成的一个库。
-每条语句以分好<code>;</code>结束。
-适用于mysql
+<p>数据库是由许多表组成的一个库。<br>
+每条语句以分好<code>;</code>结束。<br>
+适用于mysql<br>
 delect只能删除行，drop才是真正的remove，什么都能删。</p>
 <h2 id="安装">安装</h2>
-<p>使用bmg文件安装，安装完成后输入：
-<code>mysql --version</code>
+<p>使用bmg文件安装，安装完成后输入：<br>
+<code>mysql --version</code><br>
 如果安装显示command not found，执行下面的命令</p>
 <pre><code>$ cd /usr/local/bin/
 
@@ -152,8 +152,8 @@ $ sudo /usr/local/mysql/support-files/mysql.server stop
 <li>DROP INDEX - 删除索引</li>
 </ul>
 <h2 id="create-database-创建数据库">CREATE DATABASE 创建数据库</h2>
-<p>CREATE DATABASE 用于创建数据库。
-<code>CREATE DATABASE database_name</code>
+<p>CREATE DATABASE 用于创建数据库。<br>
+<code>CREATE DATABASE database_name</code><br>
 SHOW DATABASES 查看数据库。</p>
 <h3 id="create-table-创建表">CREATE TABLE 创建表</h3>
 <p>CREATE TABLE 语句用于创建数据库中的表。</p>
@@ -179,48 +179,48 @@ SHOW DATABASES 查看数据库。</p>
 <li>加 LIMIT number</li>
 </ul>
 <h2 id="where-筛选条件">WHERE 筛选条件</h2>
-<p>如需<strong>有条件</strong>地从表中选取数据，可将 WHERE 子句添加到 SELECT 语句。
+<p>如需<strong>有条件</strong>地从表中选取数据，可将 WHERE 子句添加到 SELECT 语句。<br>
 增加选取条件。</p>
 <ul>
 <li>SELECT 列名称 FROM 表名称 WHERE 列 运算符 值</li>
 </ul>
-<p><code>SELECT * FROM Persons WHERE City='Beijing'</code>
+<p><code>SELECT * FROM Persons WHERE City='Beijing'</code><br>
 注意：表中的字符串加单引号</p>
 <ul>
 <li>
-<p>一次性指定多个值：
-WHERE column_name IN (value1,value2,...)
+<p>一次性指定多个值：<br>
+WHERE column_name IN (value1,value2,...)<br>
 <code>WHERE LastName IN ('Adams','Carter')</code></p>
 </li>
 <li>
-<p>LIKE :匹配字符串
+<p>LIKE :匹配字符串<br>
 使用的<a href="http://www.w3school.com.cn/sql/sql_wildcards.asp">通配符</a></p>
 </li>
 <li>
-<p>BETWEEN
-操作符 BETWEEN ... AND 会选取介于两个值之间的数据范围。这些值可以是数值、文本或者日期。
+<p>BETWEEN<br>
+操作符 BETWEEN ... AND 会选取介于两个值之间的数据范围。这些值可以是数值、文本或者日期。<br>
 <code>BETWEEN value1 AND value2</code></p>
 </li>
 </ul>
 <h2 id="and-or-整合筛选条件">AND, OR 整合筛选条件</h2>
 <p>AND 和 OR 可在 WHERE 子语句中把两个或多个条件结合起来。</p>
 <h2 id="order-by-排序">ORDER BY 排序</h2>
-<p>ORDER BY 语句用于根据指定的列对结果集进行排序。
-ORDER BY 语句<strong>默认按照升序</strong>对记录进行排序。
+<p>ORDER BY 语句用于根据指定的列对结果集进行排序。<br>
+ORDER BY 语句<strong>默认按照升序</strong>对记录进行排序。<br>
 如果您希望按照降序对记录进行排序，可以使用** DESC 关键字**。</p>
 <p>顺序是从上向下看。</p>
 <h3 id="如果对第一列进行降序第二列升序">如果对第一列进行降序，第二列升序</h3>
-<p>在第一列中有相同的值时，第二列是以升序排列的。
+<p>在第一列中有相同的值时，第二列是以升序排列的。<br>
 不相同的值不进行排序。</p>
 <h2 id="insert-intovalues-插入新的行">INSERT INTO....VALUES... 插入新的行</h2>
-<p>在表中插入新的行。
+<p>在表中插入新的行。<br>
 如果单独选择几个列插入，则没有值的列为空。</p>
 <ul>
 <li>INSERT INTO 表名称 VALUES (值1, 值2,....)：一行</li>
 <li>INSERT INTO 表名称(列1, 列2,...) VALUES (值1, 值2,....)：指定选择的列</li>
 </ul>
 <h2 id="updatesetwhere-修改表中的数据">UPDATE....SET....WHERE... 修改表中的数据</h2>
-<p>UPDATE 用于修改表中的数据。
+<p>UPDATE 用于修改表中的数据。<br>
 where用来选择哪一行。</p>
 <ul>
 <li>UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值</li>
@@ -247,8 +247,8 @@ AS alias_name
 FROM table_name
 </code></pre>
 <h2 id="join-连接两个表">join 连接两个表</h2>
-<p>和pandas中的连接相似，通过主键，连接两个表。
-也可以通过where实现一部分功能，但是通过join实现更加方便和完整。
+<p>和pandas中的连接相似，通过主键，连接两个表。<br>
+也可以通过where实现一部分功能，但是通过join实现更加方便和完整。<br>
 跟在from后面，on指定主键</p>
 <pre><code class="language-sql">SELECT column_name(s)
 FROM table_name1
@@ -283,14 +283,14 @@ UNION ALL
 SELECT column_name(s) FROM table_name2
 </code></pre>
 <h2 id="select-into-选取数据插入另外一个表备份存档">SELECT INTO 选取数据插入另外一个表，备份存档</h2>
-<p>SELECT INTO 语句从一个表中选取数据，然后把数据插入另一个表中。
+<p>SELECT INTO 语句从一个表中选取数据，然后把数据插入另一个表中。<br>
 SELECT INTO 语句常用于创建表的<em>备份复件</em>或者用于对记录<em>进行存档</em>。</p>
 <pre><code class="language-sql">SELECT *
 INTO new_table_name [IN externaldatabase] 
 FROM old_tablename
 </code></pre>
 <h2 id="sql-约束-constraints">SQL 约束 (Constraints)</h2>
-<p>SQL 约束
+<p>SQL 约束<br>
 <em>约束用于限制加入表的数据的类型。</em></p>
 <p>可以在创建表时规定约束（通过 CREATE TABLE 语句），或者在表创建之后也可以（通过 ALTER TABLE 语句）。</p>
 <p>我们将主要探讨以下几种约束：</p>
@@ -303,7 +303,7 @@ FROM old_tablename
 <li>DEFAULT</li>
 </ul>
 <h3 id="not-null-not-null-约束非空">NOT NULL (not null) 约束非空</h3>
-<p>NOT NULL 约束强制列不接受 NULL 值。
+<p>NOT NULL 约束强制列不接受 NULL 值。<br>
 下面的 SQL 语句强制 &quot;Id_P&quot; 列和 &quot;LastName&quot; 列不接受 NULL 值：</p>
 <pre><code class="language-sql">CREATE TABLE Persons
 (
@@ -315,19 +315,19 @@ City varchar(255)
 )
 </code></pre>
 <h3 id="unique-约束">UNIQUE 约束</h3>
-<p><a href="http://www.w3school.com.cn/sql/sql_unique.asp">UNIQUE 约束</a>唯一标识数据库表中的每条记录。具体看看这个网站。还不是很明白什么用。
-UNIQUE 和 PRIMARY KEY 约束均为列或列集合提供了唯一性的保证。
-PRIMARY KEY 拥有自动定义的 UNIQUE 约束。
+<p><a href="http://www.w3school.com.cn/sql/sql_unique.asp">UNIQUE 约束</a>唯一标识数据库表中的每条记录。具体看看这个网站。还不是很明白什么用。<br>
+UNIQUE 和 PRIMARY KEY 约束均为列或列集合提供了唯一性的保证。<br>
+PRIMARY KEY 拥有自动定义的 UNIQUE 约束。<br>
 请注意，每个表可以有多个 UNIQUE 约束，但是每个表只能有一个 PRIMARY KEY 约束。</p>
 <h3 id="primary-key-约束">PRIMARY KEY 约束</h3>
-<p><a href="http://www.w3school.com.cn/sql/sql_primarykey.asp">PRIMARY KEY 约束</a>唯一标识数据库表中的每条记录。
-主键必须包含唯一的值。
-主键列不能包含 NULL 值。
+<p><a href="http://www.w3school.com.cn/sql/sql_primarykey.asp">PRIMARY KEY 约束</a>唯一标识数据库表中的每条记录。<br>
+主键必须包含唯一的值。<br>
+主键列不能包含 NULL 值。<br>
 每个表都应该有一个主键，并且每个表只能有一个主键。</p>
 <h3 id="foreignforeign-key-约束">FOREIGN（foreign） KEY 约束</h3>
-<p>不是很懂作用？
-一个表中的 FOREIGN KEY 指向另一个表中的 PRIMARY KEY。
-FOREIGN KEY 约束用于预防破坏表之间连接的动作。
+<p>不是很懂作用？<br>
+一个表中的 FOREIGN KEY 指向另一个表中的 PRIMARY KEY。<br>
+FOREIGN KEY 约束用于预防破坏表之间连接的动作。<br>
 FOREIGN KEY 约束也能防止非法数据插入外键列，因为它必须是它指向的那个表中的值之一。</p>
 <pre><code class="language-sql">CREATE TABLE Orders
 (
@@ -339,9 +339,9 @@ FOREIGN KEY (Id_P) REFERENCES Persons(Id_P)
 )
 </code></pre>
 <h3 id="check-约束值范围">CHECK 约束值范围</h3>
-<p>CHECK 约束用于限制列中的值的范围。
-如果对单个列定义 CHECK 约束，那么该列只允许特定的值。
-如果对一个表定义 CHECK 约束，那么此约束会在特定的列中对值进行限制。
+<p>CHECK 约束用于限制列中的值的范围。<br>
+如果对单个列定义 CHECK 约束，那么该列只允许特定的值。<br>
+如果对一个表定义 CHECK 约束，那么此约束会在特定的列中对值进行限制。<br>
 下面的 SQL 在 &quot;Persons&quot; 表创建时为 &quot;Id_P&quot; 列创建 CHECK 约束。CHECK 约束规定 &quot;Id_P&quot; 列必须只包含大于 0 的整数。</p>
 <pre><code class="language-sql">CREATE TABLE Persons
 (
@@ -365,8 +365,8 @@ City varchar(255)
 </code></pre>
 <p>跟多的可以见<a href="http://www.w3school.com.cn/sql/sql_check.asp">这里</a>。</p>
 <h3 id="default-约束插入默认值">DEFAULT 约束插入默认值</h3>
-<p>DEFAULT 约束用于向列中插入默认值。
-如果没有规定其他的值，那么会将默认值添加到所有的新记录。
+<p>DEFAULT 约束用于向列中插入默认值。<br>
+如果没有规定其他的值，那么会将默认值添加到所有的新记录。<br>
 下面的 SQL 在 &quot;Persons&quot; 表创建时为 &quot;City&quot; 列创建 DEFAULT 约束：</p>
 <pre><code>CREATE TABLE Persons
 (
@@ -377,21 +377,21 @@ Address varchar(255),
 City varchar(255) DEFAULT 'Sandnes'
 )
 </code></pre>
-<p>也可以插入系统的值
+<p>也可以插入系统的值<br>
 跟多可见<a href="http://www.w3school.com.cn/sql/sql_default.asp">这里</a>。</p>
 <h2 id="create-index-创建索引">CREATE INDEX 创建索引</h2>
-<p>CREATE INDEX 语句用于在表中***创建索引***。
+<p>CREATE INDEX 语句用于在表中***创建索引***。<br>
 在不读取整个表的情况下，索引使数据库应用程序可以更快地查找数据。</p>
 <h3 id="索引">索引</h3>
-<p>您可以在表中创建索引，以便更加快速高效地查询数据。
-用户无法看到索引，它们只能被用来加速搜索/查询。
+<p>您可以在表中创建索引，以便更加快速高效地查询数据。<br>
+用户无法看到索引，它们只能被用来加速搜索/查询。<br>
 <strong>注释</strong>：<em>更新一个包含索引的表需要比更新一个没有索引的表更多的时间，这是由于索引本身也需要更新。因此，理想的做法是仅仅在常常被搜索的列（以及表）上面创建索引。</em></p>
 <p>在表上创建一个简单的索引。允许使用重复的值：</p>
 <pre><code class="language-sql">CREATE INDEX index_name
 ON table_name (column_name)
 </code></pre>
 <p>注释：&quot;column_name&quot; 规定需要索引的列。</p>
-<p>CREATE UNIQUE INDEX 语法
+<p>CREATE UNIQUE INDEX 语法<br>
 在表上创建一个唯一的索引。唯一的索引意味着两个行不能拥有相同的索引值。</p>
 <pre><code class="language-sql">CREATE UNIQUE INDEX index_name
 ON table_name (column_name)
@@ -410,12 +410,12 @@ ON Person (LastName, FirstName)
 <pre><code class="language-sql">ALTER TABLE table_name DROP INDEX index_name
 </code></pre>
 <h3 id="drop-table-删除表">DROP TABLE 删除表</h3>
-<p>DROP TABLE 语句用于删除表（表的结构、属性以及索引也会被删除）：
+<p>DROP TABLE 语句用于删除表（表的结构、属性以及索引也会被删除）：<br>
 <code>DROP TABLE 表名称</code></p>
 <h3 id="drop-database-删除数据库">DROP DATABASE 删除数据库</h3>
 <p><code>DROP DATABASE 数据库名称</code></p>
 <h3 id="truncate-table-清空表中数据">TRUNCATE TABLE 清空表中数据</h3>
-<p>如果我们仅仅需要除去表内的数据，但并不删除表本身，那么我们该如何做呢？
+<p>如果我们仅仅需要除去表内的数据，但并不删除表本身，那么我们该如何做呢？<br>
 <code>TRUNCATE TABLE 表名称</code></p>
 <h2 id="alter-table-语句">ALTER TABLE 语句</h2>
 <p>在已有的表中添加、修改或删除列</p>
@@ -428,7 +428,7 @@ ADD column_name datatype
 <pre><code class="language-SQL">ALTER TABLE table_name 
 DROP COLUMN column_name
 </code></pre>
-<p>注释：某些数据库系统不允许这种在数据库表中删除列的方式 (DROP COLUMN column_name)。
+<p>注释：某些数据库系统不允许这种在数据库表中删除列的方式 (DROP COLUMN column_name)。<br>
 要改变表中列的数据类型，请使用下列语法：</p>
 <pre><code class="language-sql">ALTER TABLE table_name
 ALTER COLUMN column_name datatype
@@ -439,13 +439,13 @@ MODIFY COLUMN column_name datatype
 </code></pre>
 <h2 id="auto-increment-插入表中时生成一个唯一的数字">AUTO INCREMENT 插入表中时生成一个唯一的数字</h2>
 <p>Auto-increment 会在新记录插入表中时生成一个唯一的数字。</p>
-<p>我们通常希望在每次插入新记录时，自动地创建主键字段的值。
-我们可以在表中创建一个 auto-increment 字段。
-MySQL 使用 AUTO_INCREMENT 关键字来执行 auto-increment 任务。
-默认地，AUTO_INCREMENT 的开始值是 1，每条新记录递增 1。
+<p>我们通常希望在每次插入新记录时，自动地创建主键字段的值。<br>
+我们可以在表中创建一个 auto-increment 字段。<br>
+MySQL 使用 AUTO_INCREMENT 关键字来执行 auto-increment 任务。<br>
+默认地，AUTO_INCREMENT 的开始值是 1，每条新记录递增 1。<br>
 更多见<a href="http://www.w3school.com.cn/sql/sql_autoincrement.asp">这里</a>。</p>
 <h2 id="view视图">VIEW（视图）</h2>
-<p>视图就好像我定义一个函数，我们规定需要显示满足某些条件的数据，这样当我们需要查看这些数据的时候，就不需要重新去写这些语句了。
+<p>视图就好像我定义一个函数，我们规定需要显示满足某些条件的数据，这样当我们需要查看这些数据的时候，就不需要重新去写这些语句了。<br>
 在 SQL 中，视图是基于 SQL 语句的结果集的可视化的表。</p>
 <p>视图包含行和列，就像一个真实的表。视图中的字段就是来自一个或多个数据库中的真实的表中的字段。我们可以向视图添加 SQL 函数、WHERE 以及 JOIN 语句，我们也可以提交数据，就像这些来自于某个单一的表。</p>
 <p>注释：数据库的设计和结构不会受到视图中的函数、where 或 join 语句的影响。</p>
@@ -459,7 +459,7 @@ WHERE condition
 </code></pre>
 <p>更多可见<a href="http://www.w3school.com.cn/sql/sql_view.asp">这里</a>。</p>
 <h2 id="日期">日期</h2>
-<p>只要数据包含的只是日期部分，运行查询就不会出问题。但是，如果涉及时间，情况就有点复杂了。
+<p>只要数据包含的只是日期部分，运行查询就不会出问题。但是，如果涉及时间，情况就有点复杂了。<br>
 <a href="http://www.w3school.com.cn/sql/sql_dates.asp">下面的表格</a>（在这个链接里）列出了 MySQL 中最重要的内建日期函数。</p>
 <pre><code>MySQL 使用下列数据类型在数据库中存储日期或日期/时间值：
 DATE - 格式 YYYY-MM-DD
@@ -468,24 +468,24 @@ TIMESTAMP - 格式: YYYY-MM-DD HH:MM:SS
 YEAR - 格式 YYYY 或 YY
 </code></pre>
 <h3 id="日期处理">日期处理</h3>
-<p>如果不涉及时间部分，那么我们可以轻松地比较两个日期！
-例如
+<p>如果不涉及时间部分，那么我们可以轻松地比较两个日期！<br>
+例如<br>
 <code>SELECT * FROM Orders WHERE OrderDate='2008-12-26'</code></p>
-<p>如果日期中包含时间，那么上面的语句就无法查询到结果。
-那么我们得不到结果。这是由于该查询不含有时间部分的日期。
+<p>如果日期中包含时间，那么上面的语句就无法查询到结果。<br>
+那么我们得不到结果。这是由于该查询不含有时间部分的日期。<br>
 **提示：**<em>如果您希望使查询简单且更易维护，那么请不要在日期中使用时间部分！</em></p>
 <h2 id="null-值">NULL 值</h2>
-<p>NULL 值是遗漏的未知数据。
+<p>NULL 值是遗漏的未知数据。<br>
 默认地，表的列可以存放 NULL 值。</p>
 <p>如果表中的某个列是可选的，那么我们可以在不向该列添加值的情况下插入新记录或更新已有的记录。这意味着该字段将以 NULL 值保存。</p>
-<p>NULL 值的处理方式与其他值不同。
-NULL 用作未知的或不适用的值的占位符。
+<p>NULL 值的处理方式与其他值不同。<br>
+NULL 用作未知的或不适用的值的占位符。<br>
 注释：无法比较 NULL 和 0；它们是不等价的。</p>
 <h3 id="那么我们如何测试-null-值呢">那么我们如何测试 NULL 值呢？</h3>
-<p>无法使用比较运算符来测试 NULL 值，比如 =, &lt;, 或者 &lt;&gt;。
+<p>无法使用比较运算符来测试 NULL 值，比如 =, &lt;, 或者 &lt;&gt;。<br>
 <strong>我们必须使用 IS NULL 和 IS NOT NULL 操作符。</strong></p>
 <h3 id="sql-is-null">SQL IS NULL</h3>
-<p>我们如何仅仅选取在 &quot;Address&quot; 列中带有 NULL 值的记录呢？
+<p>我们如何仅仅选取在 &quot;Address&quot; 列中带有 NULL 值的记录呢？<br>
 我们必须使用 IS NULL 操作符：</p>
 <pre><code class="language-sql">SELECT LastName,FirstName,Address FROM Persons
 WHERE Address IS NULL

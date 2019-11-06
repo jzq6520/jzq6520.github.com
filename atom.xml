@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-11-04T01:58:08.215Z</updated>
+    <updated>2019-11-06T06:15:11.298Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,157 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[Cython(2)--编译和运行]]></title>
+        <id>https://jzq6520.github.io/post/cython2-bian-yi-he-yun-xing</id>
+        <link href="https://jzq6520.github.io/post/cython2-bian-yi-he-yun-xing">
+        </link>
+        <updated>2019-11-06T03:34:57.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>和c、c++一样，Cython代码运行前也是需要编译的；</li>
+<li>Cython是python的<strong>超集</strong>，所以python编译器是不能直接import和运行Cython的；</li>
+<li>这个编译步骤可以是<strong>显式</strong>的，也可以是<strong>隐式</strong>的，即可以<strong>自动运行</strong>，不需要用户参与(让Cython感觉很像Python)，也可以由终端用户在需要更多控制时临时运行，两种都有它的作用；</li>
+<li><strong>自动编译</strong>Cython的一个很好的特性是，它使使用Cython感觉像是在使用纯Python工作；</li>
+<li>几种操作（<strong>但是没必要知道所有的编译方法，所有按需学习</strong>）：
+<ul>
+<li>Cython代码可以从IPython解释器编译并交互式地运行。</li>
+<li>可以在导入时自动编译。</li>
+<li>它可以通过Python的distutils等构建工具单独编译。</li>
+<li>它可以集成到标准构建系统中，如make、CMake或SCons。</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-cython编译流程pipeline">1 Cython编译流程（pipeline）</h2>
+<p>该管道的工作是将Cython代码转换为Python<strong>扩展模块</strong>（extension module），Python解释器可以导入并使用该模块。</p>
+<p><strong>该管道包括两个阶段</strong>：</p>
+<ol>
+<li>第一阶段由cython编译器处理，它将cython源代码转换为优化的、与<strong>平台无关</strong>的C或c++。</li>
+<li>第二阶段使用标准的C或c++编译器将生成的C或c++源代码<strong>编译成共享库</strong>（shared library）。生成的<strong>共享库</strong>是<strong>平台相关</strong>的。共享库在unix系统上是<code>.so</code>后缀。</li>
+</ol>
+<p>我们将这个<strong>编译后的模块称为扩展模块（extension module）</strong>，它可以<strong>像用纯Python编写一样导入和使用</strong>。</p>
+<p>cython编译器是一个源代码到源代码的编译器，生成代码经过了高度优化。由Cython生成的C代码比典型的手工编写的C代码要快。<strong>所以我们可以看到生成的c文件里面的代码我们都是看不太懂的，而且很长很复杂</strong>。Cython生成的C代码也具有高度可移植性，可以同时支持所有常见的C编译器和许多Python版本。</p>
+<p>编译的时候确保两个工具安装了：</p>
+<ol>
+<li>c或c++编译器； gcc</li>
+<li>cython编译器。anaconda自带或 <code>pip install cython -i https://pypi.tuna.tsinghua.edu.cn/simple/</code>安装。</li>
+</ol>
+<h3 id="安装cython">安装cython</h3>
+<ul>
+<li>anaconda自带；</li>
+<li><code>pip install cython -i https://pypi.tuna.tsinghua.edu.cn/simple/</code>安装。</li>
+</ul>
+<h2 id="2-编译方式1-using-distutils-with-cythonize标准方式">2 编译方式1 Using distutils with cythonize（标准方式）</h2>
+<p>distutils包是用于构建、打包和分发Python项目的，python再带。</p>
+<h3 id="21-一个pyx文件内">2.1 一个pyx文件内</h3>
+<p>步骤：</p>
+<ol>
+<li><code>cythonize</code>将Cython编译成c/c++语言；</li>
+<li>然后，<code>distutils</code>（distributing utils）将c/c++语言编译成可以执行代码os,即扩展模块。</li>
+</ol>
+<p>代码：</p>
+<pre><code class="language-python"># setup.py
+# cythonize在.pyx源文件上调用cython编译器，setup将生成的C或c++代码编译成Python扩展模块。
+from distutils.core import setup, Extension
+from Cython.Build import cythonize
+
+# setup(ext_modules=cythonize('fib.pyx')) #这样写的话其实没有显示知道编译以后扩展包的名字
+setup(ext_modules = cythonize(Extension(name='warp_fib', sources=[&quot;fib.pyx&quot;])) #指定扩展包名
+</code></pre>
+<p>然后命令行执行编译即可：</p>
+<pre><code class="language-c">// build_ext参数是一个命令，指示distutils构建扩展对象或cythonize调用创建的对象。可选的——inplace标志指示distutils将每个扩展模块放在其各自的Cython.pyx源文件旁边。
+$ python setup.py build_ext --inplace
+</code></pre>
+<h4 id="编译生成的文件">编译生成的文件</h4>
+<p><img src="https://jzq6520.github.io/post-images/1573020753272.png" alt=""><br>
+这里面 <code>.c .o .so</code>这几个文件都是编译生成的文件。</p>
+<h3 id="22-包含c语言文件和pyx文件">2.2 包含c语言文件和pyx文件</h3>
+<pre><code class="language-python">from distutils.core import setup, Extension from Cython.Build import cythonize
+
+# First create an Extension object with the appropriate name and sources. 
+ext = Extension(name=&quot;wrap_fib&quot;, sources=[&quot;cfib.c&quot;, &quot;wrap_fib.pyx&quot;])
+
+# Use cythonize on the extension object. 
+setup(ext_modules=cythonize(ext))
+</code></pre>
+<h3 id="23-包含预先编译好的动态库">2.3 包含预先编译好的动态库</h3>
+<pre><code class="language-python">from distutils.core import setup, Extension 
+from Cython.Build import cythonize
+
+ext = Extension(name=&quot;wrap_fib&quot;, sources=[&quot;wrap_fib.pyx&quot;], library_dirs=[&quot;/path/to/libfib.so&quot;], libraries=[&quot;fib&quot;])
+
+setup(ext_modules=cythonize(ext))
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Cython(1)--基本概念]]></title>
+        <id>https://jzq6520.github.io/post/cython1</id>
+        <link href="https://jzq6520.github.io/post/cython1">
+        </link>
+        <updated>2019-11-06T02:19:26.000Z</updated>
+        <content type="html"><![CDATA[<p>一下全来自于对《Cython：A Guide for Python Programmers》一书的学习。<br>
+cython最大的作用就是用来加速python代码。</p>
+<p>cython是什么：</p>
+<ul>
+<li>Cython是融合python和c/c++的一种编程语言；</li>
+<li>cython编译器可以将Cython代码编程成c/c++。然后编译后可以被python当成扩展包进行调用。</li>
+</ul>
+<p>Cython的美妙之处在于:它将Python的表达性和动态性与C的裸机性能（bare-metal performance）结合在一起，<strong>同时仍然感觉像Python</strong>。</p>
+<h2 id="1-特点">1. 特点</h2>
+<ul>
+<li>Cython代码里面可以写python代码，也就是说Cython可以理解python代码。</li>
+<li>需要用cdef声明变量</li>
+</ul>
+<h2 id="2-速度">2. 速度</h2>
+<p>总结：</p>
+<ol>
+<li>能用：循环密集、算术密集</li>
+<li>不能用：I/O密集</li>
+</ol>
+<p>然后看分析：</p>
+<p>速度快，可以看一下对比数据。<br>
+<img src="https://jzq6520.github.io/post-images/1573008098399.png" alt=""></p>
+<ul>
+<li>函数调用：<code>fib(0)</code>可以是看做函数调用的时间对比，<code>fib(0)</code>运行时主要消耗在<strong>调用相应语言中的函数</strong>所需的时间上;<strong>运行函数体的时间相对较短</strong>。从表1-1中可以看到，Cython生成的代码比调用Python函数快一个数量级，比手工编写的快两倍多.</li>
+<li>循环：python中的循环相对c语言来说是非常慢的。加速循环Python代码的一个可靠的方法是找到方法将Python for和while循环移动到<strong>已编译的代码中</strong>，可以通过<strong>调用内置函数</strong>，也可以使用类似<strong>Cython</strong>的东西来完成转换。</li>
+<li>数学操作：python在做算术运算的时候是不知道数据类型的，所以还需要去查找，但是c和cyhton是显示声明数据类型的。</li>
+<li>堆栈与堆分配：在C级，动态Python对象完全是堆分配的。Python煞费苦心地智能地管理内存，使用内存池并内化常用的整数和字符串。但事实仍然是，创建和销毁对象——任何对象，甚至标量——都会增加处理动态分配内存和Python内存子系统的开销。因为Python浮动对象是不可变的，所以使用Python浮动的操作涉及到创建和销毁堆分配的对象。Cython版本的fib声明所有变量都是堆栈分配的C double。通常，堆栈分配比堆分配快得多。此外，C浮点数是可变的，这意味着for循环体在分配和内存使用方面更有效。</li>
+</ul>
+<p>但是，值得注意的是，<strong>并不是所有Python代码在使用Cython编译时都能看到巨大的性能改进</strong>。前面的fib示例是有意对CPU进行限制的，这意味着所有的运行时都是在CPU寄存器内操作几个变量，几乎不需要移动数据。相反,如果这个函数内存约束(例如,添加两个大数组的元素),I / O绑定(例如,从磁盘读取大型文件),或网络绑定(例如,从一个FTP服务器下载文件),Python之间的性能差异,C, Cython可能显著降低(内存受限操作)或完全消失(<strong>I/O密集型</strong>或network密集型操作)。</p>
+<p>当提高Python的性能是我们的目标时，帕累托原则就对我们有利:我们可以预期，<strong>一个程序大约80%的运行时间是由20%的代码造成的</strong>。这个原则的一个推论是，如果不进行分析，很难找到那20%。但是没有理由不分析Python代码，因为它的内置分析工具非常简单。<strong>在我们使用Cython改善性能之前，获取分析数据是第一步</strong>。</p>
+<ul>
+<li>也就是说，<strong>如果我们通过分析确定程序中的瓶颈是由于I/O或网络限制造成的，那么我们就不能指望Cython在性能上有显著的改进</strong>。</li>
+</ul>
+<h2 id="用cython包装wrappingc语言">用cython包装（wrapping）c语言</h2>
+<p>python调用c语言的方法。<br>
+下面给出的只是其中一种方式，是吧c语言分来开存放，还有一种方式，是写在一个文件里。</p>
+<p>c代码：</p>
+<pre><code class="language-c">// cfib.c
+double cfib(int n) { 
+    int i; 
+    double a=0.0, b=1.0, tmp; 
+    for (i=0; i&lt;n; ++i) {
+            tmp = a; a = a + b; b = tmp; 
+        } 
+    return a; 
+}
+</code></pre>
+<pre><code class="language-c">// cfib.h
+double cfib(int n);
+</code></pre>
+<p>cython代码：</p>
+<pre><code class="language-python"># wrap_fib.pyx
+cdef extern from &quot;cfib.h&quot;: 
+    double cfib(int n)
+
+def fib(n): 
+&quot;&quot;&quot;Returns the nth Fibonacci number.&quot;&quot;&quot; 
+    return cfib(n)
+</code></pre>
+<p>最后经过编译就可以在python里面调用了<code>from wrap_fib import fib</code>。cython代码里面需要用定义一个包装（wrapping）函数来返回c定义的函数。</p>
+<p>并且，因为Cython语言理解Python，并且可以访问Python的标准库，所以我们可以利用Python的所有强大功能和灵活性。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CV-笔记-RetinaNet和Focal Loss]]></title>
         <id>https://jzq6520.github.io/post/cv-bi-ji-retinanet-he-focal-loss</id>
@@ -41,36 +192,36 @@
 <li><strong>Huber损失（类似smooth L1）</strong>，该函数通过降低具有较大错误的示例(硬示例)的损失的权重来<strong>减少异常值的贡献</strong>，因为在误差大的时候损失的梯度是不变的，不变很重要 这样就不容易被误差值所影响，其实也就是差值一个是不进行平方，一个进行平方计算，平方计算就会增长很快，而在误差小的时候梯度慢慢减少。</li>
 <li>相比之下，<strong>Focal loss</strong>的重点并不是处理异常值，而是通过减权<strong>简单的例子</strong>来解决阶级不平衡，这样即使简单的例子的数量很大，它们<strong>对总损失的贡献也很小</strong>。<strong>这点非常重要，是减少简单例子的影响，所以选择这个loss的适合一定要思考你的负样本是不是所谓的简单的负样本</strong>。</li>
 </ul>
-<p>下面来看一下cross entropy的损失函数曲线（其实就是-log(p)）：
-<img src="https://jzq6520.github.io/post-images/1572512564723.png" alt="">
+<p>下面来看一下cross entropy的损失函数曲线（其实就是-log(p)）：<br>
+<img src="https://jzq6520.github.io/post-images/1572512564723.png" alt=""><br>
 cross entropy可以看着只计算这个神经元负责的当前正样本的loss，假设有两个神经元分别预测目标和背景，那么对于两个神经元来说这两个都是正样本（因为第一个负责预测目标，第二负责预测背景呀，所以第一个神经元的正样本就是目标，第二个神经元的正样本就是背景，都是要预测概率为1的）因为是<strong>onehot</strong>。</p>
 <p>这里有个假设，假设有个正样本，我们预测他为正样本的概率是<code>0.6~1</code>之间，我们就算这个样本是简单的，<strong>也就说能预测对的就算是简单的</strong>。</p>
 <p><strong>所以我们观察上图可以发现，在我们定义的简单样本的区间内，其实普通的cross entropy的loss还是继续下降的（也就是说还是有一点的loss的），因为cross entropy总是希望概率可以很大很确信</strong>。所以可以看出focal loss在这个区间内的loss是很小的，而预测不对的话损失是很大的。<strong>这就是Focal loss核心思想</strong>。划重点。</p>
 <p>因为我们希望在目标检测中那么多的<strong>负样本不要共享很多loss，预测的差不多得了，能大于0.6就好了，知道你是就行了，超过0.6，loss就少贡献一点</strong>，但是因为正负都是同等对待的，所以正样本预测的概率数值也会小一点。</p>
 <h4 id="121-普通的加权方式">1.2.1 普通的加权方式</h4>
-<p><img src="https://jzq6520.github.io/post-images/1572514035161.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572514035161.png" alt=""></figure>
 <ul>
 <li>虽然alpha参数可以平衡正负样本，但是还无法区分简单和困难的例子，我们希望减少简单例子的权重而关注（Focus）那些难的样本。</li>
 <li>α ∈ [0, 1] for class 1（正样本） and 1−α for class −1（负样本）.</li>
 <li>因为RetinaNet里面是直接预测k个类，而不是先预测是不是目标。所以这里的加权应该是直接在是目标的类别加权α，然后负样本加权1−α。</li>
-<li>下图可以看出<strong>只加α</strong>和<strong>加了focal与α</strong>的α的值是不一样的，与我们直观理解一样只加α的时候正样本的权重应该要高一点，而加了focal以后反而正样本的权重要小一点好：
+<li>下图可以看出<strong>只加α</strong>和<strong>加了focal与α</strong>的α的值是不一样的，与我们直观理解一样只加α的时候正样本的权重应该要高一点，而加了focal以后反而正样本的权重要小一点好：<br>
 <img src="https://jzq6520.github.io/post-images/1572601464394.png" alt=""></li>
 </ul>
 <h4 id="122-focal-loss">1.2.2 focal loss</h4>
-<p>所以focal loss增加了一个调制的因子<code>(1 − pt )^γ</code>，当γ大于0时就是focal loss，等于0的适合是普通的交叉熵loss。
+<p>所以focal loss增加了一个调制的因子<code>(1 − pt )^γ</code>，当γ大于0时就是focal loss，等于0的适合是普通的交叉熵loss。<br>
 <img src="https://jzq6520.github.io/post-images/1572577100834.png" alt=""></p>
 <p>有两点：</p>
 <ol>
 <li>可以发现当pt趋向于0的时候，<code>(1 − pt )^γ</code>因子就接近1，loss的值是非常大的，当pt趋向于1的时候（或者说是子啊0.6到1的时候）<code>(1 − pt )^γ</code>这个因子就会解决与0，那么loss贡献就会非常的小，这个和γ参数也有关，γ越大那么预测概率解决于0的时候的loss越小。</li>
 <li><em>we found γ = 2 to work best in our experiments</em>，作者实验下来 γ = 2的时候最好。</li>
 </ol>
-<p>实际使用中作者还加了alpha权重：
+<p>实际使用中作者还加了alpha权重：<br>
 <img src="https://jzq6520.github.io/post-images/1572577872330.png" alt=""></p>
 <h2 id="2-retinanet">2 RetinaNet</h2>
 <p><strong>单阶段（one-stage）的目标检测，使用了Focal Loss解决分类的正负样本不平衡问题</strong>。</p>
 <p>为什么叫这个名字，因为是一个密集目标检测（像视网膜一样密集），这里的密集意思是一次性在所有区域里面检测模型，而不是像两阶段一样从建议区域里面检测。</p>
 <p>retinanet只是使用了Focal Loss的一个网络，其他和这个loss无关，采样的都是以前的一些结构，然后很好的组合成一块。</p>
-<p>总的结构是这样的：
+<p>总的结构是这样的：<br>
 <img src="https://jzq6520.github.io/post-images/1572589354355.png" alt=""></p>
 <p>分别说一下RetinaNet里面用的这4个东西的设置：</p>
 <ol>
@@ -128,17 +279,17 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>α ∈ [0, 1] for class 1 and 1−α for class −1.</li>
 </ul>
 <h4 id="251-参数初始化">2.5.1 参数初始化</h4>
-<p>所有新conv层RetinaNet子网中除了最后一个conv外都初始化为bias=0。最后conv层用下面的公式算出来的值初始化，文章中设置为π = .01：
-<img src="https://jzq6520.github.io/post-images/1572600783017.png" alt="">
+<p>所有新conv层RetinaNet子网中除了最后一个conv外都初始化为bias=0。最后conv层用下面的公式算出来的值初始化，文章中设置为π = .01：<br>
+<img src="https://jzq6520.github.io/post-images/1572600783017.png" alt=""><br>
 作用：<strong>这样初始化可以防止大量的背景锚点在训练的第一次迭代中产生较大的、不稳定的损失值</strong>。</p>
 <h3 id="网络训练细节">网络训练细节</h3>
 <p>RetinaNet is trained with stochastic gradient descent (SGD). We use synchronized <strong>SGD</strong> over 8 GPUs with a total of 16 images per minibatch (2 images per GPU). Unless otherwise speciﬁed, all models are <strong>trained for 90k iterations</strong> with an <strong>initial learning rate of 0.01</strong>, which is then <strong>divided by 10 at 60k and again at 80k iterations</strong>. We use horizontal image ﬂipping as the only form of data augmentation unless otherwise noted. <strong>Weight decay of 0.0001 and momentum of 0.9 are used</strong>. The training loss is the sum the focal loss and the standard smooth L 1 loss used for box regression [10]. <strong>Training time</strong> ranges between <strong>10 and 35 hours</strong> for the models in Table 1e.</p>
 <h2 id="结果">结果</h2>
-<p>信息量确实很大，文章很好，看不动了，好累，直接贴实验结果吧。
-<img src="https://jzq6520.github.io/post-images/1572601681760.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601690019.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601695560.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601732469.png" alt="">
+<p>信息量确实很大，文章很好，看不动了，好累，直接贴实验结果吧。<br>
+<img src="https://jzq6520.github.io/post-images/1572601681760.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601690019.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601695560.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601732469.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1572601737614.png" alt=""></p>
 <h2 id="引用">引用</h2>
 <ul>
@@ -166,7 +317,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>上采样使用最近邻插值</li>
 <li>只使用c2,c3,c4,c5尺度的特征图。</li>
 <li>中间的skip连接是用1x1卷积把channel数降到256.</li>
-<li>fpn是完全对称的
+<li>fpn是完全对称的<br>
 <img src="https://jzq6520.github.io/post-images/1572492067196.png" alt=""></li>
 <li><strong>使用同样的channel的原因</strong>：因为金字塔的所有层次都使用<strong>共享的分类器/回归器</strong>，就像传统的特征图金字塔一样，我们修正了所有特征图的特征维数。Because all levels of the pyramid use shared classiﬁers/regressors as in a traditional featurized image pyramid, we ﬁx the feature dimension (numbers of channels, denoted as d) in all the feature maps. We set d = 256 in this pa- per and thus all <strong>extra convolutional</strong> layers have 256-channel outputs.There are no non-linearities in these <strong>extra layers</strong>, which we have empirically found to have minor impacts.<strong>在这些额外的层中不存在非线性，我们根据经验发现它们的影响很小</strong>。</li>
 </ul>
@@ -191,7 +342,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <p>首先我们要搞清楚一个概念，<strong>RPN的作用是确定出原图上的目标ROI区域</strong>（而非特征图上的区域），这时候我们再将原图上的ROI坐标映射到特征图上，然后把特征图上的roi区域拿过来进行分类和区域的回归矫正。</p>
 <p>理解了这一点，那就清楚了，RPN确定的只是在原图上的roi区域，所以RPN做完以后，anchor就没用了，这时候就根据roi来确定我要在哪一层选择这个区域的特征来进行分类和回归。</p>
 <p>虽然我们直观上理解是哪个特征图检测出了这个目标，就由哪个特征图所roi pooling，<strong>其实不是的</strong>，文章中是对roi进行重新分配了，<strong>所以RPN做完以后预测出的候选区域就和特征图没有半毛钱关系了，后面就等着再分配了</strong>。</p>
-<p>那么分配规则是怎么样的呢，文章中是按照下面这个公式来确定分配给哪一层，那个类似于中括号的是<strong>取整</strong>，应该是向上取整，如果是5到4.1就是再第5层特征层做。。
+<p>那么分配规则是怎么样的呢，文章中是按照下面这个公式来确定分配给哪一层，那个类似于中括号的是<strong>取整</strong>，应该是向上取整，如果是5到4.1就是再第5层特征层做。。<br>
 <img src="https://jzq6520.github.io/post-images/1572504129264.png" alt=""></p>
 <p>首先，先通俗理解一下，前面最开始分配anchor的时候就知道了，深层特征图检测大目标，浅层的检测小目标，所以这里也是一样，<strong>大目标（即大ROI）分配给低分辨率（小特征图）的特征图即P5，小目标（小ROI）分配给到的高分辨率（大特征图）的特征图</strong>。</p>
 <p>如果我们最小的特征图是P5，那么k0初始化为5，然后这里的224应该不要这样写好，应该写成输入图像的大小，如果输入是448那这里就是448了，意思就是如果roi是图像的一半，那么应该分配给P4特征图做roi pooling。以此类推。</p>
@@ -219,16 +370,16 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <p>置信度：应该也是一个1和0，落在网格里面就是算有目标，这个和RPN不一样，RPN是通过iou计算正负样本的，这里是看是不是落在网格里面，如果不是这个区别那么就变成了普通的RPN了。原文：The network predicts 5 coordinates for each bounding box, t x , t y , t w , t h , and t o 。to就是置信度。</p>
 <p>但是，需要注意的是，每个cell中实际上有5个anchor，并不是每个anchor的会预测这个物体，我们只会选择一个长宽和这个bbox最匹配的anchor来负责预测这个物体。那么什么叫长宽最为匹配？这个实际上就是将anchor移动到图像的右上角，bbox也移动到图像的左上角，然后去计算它们的iou，iou最大的其中一个anchor负责预测这个物体。这点和RPN中不一样，RPN只需要iou符合大于某个阈值就可以了。感觉yolo复杂多了。</p>
 <p>和RPN还有个不同的是，RPN的是目标和不是目标是两个神经元预测，也就是softmax，这里是一个预测 sigmoid。</p>
-<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：
-<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt="">
-原文中符号写错了：
-<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt="">
+<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：<br>
+<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt=""><br>
+原文中符号写错了：<br>
+<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt=""><br>
 这样回归其实是有缺点的，这个公式回归出来的中心点是不受约束的，它的<strong>活动范围是全图</strong>，可以想象其实我们回归出t以后然后计算出的<strong>x,y的值可以是图像中的任意位置</strong>，<strong>在随机初始化的情况下，模型需要很长时间才能稳定地预测出合理的偏移量</strong>。</p>
-<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。
+<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。<br>
 即<code>tx = bx - cx, ty = by - cy</code>，</p>
-<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。
-<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt="">
-宽高和RPN一样：
+<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。<br>
+<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt=""><br>
+宽高和RPN一样：<br>
 <img src="https://jzq6520.github.io/post-images/1572413551539.png" alt=""></p>
 <h2 id="输入图像的大小">输入图像的大小</h2>
 <p>为了使得目标占很大，或者是中心点在图的中间的目标在预测的适合更加准确，所以最好让输出的特征图的像素是个奇数，也就是说把图像隔成奇数个网格，这样就不会像偶数格一样把图像中心分成两部分了，大家可以想象一下3格和4格的区别，4格就把图的中心分割成一半了，如果目标中心点正好在中心区域的周围，那么偏移一点误差也很大了。</p>
@@ -238,25 +389,25 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>多尺度训练，Every 10 batches our network randomly chooses a new image dimension size. Since our model downsamples by a factor of 32, we pull from the following multiples of 32: {320, 352, ..., 608}. Thus the smallest option is 320 × 320 and the largest is 608 × 608. We resize the network to that dimension and continue training.</li>
 </ol>
 <h2 id="网络">网络</h2>
-<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：
+<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：<br>
 <img src="https://jzq6520.github.io/post-images/1572415768870.png" alt=""></p>
-<p>网上的图：
-<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt="">
+<p>网上的图：<br>
+<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt=""><br>
 这是在imagenet上进行预训练的结构，训练检测的时候去掉最后一个卷积层，然后增加一个3x3的卷积层和一个1x1的卷积层。原文：<em>We modify this network for detection by removing the last convolutional layer and instead adding on three 3 × 3 convolutional layers with 1024 ﬁlters each followed by a ﬁnal 1 × 1 convolutional layer with the number of outputs we need for detection。</em></p>
 <p>并且，还增加了一个从最后的3×3×512层到第二个到最后一个卷积层的透传层，这样我们的模型可以使用细粒度的特征。原文（看的不是很清晰）：We also add a passthrough layer from the ﬁnal 3 × 3 × 512 layer to the second to last convolutional layer so that our model can use ﬁne grain features.</p>
-<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。
+<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。<br>
 <img src="https://jzq6520.github.io/post-images/1572416170928.png" alt=""></p>
 <h3 id="网络的预测输出">网络的预测输出</h3>
-<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：
+<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：<br>
 <img src="https://jzq6520.github.io/post-images/1572419086667.png" alt=""></p>
 <p>对比YOLO1的输出张量，YOLO2的主要变化就是会输出5个先验框，且每个先验框都会尝试预测一个对象。输出的 <code>13*13*5*25</code> 张量中，25维向量包含 20个对象的分类概率+4个边框坐标+1个边框置信度。</p>
 <h2 id="损失函数">损失函数</h2>
-<p>？？？？？？what？
-文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？
+<p>？？？？？？what？<br>
+文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？<br>
 <strong>应该是结合吧，既然预测宽和高用的是RPN的，预测中心点用的是yolo，预测有没有目标也是yolo的。那么应该就是结合一下了，宽高用smooth L1， 中心点用均方差，有没有目标（置信度）用均方差</strong>以上只是猜测，具体看代码。</p>
-<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：
-<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt="">
-<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt="">
+<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：<br>
+<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1572420619180.png" alt=""></p>
 <p><strong>卧槽 差点被坑了，文章中是把网络输出换算成x，y，w，h之后才进行计算loss的</strong>。<strong>不是直接回归t。RPN中是回归t的</strong>。</p>
 <h2 id="训练参数学习率">训练参数，学习率</h2>
@@ -266,9 +417,9 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>数据增强：We use a similar data augmentation to YOLO and SSD with random crops, color shifting, etc</li>
 </ul>
 <h2 id="实验结果">实验结果</h2>
-<p>分辨率越高效果越好：
+<p>分辨率越高效果越好：<br>
 <img src="https://jzq6520.github.io/post-images/1572414966868.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></figure>
 <h2 id="引用">引用</h2>
 <ul>
 <li>YOLOv2 / YOLO9000 深入理解 - X-猪的文章 - 知乎https://zhuanlan.zhihu.com/p/47575929</li>
@@ -299,26 +450,26 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <p>只是这里说的比较明确，说是把原图分割成最后一层feature map大小的个数，feature map是多少个像素，那么就分成几个格子。</p>
 <p>只是说<strong>Faster R-CNN里面好像没有明确提到anchor的中心点在原图的哪个地方</strong>。其实这也是我们规定哪个点就是哪个点，<strong>但是按照感受野的概念，感受野中心的区域的权重往往会高一点</strong>，所以anchor的中心点可以设置成格子的中心。所以anchor的中心点在原图的坐标经过换算一下也是很简单的。应该就是<code>(x*stride + stride/2, y*stride + stride/2)</code>,这里的x和y表示在feature map上的坐标，计算出来的表示原图上的坐标，这也是我自己推测的（<strong>代码还没看过</strong>）。</p>
 <h2 id="定义label">定义label</h2>
-<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：
-* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。
-* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。
+<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：<br>
+* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。<br>
+* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。<br>
 * 类别：是哪个类别</p>
-<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：
+<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：<br>
 <img src="https://jzq6520.github.io/post-images/1572353048785.png" alt=""></p>
 <p>Fast R-CNN最后只是有一个类别和坐标，但是他的类别里面是包含背景的，yolo的类别里面是不包含背景。</p>
-<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。
-这个应该是预测时候的示意图。
+<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。<br>
+这个应该是预测时候的示意图。<br>
 <img src="https://jzq6520.github.io/post-images/1572338771015.png" alt=""></p>
 <h2 id="训练的时候">训练的时候</h2>
 <ul>
 <li>训练的时候只预测一个目标，选择iou高的。原文：<em>YOLO predicts multiple bounding boxes per grid cell. At training time we only want one bounding box predictor to be responsible for each object. We assign one predictor to be “responsible” for predicting an object based on which prediction has the highest current IOU with the ground truth.</em></li>
 </ul>
 <h2 id="损失函数">损失函数</h2>
-<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。
+<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。<br>
 <img src="https://jzq6520.github.io/post-images/1572341526648.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></figure>
 <p>这个长的像1的系数表示有目标的适合是1，没有的适合是0。那头上写的是noobj的时候就反一下。这里大写的C表示confidence置信度。p那个表示类别。计算不是目标的置信度的适合权重设置为0.5 。</p>
-<p>根号的作用：
+<p>根号的作用：<br>
 <img src="https://jzq6520.github.io/post-images/1572352978309.png" alt=""></p>
 <h2 id="缺点">缺点</h2>
 <ul>
@@ -338,7 +489,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
         <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-fast-r-cnn-ji-roi-pooling">
         </link>
         <updated>2019-10-29T03:59:07.000Z</updated>
-        <content type="html"><![CDATA[<p>Fast R-CNN主要是使用了一个ROI Pooling操作来对候选区域进行分类和包围框的微调。
+        <content type="html"><![CDATA[<p>Fast R-CNN主要是使用了一个ROI Pooling操作来对候选区域进行分类和包围框的微调。<br>
 这里主要说明一下ROI pooling是怎么做的，主要包括：</p>
 <ol>
 <li>原图上的ROI坐标如何映射到feature map上？</li>
@@ -349,26 +500,26 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>loss怎么计算？</li>
 <li>回归的数值是什么？</li>
 </ol>
-<p>以上就是我这篇文章看下来的疑问或文章中的重点，然后查找资料和阅读相关论文来寻找答案。
+<p>以上就是我这篇文章看下来的疑问或文章中的重点，然后查找资料和阅读相关论文来寻找答案。<br>
 下面一个个来说明。</p>
 <h2 id="1-原图上的roi坐标如何映射到feature-map上">1 原图上的ROI坐标如何映射到feature map上？</h2>
 <p>这个问题相对简单，可以这样理解，最后一层的feature map是网络多次下采样得到的，所以只要对原图上的坐标进行相同倍数的缩放即可。vgg16最后一个特征图是经过4次下采样，即缩小16倍得到的，所以坐标<code>x' = [x/下采样倍数] + 1</code> 中括号表示向下取整，vgg16的下采样倍数就是16。这里为什么要+1还不清楚。</p>
 <h2 id="2-roi-pooling是如何做">2 ROI Pooling是如何做？</h2>
 <p>因为物体有大有小，所以物体的ROI映射到特征图上以后也是有大有小 尺寸不一样，所以如果想输入到全连接层进行分类，那么就必须要同样的神经元个数，因为全连接的输入大小是固定的。</p>
 <p>所以这里使用了一个max pooling方式将任意大小的roi对应的featuremap（这里的对应的roi featuremap只是最后输出的featuremap中切下的一小块）弄到一个尺度，比如文章中就是都弄到了7x7 。</p>
-<p>其实很简单，就是将roi feature map隔成7x7的格子，然后每个格子里取最大的数（max pooling) 。如下图所示，图中的黑框就是原图中的roi在featuremap中对应的特征区域：
+<p>其实很简单，就是将roi feature map隔成7x7的格子，然后每个格子里取最大的数（max pooling) 。如下图所示，图中的黑框就是原图中的roi在featuremap中对应的特征区域：<br>
 <img src="https://jzq6520.github.io/post-images/1572328585352.png" alt=""></p>
 <h2 id="3-roi-pooling的梯度反向传播是怎么做的">3 ROI Pooling的梯度反向传播是怎么做的？</h2>
 <p>这个梯度计算在文章中的公式写的很难看懂，但是看了其他人的<a href="https://zhuanlan.zhihu.com/p/30368989">博客</a>解释就比较清晰了，其实还是很简单的。</p>
-<p>首先，了解一下max pooling是怎么反向传播的，其实就是max的区域有梯度，为1。
-<img src="https://jzq6520.github.io/post-images/1572328987720.jpg" alt="">
-<img src="https://jzq6520.github.io/post-images/1572329086778.png" alt="">
-有了上面的了解，再来看ROI pooling，其中不一样的是<strong>特征图中的一个像素</strong>可能是多个感兴趣区域的重合部分。例如：
+<p>首先，了解一下max pooling是怎么反向传播的，其实就是max的区域有梯度，为1。<br>
+<img src="https://jzq6520.github.io/post-images/1572328987720.jpg" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572329086778.png" alt=""><br>
+有了上面的了解，再来看ROI pooling，其中不一样的是<strong>特征图中的一个像素</strong>可能是多个感兴趣区域的重合部分。例如：<br>
 <img src="https://jzq6520.github.io/post-images/1572329164506.jpg" alt=""></p>
 <p>那么这个个像素的位置的梯度就累积就可以了，比如假设3个roi pooling都用到了这个像素，那么梯度就是3了。</p>
 <h2 id="4-那么多的roi-pooling做完以后是怎么进入到全连接层进行训练的">4 那么多的ROI Pooling做完以后是怎么进入到全连接层进行训练的？</h2>
 <p>这一点细节其实文章中没提到，但是我想文章中是说到了每次选择2张图片，然后每张图片中选择64个roi进行训练，那么可以看出最后预测的全连接层的batch size是128，其实可以把roi pooling去掉，那么后面的网络其实就是一个输入一个7x7个神经元个数的全连接神经网络，batchsize为128。</p>
-<p>所以这里是<strong>对选择的128个区域做ROI Pooling，然后把128个特征作为batchsize的形式传到网络中训练的</strong>。可以看下图：
+<p>所以这里是<strong>对选择的128个区域做ROI Pooling，然后把128个特征作为batchsize的形式传到网络中训练的</strong>。可以看下图：<br>
 <img src="https://jzq6520.github.io/post-images/1572329514254.png" alt=""></p>
 <h2 id="5-正负样本怎么制作">5 正负样本怎么制作？</h2>
 <p>说到训练肯定是要去看怎么做数据，和选择正负样本的。</p>
@@ -384,12 +535,12 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>坐标回归采用smooth L1，当回归的数值非常大的时候，如果用L2loss就要非常小心，要防止梯度爆炸，因为抛物线两边是梯度越来越大的，L1是不变的。</li>
 </ul>
 <h3 id="smooth-l1">smooth L1</h3>
-<p><img src="https://jzq6520.github.io/post-images/1572330028401.png" alt="">
+<p><img src="https://jzq6520.github.io/post-images/1572330028401.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1572330081867.png" alt=""></p>
 <h2 id="7回归的数值是什么">7回归的数值是什么？</h2>
-<p>现在检测的话都是回归一个相对坐标。
+<p>现在检测的话都是回归一个相对坐标。<br>
 这里的话<strong>参照边框</strong>就是<strong>proposal的框</strong>了，而不是anchor的框。</p>
-<p>回归的label是这么制作的：
+<p>回归的label是这么制作的：<br>
 <img src="https://jzq6520.github.io/post-images/1572330297928.png" alt=""></p>
 <p><strong>我们实际回归的就是这个t，然后再反过来求一下坐标和宽高。R-CNN论文里面写的有点复杂，其实就是回归一t就对了</strong>。</p>
 <h2 id="引用">引用</h2>
@@ -427,7 +578,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 </li>
 </ul>
 </li>
-<li>为了产生region proposal，用一个<strong>小的网络进行卷积</strong>，文章中使用了<strong>一个3x3的卷积层作为小的网络</strong>如下图所示，然后文章中计算出来做了3x3的卷积以后的感受野是228，因为vgg16最后一个特征图（不算最后的maxpooling）的感受野是196，根据上面给出的公式，那最后<strong>region proposal的感受野就是</strong> <code>196+(3-1)*16=228</code> 。这里的16是之前做了4次pooling，stride累乘就是16。
+<li>为了产生region proposal，用一个<strong>小的网络进行卷积</strong>，文章中使用了<strong>一个3x3的卷积层作为小的网络</strong>如下图所示，然后文章中计算出来做了3x3的卷积以后的感受野是228，因为vgg16最后一个特征图（不算最后的maxpooling）的感受野是196，根据上面给出的公式，那最后<strong>region proposal的感受野就是</strong> <code>196+(3-1)*16=228</code> 。这里的16是之前做了4次pooling，stride累乘就是16。<br>
 <img src="https://jzq6520.github.io/post-images/1572242265100.png" alt=""></li>
 </ul>
 <h3 id="anchor">anchor</h3>
@@ -436,7 +587,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <ul>
 <li>其实这一块<strong>不用想的特别复杂</strong>，他虽然画了一个anchor再上面，这里<strong>画出来</strong>只是表示最终anchor的特征是在这里提取的，<strong>重点不是在这个anchor上</strong>，anchor只是一个虚拟的大小的宽，用来给坐标回归提供一个相对位置的，或者<strong>说是一个参考的坐标系（类似于这个作用）</strong>，但是其实做数据还是按照规定在固定的网格中做数据就可以了，对应的<strong>坐标和置信度，主要的还是这两个分支</strong>。</li>
 <li>anchor的个数限制了feature map上每个点可以预测几个region proposal。这个其实就像平时分类一样，我可以最后输出4个神经元来预测四个类别，那我也可以输出8个神经元来预测8个类别。一个道理，这里假设规定了k个anchor，那么我们就预测k个框就好了。</li>
-<li>这里的feature map上的点可以怎么理解呢，就是说每个feature map的点是预测k组（这里的组是指坐标+置信度）目标，就像<strong>平时我们是把特征图拉直或者是做过global avg pooling，因为分类是最终分出几个类别，是根据整体的信息来的</strong> ，这里只是不再进行降维了，而是每个点我出来预测一个东西。这样其实有个好处就是，<strong>特征图上的每个点对应的感受野其实是原图上的一块区域的</strong>，而且通常来说感受野是<strong>输入中越靠感受野中间的元素对特征的贡献越大</strong>的，如下图所示，出自论文understanding-the-effective-receptive-field-in-deep-convolutional-neural-networks。所以这样来预测其实是符合计算的。
+<li>这里的feature map上的点可以怎么理解呢，就是说每个feature map的点是预测k组（这里的组是指坐标+置信度）目标，就像<strong>平时我们是把特征图拉直或者是做过global avg pooling，因为分类是最终分出几个类别，是根据整体的信息来的</strong> ，这里只是不再进行降维了，而是每个点我出来预测一个东西。这样其实有个好处就是，<strong>特征图上的每个点对应的感受野其实是原图上的一块区域的</strong>，而且通常来说感受野是<strong>输入中越靠感受野中间的元素对特征的贡献越大</strong>的，如下图所示，出自论文understanding-the-effective-receptive-field-in-deep-convolutional-neural-networks。所以这样来预测其实是符合计算的。<br>
 <img src="https://jzq6520.github.io/post-images/1572243550140.png" alt=""></li>
 <li>我靠之前怎么想不到，<strong>这个其实就是和分割差不多啊</strong>，分割的输出也是不进行降维的，也是<strong>一个像素其实对应一块区域的感受野的</strong>。</li>
 </ul>
@@ -446,7 +597,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 </ul>
 <h3 id="参数量">参数量</h3>
 <ul>
-<li>region proposal小网络（文章中说小网络，其<strong>实就是1个分支，也就是1个卷积层</strong>）提到了Each sliding window is mapped to a lower-dimensional feature (256-d for ZF and <strong>512-d</strong> for VGG, with ReLU [33] following).和our output layer has 2.8 × 10 4 parameters (<strong>512</strong> × (4 + 2) × 9 for VGG-16)，这里的<strong>512是指这个分支卷积层的channel数</strong>，就像隐藏层的参数个数一样，他这边的参数量应该不是所有的feature map上的点，因为输入图像大小不一样，featuremap大小也是不一样的。所有这里说的参数是featuremap上<strong>一个点的region proposal的参数量</strong>，所有文章又补充说明了一下，如下图：
+<li>region proposal小网络（文章中说小网络，其<strong>实就是1个分支，也就是1个卷积层</strong>）提到了Each sliding window is mapped to a lower-dimensional feature (256-d for ZF and <strong>512-d</strong> for VGG, with ReLU [33] following).和our output layer has 2.8 × 10 4 parameters (<strong>512</strong> × (4 + 2) × 9 for VGG-16)，这里的<strong>512是指这个分支卷积层的channel数</strong>，就像隐藏层的参数个数一样，他这边的参数量应该不是所有的feature map上的点，因为输入图像大小不一样，featuremap大小也是不一样的。所有这里说的参数是featuremap上<strong>一个点的region proposal的参数量</strong>，所有文章又补充说明了一下，如下图：<br>
 <img src="https://jzq6520.github.io/post-images/1572244888520.png" alt=""></li>
 </ul>
 <h2 id="正负样本选择">正负样本选择</h2>
@@ -463,7 +614,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 </ol>
 <p>这样哪个anchor是正样本和负样本分配好了就方便了，这样数据做出来就是每个anchor的分类的label就有了，1或者0 。</p>
 <h2 id="rpn的损失函数">RPN的损失函数</h2>
-<p>损失函数如下图所示：
+<p>损失函数如下图所示：<br>
 <img src="https://jzq6520.github.io/post-images/1572256564654.png" alt=""></p>
 <p>可以看出又两个损失函数组成，一个是分类loss，另外一个是坐标回归的loss：</p>
 <ul>
@@ -471,8 +622,8 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li><strong>分类</strong>为log loss，也就是交叉熵。</li>
 <li><strong>回归</strong>为smooth L1，从公式可以看出乘以一个p星，说明只计算正样本的损失，负样本是不计算损失的。</li>
 <li>乘以一个N分之一，这个是做一个归一化，分类的N为batch-size的大小，回归的N是batch-size乘以anchor数（即所有anchor的数量），这里<em>可以看到回归是除以了所以anchor的数量，而分类的只除以batch-size</em>。然后这里的lambda参数又是来平衡两个loss，这里论文中设置了一个10效果最好，<strong>那么傻逼了</strong>，因为文章anchor是9，那么乘10再除9 来平衡，tm的为什么不直接除batch-size，干嘛还乘一个anchor个数来平衡。</li>
-<li>坐标回归的loss：
-<img src="https://jzq6520.github.io/post-images/1572271188684.png" alt="">
+<li>坐标回归的loss：<br>
+<img src="https://jzq6520.github.io/post-images/1572271188684.png" alt=""><br>
 <strong>可以看出这里的label是经过转换得到的</strong>，所以预测出来的结果还需要经过变换，转换到原来的坐标和长宽。可以把回归看做是和最接近的anchor计算相对位置的，因为做label（正负样本）的时候就是选择IOU(接近)大的anchor的。</li>
 </ul>
 <h2 id="训练rpn">训练RPN</h2>
@@ -496,7 +647,7 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 </ul>
 <h2 id="整体的网络结构就是这样">整体的网络结构就是这样</h2>
 <p>ROI Pooling结构可以仔细看Fast R-CNN，这篇文章没有仔细介绍。</p>
-<p><img src="https://jzq6520.github.io/post-images/1572275302379.png" alt=""></p>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1572275302379.png" alt=""></figure>
 ]]></content>
     </entry>
     <entry>
@@ -518,33 +669,33 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <h2 id="2-数据合成">2 数据合成</h2>
 <h3 id="21-合成网络synthesizer-network">2.1 合成网络Synthesizer Network</h3>
 <p>文章中的核心思想就是这个网络。里面还有一个小技巧来<strong>避免过拟合这种合成的数据</strong>。</p>
-<p>首先，合成网络<strong>不是</strong>我们想的那样输入两个图形然后自动输出一个图片，其实这个网络是输入两张图片然后预测一个2D affine transformations（二维刚性变换）的矩阵，这个矩阵是一个<strong>维度为6的向量</strong>，如下图所示（文章中没给，见Spatial Transformer Networks论文）：
-<img src="https://jzq6520.github.io/post-images/1571909222916.png" alt="">
+<p>首先，合成网络<strong>不是</strong>我们想的那样输入两个图形然后自动输出一个图片，其实这个网络是输入两张图片然后预测一个2D affine transformations（二维刚性变换）的矩阵，这个矩阵是一个<strong>维度为6的向量</strong>，如下图所示（文章中没给，见Spatial Transformer Networks论文）：<br>
+<img src="https://jzq6520.github.io/post-images/1571909222916.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1571909211491.png" alt=""></p>
-<p>这个网络结构如下：
+<p>这个网络结构如下：<br>
 <img src="https://jzq6520.github.io/post-images/1571910057977.png" alt=""></p>
-<p>感觉文章的图片画的不是很清晰，且参数共享那一块容易给人造成误解，所以重新画了一幅图，网络有部分是参数共享，但是又有部分是不进行参数共享的，结构和孪生网络相似。最终预测的就是一个变换矩阵的参数。具体设置如下：
+<p>感觉文章的图片画的不是很清晰，且参数共享那一块容易给人造成误解，所以重新画了一幅图，网络有部分是参数共享，但是又有部分是不进行参数共享的，结构和孪生网络相似。最终预测的就是一个变换矩阵的参数。具体设置如下：<br>
 <img src="https://jzq6520.github.io/post-images/1571910821669.png" alt=""></p>
 <h3 id="22-合成数据">2.2 合成数据</h3>
 <p>那么怎么将前景和背景合为一体呢呢，其实和Cut-Paste-Learn一样，把背景扣掉一块然后将前景放进去，其实<strong>说白了就是把前景贴到背景上</strong>，但是文章中给了一个<em>故弄玄虚的公式</em>说是叫做alpha-blending，其实就是贴图的方式。<strong>但是多了对图像做一个仿射变换以后叠加</strong>，再加上有一个判别网络来保证合成的网络是真实的。</p>
-<p>如下图所示，上一行就是不真实（不符合真实世界的分布）的数据，下一行就是合成的符合真实世界的分布的数据：
+<p>如下图所示，上一行就是不真实（不符合真实世界的分布）的数据，下一行就是合成的符合真实世界的分布的数据：<br>
 <img src="https://jzq6520.github.io/post-images/1571911885967.png" alt=""></p>
 <h3 id="23-防止过拟合贴图数据">2.3 防止过拟合贴图数据</h3>
-<p>为了防止过拟合这些合成的数据，本身将一些和目标形状一样的背景图像贴到一些训练的图像中去（其实就是目标的mask乘以一些背景区域，这样就取出和目标一样形状的背景图片，然后贴到其他图片中去）。如图所示：
+<p>为了防止过拟合这些合成的数据，本身将一些和目标形状一样的背景图像贴到一些训练的图像中去（其实就是目标的mask乘以一些背景区域，这样就取出和目标一样形状的背景图片，然后贴到其他图片中去）。如图所示：<br>
 <img src="https://jzq6520.github.io/post-images/1571910704686.png" alt=""></p>
 <h2 id="3-loss">3 loss</h2>
-<p>判别网络loss，就是个交叉熵：
+<p>判别网络loss，就是个交叉熵：<br>
 <img src="https://jzq6520.github.io/post-images/1571910918644.png" alt=""></p>
-<p>GAN的 loss：
+<p>GAN的 loss：<br>
 <img src="https://jzq6520.github.io/post-images/1571910951399.png" alt=""></p>
 <p>生成仿射变换的6维向量的适合是没有监督的，是通过对抗学习来学习合成网络的参数的。</p>
 <h2 id="4-result">4 result</h2>
-<p>只贴了少部分实验数据，具体可以看论文。
+<p>只贴了少部分实验数据，具体可以看论文。<br>
 <img src="https://jzq6520.github.io/post-images/1571911142039.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571911157597.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571911183410.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571911212706.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571911278459.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1571911157597.png" alt=""></figure>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1571911183410.png" alt=""></figure>
+<figure data-type="image" tabindex="3"><img src="https://jzq6520.github.io/post-images/1571911212706.png" alt=""></figure>
+<figure data-type="image" tabindex="4"><img src="https://jzq6520.github.io/post-images/1571911278459.png" alt=""></figure>
 <h2 id="引用">引用</h2>
 <ul>
 <li>Learning to Generate Synthetic Data via Compositing</li>
@@ -563,69 +714,18 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <p>这里是把验证集也拿过来训练了，虽然只是学习一个简单的线性变换，因为这个线性变换只有两个参数，所以需要的数据量非常少，虽然这个变换很简单，但是非常有效的提高精度。</p>
 <p>文章中说的偏差指的是增量学习的精度和全部数据一起训练的精度的差距。</p>
 <h2 id="1-什么是偏差">1 什么是偏差</h2>
-<p>偏差就是增量学习的精度和用全部数据训练的精度的差。
+<p>偏差就是增量学习的精度和用全部数据训练的精度的差。<br>
 <img src="https://jzq6520.github.io/post-images/1571711000642.png" alt=""></p>
 <h2 id="2-网络">2 网络</h2>
-<p><img src="https://jzq6520.github.io/post-images/1571710167211.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571710183774.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1571710167211.png" alt=""></figure>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1571710183774.png" alt=""></figure>
 <p>这里蒸馏学习的一个loss是logit之间的loss（即没有softmax激活的）。</p>
 <p>结合蒸馏学习和普通分类loss来进行学习。</p>
 <h2 id="3-loss">3 loss</h2>
 <p>蒸馏学习的时候，新数据和老数据的蒸馏loss都是要计算的，无论是新的类别还是老的类别，这里其实是计算一个特征提取器的loss，让新的特征提取器提取的特征和老的一样。</p>
-<p><img src="https://jzq6520.github.io/post-images/1571710427789.png" alt=""></p>
+<figure data-type="image" tabindex="3"><img src="https://jzq6520.github.io/post-images/1571710427789.png" alt=""></figure>
 <h2 id="4-偏差矫正层">4 偏差矫正层</h2>
-<p><img src="https://jzq6520.github.io/post-images/1571710889389.png" alt=""></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-笔记-增量学习incremental learning]]></title>
-        <id>https://jzq6520.github.io/post/cv-bi-ji-zeng-liang-xue-xi-incremental-learning</id>
-        <link href="https://jzq6520.github.io/post/cv-bi-ji-zeng-liang-xue-xi-incremental-learning">
-        </link>
-        <updated>2019-10-21T09:49:24.000Z</updated>
-        <content type="html"><![CDATA[<p>又是一种深度学习的学习策略。</p>
-<p>自然学习（Natural learning）系统本质上是<strong>渐进的</strong>，新知识是随着时间的推移而不断学习的，而现有的知识是保持不变的。现实世界中的许多计算机视觉应用程序都需要<strong>增量学习</strong>能力。例如，人脸识别系统应该能够在不忘记已学过的面孔的情况下添加新面孔。然而，大多数深度学习方法都存在灾难性的遗忘——<strong>当无法获得过去的数据时</strong>，性能会显著下降。</p>
-<p><strong>旧类数据的缺失带来了两个挑战</strong>:(a)维护旧类的分类性能; (b)平衡旧类和新类。<strong>知识蒸馏</strong>已被用来有效地解决前一个挑战。最近的研究也表明，从旧的类中<strong>选择几个样本(抽样)</strong> 可以缓解不平衡问题。这些方法在小数据集上运行良好。然而，<strong>当类的数量变得很大</strong>(例如，成千上万个类)时，它们的性能会显著下降。图1显示了以非增量分类器为参考的这些最先进算法的性能退化情况。当类的数量从100增加到1000时，iCaRL和EEIL都有更多的精度下降。</p>
-<p>为什么处理大量的类进行增量学习更具挑战性? 我们认为这是由于两个因素的耦合。首先，<strong>训练数据不平衡</strong>。其次，随着类数量的增加，在不同的增量步骤中更<strong>可能出现类似的类</strong>(例如ImageNet中的多个dog类)。在数据不平衡的增量约束下，视觉上相似的类数量的增加尤其具有挑战性，因为类之间边界的<strong>小边界</strong>对数据不平衡过于敏感。边界被推到支持具有更多示例的类。</p>
-<h2 id="引用">引用</h2>
-<ul>
-<li>Large Scale Incremental Learning</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-Paper-主动学习-Learning Loss for Active Learning]]></title>
-        <id>https://jzq6520.github.io/post/cv-paper-zhu-dong-xue-xi-learning-loss-for-active-learning</id>
-        <link href="https://jzq6520.github.io/post/cv-paper-zhu-dong-xue-xi-learning-loss-for-active-learning">
-        </link>
-        <updated>2019-10-17T09:36:24.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="1-简介">1 简介</h2>
-<p>主动学习，即在拥有少部分监督数据的情况下，主动的去选择一部分对训练模型<strong>有较大提高的</strong>未标注数据，然后对选择出来的数据进行标注，标注后加入到训练集进行训练。为什么这么做的，我们把数据都标注一下不行吗？当然可以，但是标注是要时间和金钱的，我们希望选择更有助于模型提高的数据先进行标注。如下图所示：
-<img src="https://jzq6520.github.io/post-images/1571305200850.png" alt="主动学习流程图"></p>
-<p>以往的研究结果表明，主动学习实际上降低了标注成本。最开始提出主动学习的方法是选择出不确信的数据进行标注。主动学习的核心思想是信息量最大的数据比随机选择的数据更有利于模型的改进。无论任务是什么、有多少任务以及体系结构有多复杂，深度网络都是通过最小化单个损失来学习的。</p>
-<h2 id="2-学习loss">2 学习Loss</h2>
-<p>这个方法可以归为不确定度方法，但不同之处在于<strong>它是根据输入内容来预测“损失”</strong>，而不是根据输出来统计估计不确定度。这类似于各种难例挖掘，因为他们认为损失较大的训练数据点对模型的改进意义重大</p>
-<p>去学习损失，这是一个很有创新的想法，但有用。既然我们选择数据的时候没有标签（未打标签），那么是不是可以先选择出预测较差的数据进行打标签。这时候loss确实是一个可以用来做这种选择的东西。当loss较大的时候说明和真实标签的差异性很大，loss较小则差异较小。其实最终我们是要对未打标签的数据进行<strong>排序</strong>，先是模型较难预测的，然后再是较好预测的。</p>
-<p>作者就很聪明，没有label那么我们可以去预测一个loss啊。利用损失来进行排序。其实这个loss的得到也是很悬，可能是有某个隐藏的特征空间进行映射，<strong>或者说这里说是loss，但是网络本身学习到的并不是loss呢，而是一个排序</strong>。但是文章这里就把这个学习到的东西叫做loss，<strong>其实不然，我觉得更侧重于一个排序的信息</strong>。这里的思想和一篇图像质量评价的论文很像，学习怎么去排序，见之前的图像评价论文RankIQA。</p>
-<p>那么这个loss如何学习呢？第一时间我们可以想到的是用回归的方法学习，即MSE，利用我们训练分类器或者检测或则定位的loss来作为label（见图）。作者也是这么想的，但是实验下来效果很差，还不如没用来的好。<strong>所以作者解释是由于在梯度下降的时候loss也是下降的，所以学习loss是不稳定的，无法学习</strong>。所以作者想到了用一个<strong>排序的loss</strong>（也可以认为是<strong>比较大小的</strong>loss）来作为损失函数，这样即使作为label的loss一直在变，但是loss的相对大小是不会变的，难的样本的loss就是比容易样本的loss来的大（和RankIQA中的思想一毛一样）。</p>
-<p>这里计算排序的loss和RankIQA中的思想一毛一样，但是网络架构不一样，RankIQA中是使用参数共享的两个网络进行排序，这里是将一个batch分为两部分。但是仔细想想是一毛一样的，都是同一个端到端的网络，只是说一个是分开的 一个是画到一块。</p>
-<p>这里的排序loss（不行叫他学习loss的loss，因为容易混 还不太准确）：
-<img src="https://jzq6520.github.io/post-images/1571306285061.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571306940422.png" alt=""></p>
-<p>最终端到端loss：
-<img src="https://jzq6520.github.io/post-images/1571307032943.png" alt=""></p>
-<h2 id="3-网络结构">3 网络结构</h2>
-<p><img src="https://jzq6520.github.io/post-images/1571307076883.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571307093582.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1571307115680.png" alt=""></p>
-<h2 id="4-结果">4 结果</h2>
-<p>如果为标注数据多的时候，这个方法选择样本是这样的：首先对所有未标注的进行随机采样，然后在选择前k个最不确信的样本，这样可以避免都选择出相同类别的。因为可能会出现前k个最不确信的样本中大部分都是一个类别的。</p>
-<p>这个主动学习的方法比之前的几个要好,learn loss表示现在这个方法：
-<img src="https://jzq6520.github.io/post-images/1571307198541.png" alt=""></p>
-<p>mse损失和排序损失的效果比较：
-<img src="https://jzq6520.github.io/post-images/1571307238951.png" alt=""></p>
-<h2 id="5-总结">5 总结</h2>
-<p>一个是通过排序的损失，一个是mse损失。排序损失会更好。其实这里更重要的是得到一个损失的相对大小，而不是损失本身，因为最后的目的是根据损失对未标注的样本进行挑选，所以排序准确才是最终目的。</p>
+<figure data-type="image" tabindex="4"><img src="https://jzq6520.github.io/post-images/1571710889389.png" alt=""></figure>
 ]]></content>
     </entry>
 </feed>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Cython(1)--基本概念 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Cython(1)--基本概念</h2>
+            <div class="post-date">2019-11-06</div>
+            
+            <div class="post-content">
+              <p>一下全来自于对《Cython：A Guide for Python Programmers》一书的学习。<br>
+cython最大的作用就是用来加速python代码。</p>
+<p>cython是什么：</p>
+<ul>
+<li>Cython是融合python和c/c++的一种编程语言；</li>
+<li>cython编译器可以将Cython代码编程成c/c++。然后编译后可以被python当成扩展包进行调用。</li>
+</ul>
+<p>Cython的美妙之处在于:它将Python的表达性和动态性与C的裸机性能（bare-metal performance）结合在一起，<strong>同时仍然感觉像Python</strong>。</p>
+<h2 id="1-特点">1. 特点</h2>
+<ul>
+<li>Cython代码里面可以写python代码，也就是说Cython可以理解python代码。</li>
+<li>需要用cdef声明变量</li>
+</ul>
+<h2 id="2-速度">2. 速度</h2>
+<p>总结：</p>
+<ol>
+<li>能用：循环密集、算术密集</li>
+<li>不能用：I/O密集</li>
+</ol>
+<p>然后看分析：</p>
+<p>速度快，可以看一下对比数据。<br>
+<img src="https://jzq6520.github.io/post-images/1573008098399.png" alt=""></p>
+<ul>
+<li>函数调用：<code>fib(0)</code>可以是看做函数调用的时间对比，<code>fib(0)</code>运行时主要消耗在<strong>调用相应语言中的函数</strong>所需的时间上;<strong>运行函数体的时间相对较短</strong>。从表1-1中可以看到，Cython生成的代码比调用Python函数快一个数量级，比手工编写的快两倍多.</li>
+<li>循环：python中的循环相对c语言来说是非常慢的。加速循环Python代码的一个可靠的方法是找到方法将Python for和while循环移动到<strong>已编译的代码中</strong>，可以通过<strong>调用内置函数</strong>，也可以使用类似<strong>Cython</strong>的东西来完成转换。</li>
+<li>数学操作：python在做算术运算的时候是不知道数据类型的，所以还需要去查找，但是c和cyhton是显示声明数据类型的。</li>
+<li>堆栈与堆分配：在C级，动态Python对象完全是堆分配的。Python煞费苦心地智能地管理内存，使用内存池并内化常用的整数和字符串。但事实仍然是，创建和销毁对象——任何对象，甚至标量——都会增加处理动态分配内存和Python内存子系统的开销。因为Python浮动对象是不可变的，所以使用Python浮动的操作涉及到创建和销毁堆分配的对象。Cython版本的fib声明所有变量都是堆栈分配的C double。通常，堆栈分配比堆分配快得多。此外，C浮点数是可变的，这意味着for循环体在分配和内存使用方面更有效。</li>
+</ul>
+<p>但是，值得注意的是，<strong>并不是所有Python代码在使用Cython编译时都能看到巨大的性能改进</strong>。前面的fib示例是有意对CPU进行限制的，这意味着所有的运行时都是在CPU寄存器内操作几个变量，几乎不需要移动数据。相反,如果这个函数内存约束(例如,添加两个大数组的元素),I / O绑定(例如,从磁盘读取大型文件),或网络绑定(例如,从一个FTP服务器下载文件),Python之间的性能差异,C, Cython可能显著降低(内存受限操作)或完全消失(<strong>I/O密集型</strong>或network密集型操作)。</p>
+<p>当提高Python的性能是我们的目标时，帕累托原则就对我们有利:我们可以预期，<strong>一个程序大约80%的运行时间是由20%的代码造成的</strong>。这个原则的一个推论是，如果不进行分析，很难找到那20%。但是没有理由不分析Python代码，因为它的内置分析工具非常简单。<strong>在我们使用Cython改善性能之前，获取分析数据是第一步</strong>。</p>
+<ul>
+<li>也就是说，<strong>如果我们通过分析确定程序中的瓶颈是由于I/O或网络限制造成的，那么我们就不能指望Cython在性能上有显著的改进</strong>。</li>
+</ul>
+<h2 id="用cython包装wrappingc语言">用cython包装（wrapping）c语言</h2>
+<p>python调用c语言的方法。<br>
+下面给出的只是其中一种方式，是吧c语言分来开存放，还有一种方式，是写在一个文件里。</p>
+<p>c代码：</p>
+<pre><code class="language-c">// cfib.c
+double cfib(int n) { 
+    int i; 
+    double a=0.0, b=1.0, tmp; 
+    for (i=0; i&lt;n; ++i) {
+            tmp = a; a = a + b; b = tmp; 
+        } 
+    return a; 
+}
+</code></pre>
+<pre><code class="language-c">// cfib.h
+double cfib(int n);
+</code></pre>
+<p>cython代码：</p>
+<pre><code class="language-python"># wrap_fib.pyx
+cdef extern from &quot;cfib.h&quot;: 
+    double cfib(int n)
+
+def fib(n): 
+&quot;&quot;&quot;Returns the nth Fibonacci number.&quot;&quot;&quot; 
+    return cfib(n)
+</code></pre>
+<p>最后经过编译就可以在python里面调用了<code>from wrap_fib import fib</code>。cython代码里面需要用定义一个包装（wrapping）函数来返回c定义的函数。</p>
+<p>并且，因为Cython语言理解Python，并且可以访问Python的标准库，所以我们可以利用Python的所有强大功能和灵活性。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://jzq6520.github.io/tag/0aHbWmvK1" class="tag">
+                    Cython
+                  </a>
+                
+                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
+                    python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cv-bi-ji-retinanet-he-focal-loss">
+                  <h3 class="post-title">
+                    CV-笔记-RetinaNet和Focal Loss
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

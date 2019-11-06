@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -126,36 +126,36 @@
 <li><strong>Huber损失（类似smooth L1）</strong>，该函数通过降低具有较大错误的示例(硬示例)的损失的权重来<strong>减少异常值的贡献</strong>，因为在误差大的时候损失的梯度是不变的，不变很重要 这样就不容易被误差值所影响，其实也就是差值一个是不进行平方，一个进行平方计算，平方计算就会增长很快，而在误差小的时候梯度慢慢减少。</li>
 <li>相比之下，<strong>Focal loss</strong>的重点并不是处理异常值，而是通过减权<strong>简单的例子</strong>来解决阶级不平衡，这样即使简单的例子的数量很大，它们<strong>对总损失的贡献也很小</strong>。<strong>这点非常重要，是减少简单例子的影响，所以选择这个loss的适合一定要思考你的负样本是不是所谓的简单的负样本</strong>。</li>
 </ul>
-<p>下面来看一下cross entropy的损失函数曲线（其实就是-log(p)）：
-<img src="https://jzq6520.github.io/post-images/1572512564723.png" alt="">
+<p>下面来看一下cross entropy的损失函数曲线（其实就是-log(p)）：<br>
+<img src="https://jzq6520.github.io/post-images/1572512564723.png" alt=""><br>
 cross entropy可以看着只计算这个神经元负责的当前正样本的loss，假设有两个神经元分别预测目标和背景，那么对于两个神经元来说这两个都是正样本（因为第一个负责预测目标，第二负责预测背景呀，所以第一个神经元的正样本就是目标，第二个神经元的正样本就是背景，都是要预测概率为1的）因为是<strong>onehot</strong>。</p>
 <p>这里有个假设，假设有个正样本，我们预测他为正样本的概率是<code>0.6~1</code>之间，我们就算这个样本是简单的，<strong>也就说能预测对的就算是简单的</strong>。</p>
 <p><strong>所以我们观察上图可以发现，在我们定义的简单样本的区间内，其实普通的cross entropy的loss还是继续下降的（也就是说还是有一点的loss的），因为cross entropy总是希望概率可以很大很确信</strong>。所以可以看出focal loss在这个区间内的loss是很小的，而预测不对的话损失是很大的。<strong>这就是Focal loss核心思想</strong>。划重点。</p>
 <p>因为我们希望在目标检测中那么多的<strong>负样本不要共享很多loss，预测的差不多得了，能大于0.6就好了，知道你是就行了，超过0.6，loss就少贡献一点</strong>，但是因为正负都是同等对待的，所以正样本预测的概率数值也会小一点。</p>
 <h4 id="121-普通的加权方式">1.2.1 普通的加权方式</h4>
-<p><img src="https://jzq6520.github.io/post-images/1572514035161.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572514035161.png" alt=""></figure>
 <ul>
 <li>虽然alpha参数可以平衡正负样本，但是还无法区分简单和困难的例子，我们希望减少简单例子的权重而关注（Focus）那些难的样本。</li>
 <li>α ∈ [0, 1] for class 1（正样本） and 1−α for class −1（负样本）.</li>
 <li>因为RetinaNet里面是直接预测k个类，而不是先预测是不是目标。所以这里的加权应该是直接在是目标的类别加权α，然后负样本加权1−α。</li>
-<li>下图可以看出<strong>只加α</strong>和<strong>加了focal与α</strong>的α的值是不一样的，与我们直观理解一样只加α的时候正样本的权重应该要高一点，而加了focal以后反而正样本的权重要小一点好：
+<li>下图可以看出<strong>只加α</strong>和<strong>加了focal与α</strong>的α的值是不一样的，与我们直观理解一样只加α的时候正样本的权重应该要高一点，而加了focal以后反而正样本的权重要小一点好：<br>
 <img src="https://jzq6520.github.io/post-images/1572601464394.png" alt=""></li>
 </ul>
 <h4 id="122-focal-loss">1.2.2 focal loss</h4>
-<p>所以focal loss增加了一个调制的因子<code>(1 − pt )^γ</code>，当γ大于0时就是focal loss，等于0的适合是普通的交叉熵loss。
+<p>所以focal loss增加了一个调制的因子<code>(1 − pt )^γ</code>，当γ大于0时就是focal loss，等于0的适合是普通的交叉熵loss。<br>
 <img src="https://jzq6520.github.io/post-images/1572577100834.png" alt=""></p>
 <p>有两点：</p>
 <ol>
 <li>可以发现当pt趋向于0的时候，<code>(1 − pt )^γ</code>因子就接近1，loss的值是非常大的，当pt趋向于1的时候（或者说是子啊0.6到1的时候）<code>(1 − pt )^γ</code>这个因子就会解决与0，那么loss贡献就会非常的小，这个和γ参数也有关，γ越大那么预测概率解决于0的时候的loss越小。</li>
 <li><em>we found γ = 2 to work best in our experiments</em>，作者实验下来 γ = 2的时候最好。</li>
 </ol>
-<p>实际使用中作者还加了alpha权重：
+<p>实际使用中作者还加了alpha权重：<br>
 <img src="https://jzq6520.github.io/post-images/1572577872330.png" alt=""></p>
 <h2 id="2-retinanet">2 RetinaNet</h2>
 <p><strong>单阶段（one-stage）的目标检测，使用了Focal Loss解决分类的正负样本不平衡问题</strong>。</p>
 <p>为什么叫这个名字，因为是一个密集目标检测（像视网膜一样密集），这里的密集意思是一次性在所有区域里面检测模型，而不是像两阶段一样从建议区域里面检测。</p>
 <p>retinanet只是使用了Focal Loss的一个网络，其他和这个loss无关，采样的都是以前的一些结构，然后很好的组合成一块。</p>
-<p>总的结构是这样的：
+<p>总的结构是这样的：<br>
 <img src="https://jzq6520.github.io/post-images/1572589354355.png" alt=""></p>
 <p>分别说一下RetinaNet里面用的这4个东西的设置：</p>
 <ol>
@@ -213,17 +213,17 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <li>α ∈ [0, 1] for class 1 and 1−α for class −1.</li>
 </ul>
 <h4 id="251-参数初始化">2.5.1 参数初始化</h4>
-<p>所有新conv层RetinaNet子网中除了最后一个conv外都初始化为bias=0。最后conv层用下面的公式算出来的值初始化，文章中设置为π = .01：
-<img src="https://jzq6520.github.io/post-images/1572600783017.png" alt="">
+<p>所有新conv层RetinaNet子网中除了最后一个conv外都初始化为bias=0。最后conv层用下面的公式算出来的值初始化，文章中设置为π = .01：<br>
+<img src="https://jzq6520.github.io/post-images/1572600783017.png" alt=""><br>
 作用：<strong>这样初始化可以防止大量的背景锚点在训练的第一次迭代中产生较大的、不稳定的损失值</strong>。</p>
 <h3 id="网络训练细节">网络训练细节</h3>
 <p>RetinaNet is trained with stochastic gradient descent (SGD). We use synchronized <strong>SGD</strong> over 8 GPUs with a total of 16 images per minibatch (2 images per GPU). Unless otherwise speciﬁed, all models are <strong>trained for 90k iterations</strong> with an <strong>initial learning rate of 0.01</strong>, which is then <strong>divided by 10 at 60k and again at 80k iterations</strong>. We use horizontal image ﬂipping as the only form of data augmentation unless otherwise noted. <strong>Weight decay of 0.0001 and momentum of 0.9 are used</strong>. The training loss is the sum the focal loss and the standard smooth L 1 loss used for box regression [10]. <strong>Training time</strong> ranges between <strong>10 and 35 hours</strong> for the models in Table 1e.</p>
 <h2 id="结果">结果</h2>
-<p>信息量确实很大，文章很好，看不动了，好累，直接贴实验结果吧。
-<img src="https://jzq6520.github.io/post-images/1572601681760.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601690019.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601695560.png" alt="">
-<img src="https://jzq6520.github.io/post-images/1572601732469.png" alt="">
+<p>信息量确实很大，文章很好，看不动了，好累，直接贴实验结果吧。<br>
+<img src="https://jzq6520.github.io/post-images/1572601681760.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601690019.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601695560.png" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572601732469.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1572601737614.png" alt=""></p>
 <h2 id="引用">引用</h2>
 <ul>

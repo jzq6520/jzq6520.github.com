@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -110,16 +110,16 @@
 <p>置信度：应该也是一个1和0，落在网格里面就是算有目标，这个和RPN不一样，RPN是通过iou计算正负样本的，这里是看是不是落在网格里面，如果不是这个区别那么就变成了普通的RPN了。原文：The network predicts 5 coordinates for each bounding box, t x , t y , t w , t h , and t o 。to就是置信度。</p>
 <p>但是，需要注意的是，每个cell中实际上有5个anchor，并不是每个anchor的会预测这个物体，我们只会选择一个长宽和这个bbox最匹配的anchor来负责预测这个物体。那么什么叫长宽最为匹配？这个实际上就是将anchor移动到图像的右上角，bbox也移动到图像的左上角，然后去计算它们的iou，iou最大的其中一个anchor负责预测这个物体。这点和RPN中不一样，RPN只需要iou符合大于某个阈值就可以了。感觉yolo复杂多了。</p>
 <p>和RPN还有个不同的是，RPN的是目标和不是目标是两个神经元预测，也就是softmax，这里是一个预测 sigmoid。</p>
-<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：
-<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt="">
-原文中符号写错了：
-<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt="">
+<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：<br>
+<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt=""><br>
+原文中符号写错了：<br>
+<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt=""><br>
 这样回归其实是有缺点的，这个公式回归出来的中心点是不受约束的，它的<strong>活动范围是全图</strong>，可以想象其实我们回归出t以后然后计算出的<strong>x,y的值可以是图像中的任意位置</strong>，<strong>在随机初始化的情况下，模型需要很长时间才能稳定地预测出合理的偏移量</strong>。</p>
-<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。
+<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。<br>
 即<code>tx = bx - cx, ty = by - cy</code>，</p>
-<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。
-<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt="">
-宽高和RPN一样：
+<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。<br>
+<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt=""><br>
+宽高和RPN一样：<br>
 <img src="https://jzq6520.github.io/post-images/1572413551539.png" alt=""></p>
 <h2 id="输入图像的大小">输入图像的大小</h2>
 <p>为了使得目标占很大，或者是中心点在图的中间的目标在预测的适合更加准确，所以最好让输出的特征图的像素是个奇数，也就是说把图像隔成奇数个网格，这样就不会像偶数格一样把图像中心分成两部分了，大家可以想象一下3格和4格的区别，4格就把图的中心分割成一半了，如果目标中心点正好在中心区域的周围，那么偏移一点误差也很大了。</p>
@@ -129,25 +129,25 @@
 <li>多尺度训练，Every 10 batches our network randomly chooses a new image dimension size. Since our model downsamples by a factor of 32, we pull from the following multiples of 32: {320, 352, ..., 608}. Thus the smallest option is 320 × 320 and the largest is 608 × 608. We resize the network to that dimension and continue training.</li>
 </ol>
 <h2 id="网络">网络</h2>
-<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：
+<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：<br>
 <img src="https://jzq6520.github.io/post-images/1572415768870.png" alt=""></p>
-<p>网上的图：
-<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt="">
+<p>网上的图：<br>
+<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt=""><br>
 这是在imagenet上进行预训练的结构，训练检测的时候去掉最后一个卷积层，然后增加一个3x3的卷积层和一个1x1的卷积层。原文：<em>We modify this network for detection by removing the last convolutional layer and instead adding on three 3 × 3 convolutional layers with 1024 ﬁlters each followed by a ﬁnal 1 × 1 convolutional layer with the number of outputs we need for detection。</em></p>
 <p>并且，还增加了一个从最后的3×3×512层到第二个到最后一个卷积层的透传层，这样我们的模型可以使用细粒度的特征。原文（看的不是很清晰）：We also add a passthrough layer from the ﬁnal 3 × 3 × 512 layer to the second to last convolutional layer so that our model can use ﬁne grain features.</p>
-<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。
+<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。<br>
 <img src="https://jzq6520.github.io/post-images/1572416170928.png" alt=""></p>
 <h3 id="网络的预测输出">网络的预测输出</h3>
-<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：
+<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：<br>
 <img src="https://jzq6520.github.io/post-images/1572419086667.png" alt=""></p>
 <p>对比YOLO1的输出张量，YOLO2的主要变化就是会输出5个先验框，且每个先验框都会尝试预测一个对象。输出的 <code>13*13*5*25</code> 张量中，25维向量包含 20个对象的分类概率+4个边框坐标+1个边框置信度。</p>
 <h2 id="损失函数">损失函数</h2>
-<p>？？？？？？what？
-文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？
+<p>？？？？？？what？<br>
+文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？<br>
 <strong>应该是结合吧，既然预测宽和高用的是RPN的，预测中心点用的是yolo，预测有没有目标也是yolo的。那么应该就是结合一下了，宽高用smooth L1， 中心点用均方差，有没有目标（置信度）用均方差</strong>以上只是猜测，具体看代码。</p>
-<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：
-<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt="">
-<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt="">
+<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：<br>
+<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt=""><br>
+<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt=""><br>
 <img src="https://jzq6520.github.io/post-images/1572420619180.png" alt=""></p>
 <p><strong>卧槽 差点被坑了，文章中是把网络输出换算成x，y，w，h之后才进行计算loss的</strong>。<strong>不是直接回归t。RPN中是回归t的</strong>。</p>
 <h2 id="训练参数学习率">训练参数，学习率</h2>
@@ -157,9 +157,9 @@
 <li>数据增强：We use a similar data augmentation to YOLO and SSD with random crops, color shifting, etc</li>
 </ul>
 <h2 id="实验结果">实验结果</h2>
-<p>分辨率越高效果越好：
+<p>分辨率越高效果越好：<br>
 <img src="https://jzq6520.github.io/post-images/1572414966868.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></figure>
 <h2 id="引用">引用</h2>
 <ul>
 <li>YOLOv2 / YOLO9000 深入理解 - X-猪的文章 - 知乎https://zhuanlan.zhihu.com/p/47575929</li>

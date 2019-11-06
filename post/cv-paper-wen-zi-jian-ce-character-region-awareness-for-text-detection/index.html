@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -118,37 +118,37 @@
 <p><strong>字符连接的识别</strong>：那么，现在字符的检测方法有了，我们要怎么知道哪些字符是组成一个文字的。这里我觉得作者特别聪明，作者也使用热图的方式来表示文字的连接，如果两个字符是相连接的，那么这两个字符之间就有一个<strong>热点</strong>。很高明的做法，利用热点图来确定两个字符是不是一组的。</p>
 <p>热点就代表着一个响应，如果图片中的某个地方有热点响应，那么表示这个地方存在我们需要的信息，热点的值的大小就代表着置信度，如果置信度越高，那么越确定。</p>
 <h3 id="11-ground-truth-构造">1.1 ground truth 构造</h3>
-<p>如何构造我们的监督信息，可以看下面这幅图。
+<p>如何构造我们的监督信息，可以看下面这幅图。<br>
 <img src="https://jzq6520.github.io/post-images/1557144607556.png" alt=""></p>
 <p>从上图可以看出，我们的监督信息（或者说网络的预测）有两个，一个是Region Score GT（区域分数），这个是预测字符位置的热图，另外一个是Affinity Score GT（关联分数），这个是预测两个字符是否<strong>关联</strong>的热图。</p>
-<p>region score其实就是单个字符的包围框的一个二维高斯图，他是通过对<strong>二维正态分布的高斯图</strong>进行仿射变换得到的。
+<p>region score其实就是单个字符的包围框的一个二维高斯图，他是通过对<strong>二维正态分布的高斯图</strong>进行仿射变换得到的。<br>
 Affinity Score 通过画对角线来连接每个字符框的对角，我们可以生成两个三角形——我们将其称为上字符三角形和下字符三角形。然后，对于每个相邻的字符框对，通过将上三角形和下三角形的中心设置为框的角，生成一个关联框。然后将<strong>二维正态分布的高斯图</strong>进行仿射变换到关联框来获得对应的热图。</p>
 <h2 id="2-数据标注问题-获得字符级别character-level的标注">2 数据标注问题-获得字符级别（Character-level）的标注</h2>
 <p>如果想通过人工进行对字符进行标注，那么可想而知是非常耗时的。所以本文使用<strong>人工生成数据和弱监督</strong>结合的方式来解决这个问题。</p>
 <h3 id="21-人工生成数据">2.1 人工生成数据</h3>
-<p><img src="https://jzq6520.github.io/post-images/1557145267677.png" alt="">
+<p><img src="https://jzq6520.github.io/post-images/1557145267677.png" alt=""><br>
 人工生成就是将文字黏贴到一下图片上，这时候因为是自己的文字，所以我们可以有字符级别的包围框，所以我们就有了字符级别的标注。</p>
 <h3 id="22-弱监督">2.2 弱监督</h3>
-<p><img src="https://jzq6520.github.io/post-images/1557145261386.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1557145261386.png" alt=""></figure>
 <p>上图就是一个弱监督的网络框架，作者将人工生成的数据和我们word-level标注数据一起进行训练。红色箭头预测的是region score，然后经过字符检测的热图来得到每个字符的框，这样进一步又可以得到affinity score的热图。这样就间接获得了文字的affinity score的热图。然后将预测得到的两个score热图作为ground truth进一步监督网络的训练。</p>
 <p>当使用弱监督训练模型时，我们被迫训练不完整的伪GT。 如果使用不准确的区域分数训练模型，则输出可能在字符区域内模糊。 为了防止这种情况，我们测量模型生成的每个伪GT的质量。 幸运的是，文本注释中有一个非常强大的提示，即单词长度。 在大多数数据集中，提供了单词的转录，并且单词的长度可用于评估伪GT的置信度。</p>
-<p>所以我们在训练的时候要根据<strong>伪GT</strong>的置信度来计算loss，如果生成的GT和真实情况很接近，那么这个loss就是有用的，如果生成的GT都很假，我们肯定是不接受这个loss。所以loss的计算方式如下：
+<p>所以我们在训练的时候要根据<strong>伪GT</strong>的置信度来计算loss，如果生成的GT和真实情况很接近，那么这个loss就是有用的，如果生成的GT都很假，我们肯定是不接受这个loss。所以loss的计算方式如下：<br>
 <img src="https://jzq6520.github.io/post-images/1557145511065.png" alt=""></p>
-<p>那么如何计算这个置信度呢，我们可以通过计算伪GT的字符长度和真实的GT的字符长度比较来得到：
+<p>那么如何计算这个置信度呢，我们可以通过计算伪GT的字符长度和真实的GT的字符长度比较来得到：<br>
 <img src="https://jzq6520.github.io/post-images/1557145731860.png" alt=""></p>
 <p>L(w)表示单词的长度，右上角加c的表示预测的得到的长度，取min得到的是不大于L(w)的值，这样Sconf的值就不会是负数，并且Sconf的值是0~1之间的。</p>
-<p>并且预测的热图在这个单词的包围框外面则权重为1，其实简单的理解就是只在word的包围框内的时候它的loss需要加权，因为word（所有的单词区域）包围框外面是没有文字的，所以只要预测出来有字符那么都是假阳。
+<p>并且预测的热图在这个单词的包围框外面则权重为1，其实简单的理解就是只在word的包围框内的时候它的loss需要加权，因为word（所有的单词区域）包围框外面是没有文字的，所以只要预测出来有字符那么都是假阳。<br>
 <img src="https://jzq6520.github.io/post-images/1557146064702.png" alt=""></p>
 <h3 id="23-弱监督gt的生成过程">2.3 弱监督GT的生成过程</h3>
-<p><img src="https://jzq6520.github.io/post-images/1557146113840.png" alt="">
+<p><img src="https://jzq6520.github.io/post-images/1557146113840.png" alt=""><br>
 如图所示，就是先根据word-level标注的数据，将单词切出来，然后再进行预测，得到热图以后再进行处理。</p>
 <h2 id="3-热图预测网络">3 热图预测网络</h2>
-<p>最后热图预测的网络是一个类U-net的网络。
+<p>最后热图预测的网络是一个类U-net的网络。<br>
 <img src="https://jzq6520.github.io/post-images/1557146202867.png" alt=""></p>
 <h2 id="4-网络收敛过程">4 网络收敛过程</h2>
-<p><img src="https://jzq6520.github.io/post-images/1557146285216.png" alt=""></p>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1557146285216.png" alt=""></figure>
 <h2 id="5-网络预测性能">5 网络预测性能</h2>
-<p><img src="https://jzq6520.github.io/post-images/1557146323704.png" alt=""></p>
+<figure data-type="image" tabindex="3"><img src="https://jzq6520.github.io/post-images/1557146323704.png" alt=""></figure>
 <h2 id="6-引用">6 引用</h2>
 <p>论文：Character Region Awareness for Text Detection</p>
 

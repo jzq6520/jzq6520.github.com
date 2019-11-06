@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -118,26 +118,26 @@
 <p>只是这里说的比较明确，说是把原图分割成最后一层feature map大小的个数，feature map是多少个像素，那么就分成几个格子。</p>
 <p>只是说<strong>Faster R-CNN里面好像没有明确提到anchor的中心点在原图的哪个地方</strong>。其实这也是我们规定哪个点就是哪个点，<strong>但是按照感受野的概念，感受野中心的区域的权重往往会高一点</strong>，所以anchor的中心点可以设置成格子的中心。所以anchor的中心点在原图的坐标经过换算一下也是很简单的。应该就是<code>(x*stride + stride/2, y*stride + stride/2)</code>,这里的x和y表示在feature map上的坐标，计算出来的表示原图上的坐标，这也是我自己推测的（<strong>代码还没看过</strong>）。</p>
 <h2 id="定义label">定义label</h2>
-<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：
-* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。
-* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。
+<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：<br>
+* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。<br>
+* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。<br>
 * 类别：是哪个类别</p>
-<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：
+<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：<br>
 <img src="https://jzq6520.github.io/post-images/1572353048785.png" alt=""></p>
 <p>Fast R-CNN最后只是有一个类别和坐标，但是他的类别里面是包含背景的，yolo的类别里面是不包含背景。</p>
-<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。
-这个应该是预测时候的示意图。
+<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。<br>
+这个应该是预测时候的示意图。<br>
 <img src="https://jzq6520.github.io/post-images/1572338771015.png" alt=""></p>
 <h2 id="训练的时候">训练的时候</h2>
 <ul>
 <li>训练的时候只预测一个目标，选择iou高的。原文：<em>YOLO predicts multiple bounding boxes per grid cell. At training time we only want one bounding box predictor to be responsible for each object. We assign one predictor to be “responsible” for predicting an object based on which prediction has the highest current IOU with the ground truth.</em></li>
 </ul>
 <h2 id="损失函数">损失函数</h2>
-<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。
+<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。<br>
 <img src="https://jzq6520.github.io/post-images/1572341526648.png" alt=""></p>
-<p><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></p>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></figure>
 <p>这个长的像1的系数表示有目标的适合是1，没有的适合是0。那头上写的是noobj的时候就反一下。这里大写的C表示confidence置信度。p那个表示类别。计算不是目标的置信度的适合权重设置为0.5 。</p>
-<p>根号的作用：
+<p>根号的作用：<br>
 <img src="https://jzq6520.github.io/post-images/1572352978309.png" alt=""></p>
 <h2 id="缺点">缺点</h2>
 <ul>

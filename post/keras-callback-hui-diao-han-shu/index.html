@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1572832685437">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573020907555">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1572832685437" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573020907555" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -140,9 +140,9 @@ if __name__ == &quot;__main__&quot;:
 </code></pre>
 <p>可以发现，其实我们只需要知道回调函数是<strong>传入什么参数，有什么功能即可</strong>，而不能自己去定义传入参数，<strong>所以我们去写回调函数的时候要按照中间函数传入的参数去写</strong>。</p>
 <h2 id="2-keras中的回调函数">2 keras中的回调函数</h2>
-<p>这里我们不讲那些keras中已经定义的回调函数，这里说一下如何创建自己的回调函数。
-keras中定义了一个回调函数的抽象类，这个类包含多个回调函数（即一个类里面有很多方法，这些方法是不同的时期被中间函数调用的）。我们继承这个类，然后重新其中的回调函数即可。
-下面看一下这个基类：
+<p>这里我们不讲那些keras中已经定义的回调函数，这里说一下如何创建自己的回调函数。<br>
+keras中定义了一个回调函数的抽象类，这个类包含多个回调函数（即一个类里面有很多方法，这些方法是不同的时期被中间函数调用的）。我们继承这个类，然后重新其中的回调函数即可。<br>
+下面看一下这个基类：<br>
 https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L275</p>
 <pre><code class="language-python">class Callback(object):
 			 &quot;&quot;&quot;Abstract base class used to build new callbacks.
