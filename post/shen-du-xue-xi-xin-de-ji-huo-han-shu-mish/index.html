@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Cython | chuck</title>
+<title>深度学习--新的激活函数Mish | chuck</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -12,6 +12,12 @@
 <link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573548525117">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -90,28 +96,69 @@
 
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
-          <h2 class="current-tag">标签: Cython</h2>
-          
-            <article class="post-item">
-              <div class="left">
-                <a href="https://jzq6520.github.io/post/cython1">
-                  <h2 class="post-title">Cython(1)--基本概念</h2>
-                </a>
-                <div class="post-date">
-                  2019-11-06
-                </div>
-                <div class="post-abstract">
-                  
-                </div>
-              </div>
-              
-            </article>
-          
+          <div class="post-detail">
+            <h2 class="post-title">深度学习--新的激活函数Mish</h2>
+            <div class="post-date">2019-11-11</div>
+            
+            <div class="post-content">
+              <pre><code>import torch
+import torch.nn.functional as F
+from torch import nn
 
-          <div class="pagination-container">
-  
-  
-</div>
+class Mish(nn.Module):
+    '''
+    Applies the mish function element-wise:
+    mish(x) = x * tanh(softplus(x)) = x * tanh(ln(1 + exp(x)))
+    Shape:
+        - Input: (N, *) where * means, any number of additional
+          dimensions
+        - Output: (N, *), same shape as the input
+    Examples:
+        &gt;&gt;&gt; m = Mish()
+        &gt;&gt;&gt; input = torch.randn(2)
+        &gt;&gt;&gt; output = m(input)
+    '''
+    def __init__(self):
+        '''
+        Init method.
+        '''
+        super(Mish, self).__init__()
+
+    def forward(self, input):
+        '''
+        Forward pass of the function.
+        '''
+        return input * torch.tanh(F.softplus(input))
+
+model = models.resnet50(pretrained=True, progress=True)
+print(&quot;acitve&quot;, model.relu)
+model.relu = Mish()  ## 在pytorch的resnet50里面这样替换一下就可以了
+print(&quot;acitve&quot;, model.relu)
+
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pytorch-deep-learning-with-pytorch-jian-dan-ji-lu">
+                  <h3 class="post-title">
+                    pytorch--Deep Learning with PyTorch 简单记录
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
 
         </div>
       </div>
@@ -133,6 +180,29 @@ var app = new Vue({
 })
 
 </script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
 
 
 

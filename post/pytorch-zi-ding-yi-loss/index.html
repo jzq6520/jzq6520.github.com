@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>pytorch--自定义loss | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573548525117">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573548525117" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">pytorch--自定义loss</h2>
+            <div class="post-date">2019-11-12</div>
+            
+            <div class="post-content">
+              <ol>
+<li>负log loss；</li>
+<li>binary crossentropy；</li>
+<li>focal loss；</li>
+</ol>
+<p>网上找到的loss写的都普遍复杂，我自己稍微写的逻辑简单一点。</p>
+<pre><code class="language-python">if inputs.is_cuda and not self.alpha.is_cuda:
+            self.alpha = self.alpha.cuda()
+</code></pre>
+<h2 id="focal-loss">focal loss</h2>
+<p>focal loss仔细实践起来可以分为两种情况，一种是二分类（<strong>sigmoid激活</strong>）的时候，还有一种情况就是多分类（<strong>softmax激活</strong>）的时候。</p>
+<h3 id="二分类focal-loss">二分类focal loss</h3>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1573545890626.png" alt=""></figure>
+<pre><code class="language-python">class FocalLoss(nn.Module):
+    &quot;&quot;&quot; -[alpha*y*(1-p)^gamma*log(p)+(1-alpha)(1-y)*p^gamma*log(1-p)] loss&quot;&quot;&quot;
+
+    def __init__(self, gamma, alpha=None , onehot=False):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.onehot = onehot
+
+
+    def forward(self, inputs, targets):
+        &quot;&quot;&quot;
+
+        :param input: onehot
+        :param target: 默认是onehot以后
+        :return:
+        &quot;&quot;&quot;
+        N = inputs.size(0)
+        C = inputs.size(1)
+        inputs = torch.clamp(inputs, min=0.001, max=1.0)  ##将一个张量中的数值限制在一个范围内，如限制在[0.1,1.0]范围内，可以避免一些运算错误，如预测结果q中元素可能为0
+        if inputs.is_cuda and not self.alpha.is_cuda:
+            self.alpha = self.alpha.cuda()    
+
+         if not self.onehot:
+            class_mask = inputs.data.new(N, C).fill_(0)
+            class_mask = Variable(class_mask)
+            ids = targets.view(-1, 1)
+            class_mask.scatter_(1, ids.data, 1.)
+            targets = class_mask
+
+        pos_sample_loss_matrix = -targets * (torch.pow((1 - inputs), self.gamma)) * inputs.log()  ## 正样本的loss
+        # mean_pos_sample_loss = pos_sample_loss_matrix.sum() / targets.sum()
+
+        neg_sample_loss_matrix = -(targets == 0).float() * (torch.pow((inputs), self.gamma)) * (1 - inputs).log()  ## 负样本的loss
+        # mean_neg_sample_loss = pos_sample_loss_matrix.sum() / targets.sum()
+        if self.alpha:
+            return (self.alpha * pos_sample_loss_matrix + (1 - self.alpha) * neg_sample_loss_matrix).sum() / (N * C)
+        else:
+            return (pos_sample_loss_matrix + neg_sample_loss_matrix).sum() / (N * C)
+
+
+</code></pre>
+<h2 id="多分类focal-loss">多分类focal loss</h2>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1573546010700.png" alt=""></figure>
+<pre><code class="language-python">class FocalLoss(nn.Module):
+    &quot;&quot;&quot; -[y*(1-p)^gamma*log(p) loss
+        softmax激活输入的foacl loss。
+    &quot;&quot;&quot;
+
+    def __init__(self, gamma, onehot=False):
+        super(FocalLoss, self).__init__()
+
+        self.gamma = gamma
+        self.onehot = onehot
+
+
+    def forward(self, inputs, targets):
+        &quot;&quot;&quot;
+
+        :param input: onehot
+        :param target: 默认是onehot以后
+        :return:
+        &quot;&quot;&quot;
+
+        inputs = torch.clamp(inputs, min=0.001, max=1.0)  ##将一个张量中的数值限制在一个范围内，如限制在[0.1,1.0]范围内，可以避免一些运算错误，如预测结果q中元素可能为0
+
+         if not self.onehot:
+            N = inputs.size(0)
+            C = inputs.size(1)
+            class_mask = inputs.data.new(N, C).fill_(0)
+            class_mask = Variable(class_mask)
+            ids = targets.view(-1, 1)
+            class_mask.scatter_(1, ids.data, 1.)
+            targets = class_mask
+
+        pos_sample_loss_matrix = -targets * (torch.pow((1 - inputs), self.gamma)) * inputs.log()  ## 正样本的loss
+        # mean_pos_sample_loss = pos_sample_loss_matrix.sum() / targets.sum()
+
+        ## 默认输出均值
+        ## 这里不能直接求mean，
+        # 因为整个矩阵还是原来的输入大小的，
+        # 求loss应该是除以label中有目标的总数。
+        
+        return pos_sample_loss_matrix / targets.sum()
+        
+
+
+</code></pre>
+<h2 id="代码">代码</h2>
+<ul>
+<li>NegtiveLogLoss</li>
+<li>BinaryCrossEntropy</li>
+</ul>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+from torch.autograd import Variable
+
+class NegtiveLogLoss(nn.Module):
+   &quot;&quot;&quot; -log(p) loss&quot;&quot;&quot;
+
+   def __init__(self, onehot=False):
+       super(NegtiveLogLoss, self).__init__()
+       self.onehot = onehot
+
+   def forward(self, inputs, targets):
+       &quot;&quot;&quot;
+
+       :param input: onehot
+       :param target: 默认是onehot以后
+       :return:
+       &quot;&quot;&quot;
+
+       inputs = torch.clamp(inputs, min=0.001, max=1.0)  ## 将一个张量中的数值限制在一个范围内，如限制在[0.1,1.0]范围内，可以避免一些运算错误，如预测结果q中元素可能为0
+
+       if not self.onehot:
+           N = inputs.size(0)
+           C = inputs.size(1)
+           class_mask = inputs.data.new(N, C).fill_(0)
+           class_mask = Variable(class_mask)
+           ids = targets.view(-1, 1)
+           class_mask.scatter_(1, ids.data, 1.)
+           targets = class_mask
+
+       loss_matrix = -targets * inputs.log()  ## 对预测的矩阵里面的每个元素做log，
+       ## 然后乘以one hot的label，也就是说获得1位置的值了。
+       ## 这时候还是个矩阵，还没有计算均值
+       ## 默认输出均值
+       return loss_matrix.sum() / targets.sum()  ## 这里不能直接求mean，
+       # 因为整个矩阵还是原来的输入大小的，
+       # 求loss应该是除以label中有目标的总数。
+
+
+
+class BinaryCrossEntropy(nn.Module):
+   &quot;&quot;&quot; -(ylog(p)+(1-y)log(1-p) loss&quot;&quot;&quot;
+
+   def __init__(self, alpha=None, onehot=False):
+       super(BinaryCrossEntropy, self).__init__()
+       self.alpha = alpha
+       self.onehot = onehot
+
+   def forward(self, inputs, targets):
+       &quot;&quot;&quot;
+
+       :param input: onehot
+       :param target: 默认是onehot以后
+       :return:
+       &quot;&quot;&quot;
+       N = inputs.size(0)
+       C = inputs.size(1)
+       inputs = torch.clamp(inputs, min=0.001, max=1.0)  ##将一个张量中的数值限制在一个范围内，如限制在[0.1,1.0]范围内，可以避免一些运算错误，如预测结果q中元素可能为0
+       
+       if not self.onehot:
+
+           class_mask = inputs.data.new(N, C).fill_(0)
+           class_mask = Variable(class_mask)
+           ids = targets.view(-1, 1)
+           class_mask.scatter_(1, ids.data, 1.)
+           targets = class_mask
+
+       pos_sample_loss_matrix = -targets * inputs.log()  ## 正样本的loss
+       # mean_pos_sample_loss = pos_sample_loss_matrix.sum() / targets.sum()
+      
+       neg_sample_loss_matrix = -(targets == 0).float() * (1 - inputs).log()  ## 负样本的loss
+       # mean_neg_sample_loss = pos_sample_loss_matrix.sum() / targets.sum()
+
+       if self.alpha:
+           return (self.alpha*pos_sample_loss_matrix + (1-self.alpha)*neg_sample_loss_matrix).sum() / (N * C)
+       else:
+           return (pos_sample_loss_matrix + neg_sample_loss_matrix).sum() / (N * C)  
+
+
+
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>http://kodgv.xyz/2019/04/22/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/FocalLoss%E9%92%88%E5%AF%B9%E4%B8%8D%E5%B9%B3%E8%A1%A1%E6%95%B0%E6%8D%AE/</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/shen-du-xue-xi-xin-de-ji-huo-han-shu-mish">
+                  <h3 class="post-title">
+                    深度学习--新的激活函数Mish
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

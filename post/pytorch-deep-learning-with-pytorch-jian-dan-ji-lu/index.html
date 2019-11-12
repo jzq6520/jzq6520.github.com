@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>pytorch--Deep Learning with PyTorch 简单记录 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573548525117">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573548525117" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">pytorch--Deep Learning with PyTorch 简单记录</h2>
+            <div class="post-date">2019-11-11</div>
+            
+            <div class="post-content">
+              <h2 id="底层细节">底层细节</h2>
+<ul>
+<li>A tensor containing only one element is called a scalar.</li>
+<li>一维tensor：</li>
+</ul>
+<pre><code>temp = torch.FloatTensor([23,24,24.5,26,27.2,23.0])
+</code></pre>
+<ul>
+<li>tensor 数据类型：<code>torch.FloatTensor</code>等</li>
+<li>数据类型转换, Tensor后加long(), int(), double(),float(),byte()等函数就能将Tensor进行类型转换；</li>
+<li>Torch provides a utility function called from_numpy(), which converts a numpy array into a torch tensor.</li>
+</ul>
+<pre><code>boston_tensor = torch.from_numpy(boston.data)
+</code></pre>
+<ul>
+<li>tensor to numpy,and slice</li>
+</ul>
+<pre><code>plt.imshow(panda_tensor[:,:,0].numpy())
+</code></pre>
+<ul>
+<li>4d tensor,先用numpy reshape</li>
+</ul>
+<pre><code>cat_imgs = np.array([np.array(Image.open(cat).resize((224,224))) for cat in cats[:64]]) 
+cat_imgs = cat_imgs.reshape(-1,224,224,3) 
+cat_tensors = torch.from_numpy(cat_imgs)
+</code></pre>
+<ul>
+<li>算术运算，addition, subtraction, multiplication, dot product, and matrix multiplication.All of these operations can be either performed on the** CPU or the GPU**.</li>
+</ul>
+<pre><code>加法：d = torch.add(a,b) ， c = a+b
+数值乘法：a.mul(b) ， a*b
+矩阵相乘：a.matmul(b)
+</code></pre>
+<ul>
+<li>把tensor从cpu拷贝到gpu，PyTorch provides a simple function called cuda() to copy a tensor on the CPU to the GPU.</li>
+</ul>
+<pre><code>a = torch.rand(10000,10000) b = torch.rand(10000,10000)
+a.matmul(b)
+Time taken: 3.23 s
+
+#Move the tensors to GPU a = a.cuda() b = b.cuda()
+a.matmul(b)
+Time taken: 11.2 µs
+</code></pre>
+<ul>
+<li>require_grad参数表示是否是可学习的，也就是是否梯度下降。</li>
+<li>在loss上调用<code>backward</code>函数计算梯度。calculate the gradients by calling the <code>backward</code> function on the final loss variable。</li>
+<li></li>
+</ul>
+<pre><code class="language-python">  def loss_fn(y,y_pred): 
+    loss = (y_pred-y).pow(2).sum() 
+    for param in [w,b]: ##这里是训练w和b，
+        if not param.grad is None: ## 如果参数的梯度是None，即不计算梯度的，那么就梯度设置为0.
+            param.grad.data.zero_()  ## remove any previously calculated gradients by calling the grad.data.zero_() operation.
+    loss.backward()  ## 调用了这句以后就会自动计算梯度，梯度计算出来就存在param.grad.data里面。
+    return loss.data[0]
+
+def optimize(learning_rate): 
+    w.data -= learning_rate * w.grad.data 
+    b.data -= learning_rate * b.grad.data
+</code></pre>
+<ul>
+<li>Dataset是一个数据结构,只需要继承并实例化三个方法</li>
+</ul>
+<pre><code>from torch.utils.data import Dataset 
+class DogsAndCatsDataset(Dataset): 
+    def __init__(self,):
+        pass 
+    def __len__(self):
+        pass 
+    def __getitem__(self,idx): 
+        pass
+</code></pre>
+<ul>
+<li>DataLoader其实是一个generator，但是可以进行<strong>多线程读取</strong>，可以指定batchsize。</li>
+</ul>
+<pre><code>dataloader = DataLoader(dogsdset,batch_size=32,num_workers=2) 
+for imgs , labels in dataloader: 
+	#Apply your DL on the dataset. 
+	pass
+</code></pre>
+<h2 id="layer">layer</h2>
+<p>higher-level functionalities are called <strong>layers</strong> across the deep learning frameworks。</p>
+<p><img src="https://jzq6520.github.io/post-images/1573460839202.png" alt=""><br>
+Summarizing the previous diagram, any deep learning training involves getting data, building an architecture that in general is getting a bunch of layers together, evaluating the accuracy of the model using a loss function, and then optimizing the algorithm by optimizing the weights of our network.</p>
+<ul>
+<li>全连接层<pre><code class="language-python">myLayer = Linear(in_features=10,out_features=5,bias=True)
+</code></pre>
+<ul>
+<li>使用：<code>myLayer(input)</code></li>
+<li>访问参数：
+<ul>
+<li>weight: <code>myLayer.weight</code></li>
+<li>bias: <code>myLayer.bias</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/cython2-bian-yi-he-yun-xing">
+                  <h3 class="post-title">
+                    Cython(2)--编译和运行
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
