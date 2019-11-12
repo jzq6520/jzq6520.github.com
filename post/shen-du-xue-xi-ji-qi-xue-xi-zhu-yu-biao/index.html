@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>进度条工具tqdm | chuck</title>
+<title>深度学习--机器学习术语表 | chuck</title>
 <meta name="description" content="天地不仁以万物为刍狗">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -97,61 +97,57 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">进度条工具tqdm</h2>
-            <div class="post-date">2019-04-29</div>
-            
-              <div class="feature-container" style="background-image: url('https://jzq6520.github.io/post-images/python-jin-du-tiao-gong-ju-tqdm.png')">
-              </div>
+            <h2 class="post-title">深度学习--机器学习术语表</h2>
+            <div class="post-date">2019-11-12</div>
             
             <div class="post-content">
-              <h2 id="安装">安装</h2>
-<pre><code>pip install tqdm
-</code></pre>
-<h2 id="使用">使用</h2>
-<p>tqdm包是一个python进度条工具，可以在我们进行for循环的时候显示我们的迭代进度。</p>
-<p>例如：</p>
-<pre><code class="language-python">from tqdm import tqdm
-import time
-
-text = &quot;&quot;
-for char in tqdm([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]):
-    time.sleep(0.25)
-    text = text + char
-</code></pre>
-<p>也可以用于显示文件下载进度、文件加载进度。</p>
-<p>可以自定义进度条的加载，例如：</p>
-<pre><code class="language-python">with tqdm(total=100) as pbar:
-    for i in range(10):
-        pbar.update(10)
-</code></pre>
-<p>或</p>
-<pre><code class="language-python">pbar = tqdm(total=100)
-for i in range(10):
-    pbar.update(10)
-pbar.close()
-</code></pre>
-<h2 id="引用">引用</h2>
-<ul>
-<li><a href="https://github.com/tqdm/tqdm">https://github.com/tqdm/tqdm</a></li>
-<li><a href="https://blog.csdn.net/qq_40666028/article/details/79335961">https://blog.csdn.net/qq_40666028/article/details/79335961</a></li>
+              <ul>
+<li>
+<p><strong>Sample or input or data point</strong>: These mean particular instances of training a set. In our image classification problem seen in the last chapter, each image can be referred to as a sample, input, or data point.</p>
+</li>
+<li>
+<p><strong>Prediction or output</strong>: The value our algorithm generates as an output. For example, in our previous example our algorithm predicted a particular image as 0, which is the label given to cat, so the number 0 is our prediction or output.</p>
+</li>
+<li>
+<p><strong>Target or label</strong>: The actual tagged label for an image. Loss value or</p>
+</li>
+<li>
+<p><strong>prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
+</li>
+<li>
+<p><strong>Classes</strong>: Possible set of values or labels for a given dataset. In the example in our previous chapter, we had two classes—cats and dogs.</p>
+</li>
+<li>
+<p><strong>Binary classification</strong>: A classification task where each input example should be classified as either one of the two exclusive categories.</p>
+</li>
+<li>
+<p><strong>Multi-class classification</strong>: A classification task where each input example can be classified into of more than two different categories.</p>
+</li>
+<li>
+<p><strong>Multi-label classification</strong>: An input example can be tagged with multiple labels—for example, tagging a restaurant with different types of food it serves such as Italian, Mexican, and Indian. Another commonly-used example is object detection in an image, where the algorithm identifies different objects in the image.</p>
+</li>
+<li>
+<p><strong>Scalar regression</strong>: Each input data point will be associated with one scalar quality, which is a number. Some examples could be predicting house prices, stock prices, and cricket scores.</p>
+</li>
+<li>
+<p><strong>Vector regression</strong>: Where the algorithm needs to predict more than one scalar quantity. One good example is when you try to identify the bounding box that contains the location of a fish in an image. In order to predict the bounding box, your algorithm needs to predict four scalar quantities denoting the edges of a square.</p>
+</li>
+<li>
+<p><strong>Batch</strong>: For most cases, we train our algorithm on a bunch of input samples referred to as the batch. The batch size varies generally from 2 to 256, depending on the GPU's memory. The weights are also updated for each batch, so the algorithms tend to learn faster than when trained on a single example.</p>
+</li>
+<li>
+<p><strong>Epoch</strong>: Running the algorithm through a complete dataset is called an epoch. It is common to train (update the weights) for several epochs.</p>
+</li>
 </ul>
 
             </div>
             
-              <div class="tag-container">
-                
-                  <a href="https://jzq6520.github.io/tag/IvXzr4cLv" class="tag">
-                    python
-                  </a>
-                
-              </div>
-            
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://jzq6520.github.io/post/about">
+                <a href="https://jzq6520.github.io/post/pytorch-zi-ding-yi-loss">
                   <h3 class="post-title">
-                    关于
+                    pytorch--自定义loss
                   </h3>
                 </a>
               </div>

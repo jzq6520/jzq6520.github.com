@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573548525117">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573552152516">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1573548525117" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1573552152516" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -200,6 +200,25 @@ Summarizing the previous diagram, any deep learning training involves getting da
 </ul>
 </li>
 </ul>
+<h2 id="loss">loss</h2>
+<p>在一些比较复杂的情况下，如果先用的pytorch中提供的loss不是好用，最好还是自己实现loss。<br>
+<img src="https://jzq6520.github.io/post-images/1573550147656.png" alt=""></p>
+<h2 id="优化器">优化器</h2>
+<p>For the sake of simplicity, let's see these optimizers as black boxes that take loss functions and all the learnable parameters and move them slightly to improve our performances.</p>
+<pre><code class="language-python">
+for input, target in dataset: 
+	optimizer.zero_grad() ## 将每个变量的梯度初始化为0
+	output = model(input) 
+	loss = loss_fn(output, target) 
+	loss.backward() ## 计算梯度calculates the gradients
+	optimizer.step() ## 对变量进行迭代优化makes the actual changes to our learnable parameter
+</code></pre>
+<h2 id="迁移学习">迁移学习</h2>
+<pre><code class="language-python">model_ft = models.resnet18(pretrained=True) num_ftrs = model_ft.fc.in_features model_ft.fc = nn.Linear(num_ftrs, 2)
+
+if is_cuda: 
+    model_ft = model_ft.cuda()
+</code></pre>
 
             </div>
             

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-11-12T08:48:48.948Z</updated>
+    <updated>2019-11-12T09:59:01.973Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -10,6 +10,52 @@
     <logo>https://jzq6520.github.io/images/avatar.png</logo>
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
+    <entry>
+        <title type="html"><![CDATA[深度学习--机器学习术语表]]></title>
+        <id>https://jzq6520.github.io/post/shen-du-xue-xi-ji-qi-xue-xi-zhu-yu-biao</id>
+        <link href="https://jzq6520.github.io/post/shen-du-xue-xi-ji-qi-xue-xi-zhu-yu-biao">
+        </link>
+        <updated>2019-11-12T09:44:49.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>
+<p><strong>Sample or input or data point</strong>: These mean particular instances of training a set. In our image classification problem seen in the last chapter, each image can be referred to as a sample, input, or data point.</p>
+</li>
+<li>
+<p><strong>Prediction or output</strong>: The value our algorithm generates as an output. For example, in our previous example our algorithm predicted a particular image as 0, which is the label given to cat, so the number 0 is our prediction or output.</p>
+</li>
+<li>
+<p><strong>Target or label</strong>: The actual tagged label for an image. Loss value or</p>
+</li>
+<li>
+<p><strong>prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
+</li>
+<li>
+<p><strong>Classes</strong>: Possible set of values or labels for a given dataset. In the example in our previous chapter, we had two classes—cats and dogs.</p>
+</li>
+<li>
+<p><strong>Binary classification</strong>: A classification task where each input example should be classified as either one of the two exclusive categories.</p>
+</li>
+<li>
+<p><strong>Multi-class classification</strong>: A classification task where each input example can be classified into of more than two different categories.</p>
+</li>
+<li>
+<p><strong>Multi-label classification</strong>: An input example can be tagged with multiple labels—for example, tagging a restaurant with different types of food it serves such as Italian, Mexican, and Indian. Another commonly-used example is object detection in an image, where the algorithm identifies different objects in the image.</p>
+</li>
+<li>
+<p><strong>Scalar regression</strong>: Each input data point will be associated with one scalar quality, which is a number. Some examples could be predicting house prices, stock prices, and cricket scores.</p>
+</li>
+<li>
+<p><strong>Vector regression</strong>: Where the algorithm needs to predict more than one scalar quantity. One good example is when you try to identify the bounding box that contains the location of a fish in an image. In order to predict the bounding box, your algorithm needs to predict four scalar quantities denoting the edges of a square.</p>
+</li>
+<li>
+<p><strong>Batch</strong>: For most cases, we train our algorithm on a bunch of input samples referred to as the batch. The batch size varies generally from 2 to 256, depending on the GPU's memory. The weights are also updated for each batch, so the algorithms tend to learn faster than when trained on a single example.</p>
+</li>
+<li>
+<p><strong>Epoch</strong>: Running the algorithm through a complete dataset is called an epoch. It is common to train (update the weights) for several epochs.</p>
+</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[pytorch--自定义loss]]></title>
         <id>https://jzq6520.github.io/post/pytorch-zi-ding-yi-loss</id>
@@ -357,6 +403,25 @@ Summarizing the previous diagram, any deep learning training involves getting da
 </ul>
 </li>
 </ul>
+<h2 id="loss">loss</h2>
+<p>在一些比较复杂的情况下，如果先用的pytorch中提供的loss不是好用，最好还是自己实现loss。<br>
+<img src="https://jzq6520.github.io/post-images/1573550147656.png" alt=""></p>
+<h2 id="优化器">优化器</h2>
+<p>For the sake of simplicity, let's see these optimizers as black boxes that take loss functions and all the learnable parameters and move them slightly to improve our performances.</p>
+<pre><code class="language-python">
+for input, target in dataset: 
+	optimizer.zero_grad() ## 将每个变量的梯度初始化为0
+	output = model(input) 
+	loss = loss_fn(output, target) 
+	loss.backward() ## 计算梯度calculates the gradients
+	optimizer.step() ## 对变量进行迭代优化makes the actual changes to our learnable parameter
+</code></pre>
+<h2 id="迁移学习">迁移学习</h2>
+<pre><code class="language-python">model_ft = models.resnet18(pretrained=True) num_ftrs = model_ft.fc.in_features model_ft.fc = nn.Linear(num_ftrs, 2)
+
+if is_cuda: 
+    model_ft = model_ft.cuda()
+</code></pre>
 ]]></content>
     </entry>
     <entry>
@@ -830,74 +895,6 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <ul>
 <li>图解YOLO - 晓雷的文章 - 知乎 https://zhuanlan.zhihu.com/p/24916786</li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-笔记-重读Fast R-CNN的ROI pooling]]></title>
-        <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-fast-r-cnn-ji-roi-pooling</id>
-        <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-fast-r-cnn-ji-roi-pooling">
-        </link>
-        <updated>2019-10-29T03:59:07.000Z</updated>
-        <content type="html"><![CDATA[<p>Fast R-CNN主要是使用了一个ROI Pooling操作来对候选区域进行分类和包围框的微调。<br>
-这里主要说明一下ROI pooling是怎么做的，主要包括：</p>
-<ol>
-<li>原图上的ROI坐标如何映射到feature map上？</li>
-<li>ROI Pooling是如何做？</li>
-<li>ROI Pooling的梯度反向传播是怎么做的？</li>
-<li>那么多的ROI Pooling做完以后是怎么进入到全连接层进行训练的？</li>
-<li>正负样本怎么制作？</li>
-<li>loss怎么计算？</li>
-<li>回归的数值是什么？</li>
-</ol>
-<p>以上就是我这篇文章看下来的疑问或文章中的重点，然后查找资料和阅读相关论文来寻找答案。<br>
-下面一个个来说明。</p>
-<h2 id="1-原图上的roi坐标如何映射到feature-map上">1 原图上的ROI坐标如何映射到feature map上？</h2>
-<p>这个问题相对简单，可以这样理解，最后一层的feature map是网络多次下采样得到的，所以只要对原图上的坐标进行相同倍数的缩放即可。vgg16最后一个特征图是经过4次下采样，即缩小16倍得到的，所以坐标<code>x' = [x/下采样倍数] + 1</code> 中括号表示向下取整，vgg16的下采样倍数就是16。这里为什么要+1还不清楚。</p>
-<h2 id="2-roi-pooling是如何做">2 ROI Pooling是如何做？</h2>
-<p>因为物体有大有小，所以物体的ROI映射到特征图上以后也是有大有小 尺寸不一样，所以如果想输入到全连接层进行分类，那么就必须要同样的神经元个数，因为全连接的输入大小是固定的。</p>
-<p>所以这里使用了一个max pooling方式将任意大小的roi对应的featuremap（这里的对应的roi featuremap只是最后输出的featuremap中切下的一小块）弄到一个尺度，比如文章中就是都弄到了7x7 。</p>
-<p>其实很简单，就是将roi feature map隔成7x7的格子，然后每个格子里取最大的数（max pooling) 。如下图所示，图中的黑框就是原图中的roi在featuremap中对应的特征区域：<br>
-<img src="https://jzq6520.github.io/post-images/1572328585352.png" alt=""></p>
-<h2 id="3-roi-pooling的梯度反向传播是怎么做的">3 ROI Pooling的梯度反向传播是怎么做的？</h2>
-<p>这个梯度计算在文章中的公式写的很难看懂，但是看了其他人的<a href="https://zhuanlan.zhihu.com/p/30368989">博客</a>解释就比较清晰了，其实还是很简单的。</p>
-<p>首先，了解一下max pooling是怎么反向传播的，其实就是max的区域有梯度，为1。<br>
-<img src="https://jzq6520.github.io/post-images/1572328987720.jpg" alt=""><br>
-<img src="https://jzq6520.github.io/post-images/1572329086778.png" alt=""><br>
-有了上面的了解，再来看ROI pooling，其中不一样的是<strong>特征图中的一个像素</strong>可能是多个感兴趣区域的重合部分。例如：<br>
-<img src="https://jzq6520.github.io/post-images/1572329164506.jpg" alt=""></p>
-<p>那么这个个像素的位置的梯度就累积就可以了，比如假设3个roi pooling都用到了这个像素，那么梯度就是3了。</p>
-<h2 id="4-那么多的roi-pooling做完以后是怎么进入到全连接层进行训练的">4 那么多的ROI Pooling做完以后是怎么进入到全连接层进行训练的？</h2>
-<p>这一点细节其实文章中没提到，但是我想文章中是说到了每次选择2张图片，然后每张图片中选择64个roi进行训练，那么可以看出最后预测的全连接层的batch size是128，其实可以把roi pooling去掉，那么后面的网络其实就是一个输入一个7x7个神经元个数的全连接神经网络，batchsize为128。</p>
-<p>所以这里是<strong>对选择的128个区域做ROI Pooling，然后把128个特征作为batchsize的形式传到网络中训练的</strong>。可以看下图：<br>
-<img src="https://jzq6520.github.io/post-images/1572329514254.png" alt=""></p>
-<h2 id="5-正负样本怎么制作">5 正负样本怎么制作？</h2>
-<p>说到训练肯定是要去看怎么做数据，和选择正负样本的。</p>
-<ul>
-<li>正样本：IOU 大于等于0.5；</li>
-<li>负样本：IOU在<code>[0.1, 0.5)</code>区间。</li>
-</ul>
-<p>正样本25%左右。</p>
-<h2 id="6-loss怎么计算">6 loss怎么计算？</h2>
-<p>loss也包括两部，分类+坐标回归。</p>
-<ul>
-<li>分类采用log loss，也就是交叉熵；</li>
-<li>坐标回归采用smooth L1，当回归的数值非常大的时候，如果用L2loss就要非常小心，要防止梯度爆炸，因为抛物线两边是梯度越来越大的，L1是不变的。</li>
-</ul>
-<h3 id="smooth-l1">smooth L1</h3>
-<p><img src="https://jzq6520.github.io/post-images/1572330028401.png" alt=""><br>
-<img src="https://jzq6520.github.io/post-images/1572330081867.png" alt=""></p>
-<h2 id="7回归的数值是什么">7回归的数值是什么？</h2>
-<p>现在检测的话都是回归一个相对坐标。<br>
-这里的话<strong>参照边框</strong>就是<strong>proposal的框</strong>了，而不是anchor的框。</p>
-<p>回归的label是这么制作的：<br>
-<img src="https://jzq6520.github.io/post-images/1572330297928.png" alt=""></p>
-<p><strong>我们实际回归的就是这个t，然后再反过来求一下坐标和宽高。R-CNN论文里面写的有点复杂，其实就是回归一t就对了</strong>。</p>
-<h2 id="引用">引用</h2>
-<ol>
-<li>roi pooling反向传播和roi在featuremap上的位置：https://zhuanlan.zhihu.com/p/30368989</li>
-<li>roi pooling的操作细节：https://deepsense.ai/region-of-interest-pooling-explained/</li>
-<li>R-CNN</li>
-</ol>
 ]]></content>
     </entry>
 </feed>
