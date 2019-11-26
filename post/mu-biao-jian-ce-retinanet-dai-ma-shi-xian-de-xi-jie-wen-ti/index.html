@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>目标检测--RetinaNet代码实现的细节 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1574781538318">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1574781538318" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">目标检测--RetinaNet代码实现的细节</h2>
+            <div class="post-date">2019-11-26</div>
+            
+            <div class="post-content">
+              <ol>
+<li>网络：
+<ol>
+<li>除了backbone部分，其他的fpn、分类subnet和回归subnet都不加bn；</li>
+<li>fpn的部分不加激活，回归和分类subnet加relu激活，最后的回归不加激活；</li>
+<li>p6到p7要做激活；</li>
+</ol>
+</li>
+<li>loss：
+<ol>
+<li>回归只计算正样本的loss，<strong>且除以正样本的个数</strong>。</li>
+<li>分类只计算正样本和负样本的loss，并且也是<strong>除以正样本的个数</strong>，而不是除以正负样本的。</li>
+</ol>
+</li>
+<li><strong>回归subnet是不共享参数的，分类subnet共享参数</strong>；</li>
+<li>最后预测的时候，对预测的所有概率进行排序，然后取前1000个bbox，然后卡0.05的阈值，最后做nms，<strong>nms的阈值是0.5</strong>.</li>
+<li>分类的最后一个conv的bias初始化为<code>-log((1-0.01)/0.01)</code>,其他照样初始化为0，子网络其他部分卷积核进行标准差为0.01的高斯初始化，bias为0初始化。</li>
+</ol>
+<h2 id="keras中是直接回归两个角的坐标">keras中是直接回归两个角的坐标</h2>
+<p>其实也是可以回归中心点和宽高的。<br>
+如下所示，直接回归角点坐标的一个变换，而不是中心点和宽高：</p>
+<pre><code class="language-python">targets_dx1 = (gt_boxes[:, 0] - anchors[:, 0]) / anchor_widths
+targets_dy1 = (gt_boxes[:, 1] - anchors[:, 1]) / anchor_heights
+targets_dx2 = (gt_boxes[:, 2] - anchors[:, 2]) / anchor_widths
+targets_dy2 = (gt_boxes[:, 3] - anchors[:, 3]) / anchor_heights
+</code></pre>
+<p>然后最后的网络回归的数值还要再在之前的上面除以一个0.2</p>
+<pre><code>if mean is None:
+        mean = np.array([0, 0, 0, 0])
+if std is None:
+    std = np.array([0.2, 0.2, 0.2, 0.2])
+targets = np.stack((targets_dx1, targets_dy1, targets_dx2, targets_dy2))
+targets = targets.T
+
+targets = (targets - mean) / std
+</code></pre>
+<h2 id="子网络subnet">子网络subnet</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<pre><code class="language-python">## 回归的subnet
+options = {
+        'kernel_size'        : 3,
+        'strides'            : 1,
+        'padding'            : 'same',
+        'kernel_initializer' : keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        'bias_initializer'   : 'zeros'}
+for i in range(4):
+        outputs = keras.layers.Conv2D(
+            filters=regression_feature_size,
+            activation='relu',
+            name='pyramid_regression_{}'.format(i),
+            **options
+        )(outputs)
+
+    outputs = keras.layers.Conv2D(num_anchors * num_values, name='pyramid_regression', **options)(outputs)
+
+## 分类的subnet
+options = {
+        'kernel_size' : 3,
+        'strides'     : 1,
+        'padding'     : 'same',
+    }
+for i in range(4):
+        outputs = keras.layers.Conv2D(
+            filters=classification_feature_size,
+            activation='relu',
+            name='pyramid_classification_{}'.format(i),
+            kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+            bias_initializer='zeros',
+            **options
+        )(outputs)
+
+    outputs = keras.layers.Conv2D(
+        filters=num_classes * num_anchors,
+        kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        bias_initializer=initializers.PriorProbability(probability=prior_probability),
+        name='pyramid_classification',
+        **options
+    )(outputs)
+</code></pre>
+<h2 id="fpn">fpn</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<pre><code class="language-python">def __create_pyramid_features(C3, C4, C5, feature_size=256):
+  
+    # upsample C5 to get P5 from the FPN paper
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
+    P5_upsampled = layers.UpsampleLike(name='P5_upsampled')([P5, C4])
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P5')(P5)
+
+    # add P5 elementwise to C4
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
+    P4           = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
+    P4_upsampled = layers.UpsampleLike(name='P4_upsampled')([P4, C3])
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P4')(P4)
+
+    # add P4 elementwise to C3
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
+    P3 = keras.layers.Add(name='P3_merged')([P4_upsampled, P3])
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P3')(P3)
+
+    # &quot;P6 is obtained via a 3x3 stride-2 conv on C5&quot;
+    P6 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=2, padding='same', name='P6')(C5)
+
+    # &quot;P7 is computed by applying ReLU followed by a 3x3 stride-2 conv on P6&quot;
+    P7 = keras.layers.Activation('relu', name='C6_relu')(P6)
+    P7 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=2, padding='same', name='P7')(P7)
+
+    return [P3, P4, P5, P6, P7]
+</code></pre>
+<h2 id="loss">loss</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<p>anchor_state:一个向量，也可以单独传入，-1表示不属于正负样本，是被忽略的，0表示负样本，1表示正样本。</p>
+<pre><code class="language-python">
+def focal(alpha=0.25, gamma=2.0):
+    &quot;&quot;&quot; Create a functor for computing the focal loss.
+
+    Args
+        alpha: Scale the focal weight with alpha.
+        gamma: Take the power of the focal weight with gamma.
+
+    Returns
+        A functor that computes the focal loss using the alpha and gamma.
+    &quot;&quot;&quot;
+    def _focal(y_true, y_pred):
+        &quot;&quot;&quot; Compute the focal loss given the target tensor and the predicted tensor.
+
+        As defined in https://arxiv.org/abs/1708.02002
+
+        Args
+            y_true: Tensor of target data from the generator with shape (B, N, num_classes).
+            y_pred: Tensor of predicted data from the network with shape (B, N, num_classes).
+
+        Returns
+            The focal loss of y_pred w.r.t. y_true.
+        &quot;&quot;&quot;
+        labels         = y_true[:, :, :-1]
+        anchor_state   = y_true[:, :, -1]  # -1 for ignore, 0 for background, 1 for object
+        classification = y_pred
+
+        # filter out &quot;ignore&quot; anchors
+        indices        = backend.where(keras.backend.not_equal(anchor_state, -1))
+        labels         = backend.gather_nd(labels, indices)
+        classification = backend.gather_nd(classification, indices)
+
+        # compute the focal loss
+        alpha_factor = keras.backend.ones_like(labels) * alpha
+        alpha_factor = backend.where(keras.backend.equal(labels, 1), alpha_factor, 1 - alpha_factor)
+        focal_weight = backend.where(keras.backend.equal(labels, 1), 1 - classification, classification)
+        focal_weight = alpha_factor * focal_weight ** gamma
+
+        cls_loss = focal_weight * keras.backend.binary_crossentropy(labels, classification)
+
+        # compute the normalizer: the number of positive anchors
+        normalizer = backend.where(keras.backend.equal(anchor_state, 1))
+        normalizer = keras.backend.cast(keras.backend.shape(normalizer)[0], keras.backend.floatx())
+        normalizer = keras.backend.maximum(keras.backend.cast_to_floatx(1.0), normalizer)
+
+        return keras.backend.sum(cls_loss) / normalizer
+
+    return _focal
+
+
+def smooth_l1(sigma=3.0):
+    &quot;&quot;&quot; Create a smooth L1 loss functor.
+
+    Args
+        sigma: This argument defines the point where the loss changes from L2 to L1.
+
+    Returns
+        A functor for computing the smooth L1 loss given target data and predicted data.
+    &quot;&quot;&quot;
+    sigma_squared = sigma ** 2
+
+    def _smooth_l1(y_true, y_pred):
+        &quot;&quot;&quot; Compute the smooth L1 loss of y_pred w.r.t. y_true.
+
+        Args
+            y_true: Tensor from the generator of shape (B, N, 5). The last value for each box is the state of the anchor (ignore, negative, positive).
+            y_pred: Tensor from the network of shape (B, N, 4).
+
+        Returns
+            The smooth L1 loss of y_pred w.r.t. y_true.
+        &quot;&quot;&quot;
+        # separate target and state
+        regression        = y_pred
+        regression_target = y_true[:, :, :-1]
+        anchor_state      = y_true[:, :, -1]
+
+        # filter out &quot;ignore&quot; anchors
+        indices           = backend.where(keras.backend.equal(anchor_state, 1))
+        regression        = backend.gather_nd(regression, indices)
+        regression_target = backend.gather_nd(regression_target, indices)
+
+        # compute smooth L1 loss
+        # f(x) = 0.5 * (sigma * x)^2          if |x| &lt; 1 / sigma / sigma
+        #        |x| - 0.5 / sigma / sigma    otherwise
+        regression_diff = regression - regression_target
+        regression_diff = keras.backend.abs(regression_diff)
+        regression_loss = backend.where(
+            keras.backend.less(regression_diff, 1.0 / sigma_squared),
+            0.5 * sigma_squared * keras.backend.pow(regression_diff, 2),
+            regression_diff - 0.5 / sigma_squared
+        )
+
+        # compute the normalizer: the number of positive anchors
+        normalizer = keras.backend.maximum(1, keras.backend.shape(indices)[0])
+        normalizer = keras.backend.cast(normalizer, dtype=keras.backend.floatx())
+        return keras.backend.sum(regression_loss) / normalizer
+
+    return _smooth_l1
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>代码：https://github.com/fizyr/keras-retinanet</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/mu-biao-jian-ce-retinanet-zuo-shu-ju-bu-fen">
+                  <h3 class="post-title">
+                    目标检测--RetinaNet做数据部分
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1573552152516">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1574781538318">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1573552152516" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1574781538318" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -101,7 +101,8 @@
             <div class="post-date">2019-11-12</div>
             
             <div class="post-content">
-              <ul>
+              <p>---- from《Deep Learning with PyTorch》</p>
+<ul>
 <li>
 <p><strong>Sample or input or data point</strong>: These mean particular instances of training a set. In our image classification problem seen in the last chapter, each image can be referred to as a sample, input, or data point.</p>
 </li>
@@ -109,10 +110,10 @@
 <p><strong>Prediction or output</strong>: The value our algorithm generates as an output. For example, in our previous example our algorithm predicted a particular image as 0, which is the label given to cat, so the number 0 is our prediction or output.</p>
 </li>
 <li>
-<p><strong>Target or label</strong>: The actual tagged label for an image. Loss value or</p>
+<p><strong>Target or label</strong>: The actual tagged label for an image.</p>
 </li>
 <li>
-<p><strong>prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
+<p><strong>Loss value or prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
 </li>
 <li>
 <p><strong>Classes</strong>: Possible set of values or labels for a given dataset. In the example in our previous chapter, we had two classes—cats and dogs.</p>
@@ -138,6 +139,22 @@
 <li>
 <p><strong>Epoch</strong>: Running the algorithm through a complete dataset is called an epoch. It is common to train (update the weights) for several epochs.</p>
 </li>
+</ul>
+<h2 id="中文">中文：</h2>
+<p>——-- 摘自《PyTorch深度学习》</p>
+<ul>
+<li><strong>样本或输入或数据点</strong>:这些是指训练一个集合的特定实例。在我们上一章看到的图像分类问题中，每个图像都可以被称为样本、输入或数据点。</li>
+<li><strong>预测或输出</strong>:我们的算法生成的输出值。例如，在前面的例子中，我们的算法将特定的图像预测为0，这是给cat的标签，所以数字0是我们的预测或输出。</li>
+<li><strong>目标或标签</strong>:图像的实际标签。</li>
+<li><strong>损失值或预测误差</strong>:预测值与实际值之间的距离的某种度量。数值越小，精度越好。</li>
+<li><strong>类</strong>:给定数据集的可能的值或标签集。在前一章的例子中，我们有两个类——猫和狗。</li>
+<li><strong>二进制分类</strong>:一个分类任务，其中每个输入示例应该被分类为两个排他的类别之一。</li>
+<li><strong>多类分类</strong>:一个分类任务，其中每个输入示例可以分为两个以上不同的类别。</li>
+<li><strong>多标签分类</strong>:输入示例可以使用多个标签进行标记—例如，用不同类型的食物(如意大利、墨西哥和印度)标记餐馆。另一个常用的例子是图像中的对象检测，该算法识别图像中的不同对象。</li>
+<li><strong>标量回归</strong>:每个输入数据点都与一个标量质量相关联，它是一个数字。一些例子可以用来预测房价、股票价格和板球比分。</li>
+<li><strong>向量回归</strong>:算法需要预测一个以上的标量。一个很好的例子是当你试图识别一个包含一条鱼在图像中的位置的边界框。为了预测边界框，您的算法需要预测表示正方形边缘的四个标量。</li>
+<li><strong>Batch</strong>:对于大多数情况，我们在一堆输入样本上训练我们的算法。批处理大小通常在2到256之间变化，这取决于GPU的内存。每个批处理的权重也会更新，因此算法的学习速度往往比在单个示例上训练的速度要快。</li>
+<li><strong>Epoch</strong>:在完整数据集上运行算法称为Epoch。训练(更新重量)几个时代是很常见的。</li>
 </ul>
 
             </div>

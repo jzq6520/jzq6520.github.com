@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>目标检测--RetinaNet做数据部分 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1574781538318">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1574781538318" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">目标检测--RetinaNet做数据部分</h2>
+            <div class="post-date">2019-11-18</div>
+            
+            <div class="post-content">
+              <p>制作label，并计算loss。</p>
+<p>首先理一下网络输出的shape，和数据label的shape。再看一下计算loss的时候应该怎么把数据转换成容易计算的形式。</p>
+<h2 id="1-shape">1 shape</h2>
+<h3 id="11-网络输出的shape">1.1 网络输出的shape</h3>
+<p>下图表示分类分支预测输出的feature map。 格子表示featuremap上的像素。可以发现其实featuremap的<strong>每一层是预测种类别的信息</strong>，我们可以假设有四类别的信息，即x,y,w,h，当然实际预测的是x,y,w,h变换后的值。直接可以看出，每个4个像素对应一个anchor，且位置与原图上的位置相对应。<br>
+<img src="https://jzq6520.github.io/post-images/1574061437288.png" alt=""></p>
+<h3 id="12计算loss时候的shape">1.2计算loss时候的shape</h3>
+<p>因为我们需要计算fpn不同level层的损失（loss），由于不同level层的下采样次数不一样 ，所以featuremap的大小也不一样，这时候我们如果想要简单的将不同层的预测输出放在一个矩阵中，然后和label计算损失是不行的。因为像素宽度不一样，所以不能直接concat，所以我们需要reshape一下，再计算损失。reshape以后矩阵的每一行表示一个anchor。<br>
+<img src="https://jzq6520.github.io/post-images/1574062241745.png" alt=""></p>
+<h2 id="2-得到监督数据label或者说target">2 得到监督数据（label）或者说target</h2>
+<p>其实说起来很简单，就是<strong>对于每个anchor只分配一个与其iou最大的目标</strong>，注：这里不管目标是相同类别的还是不同类别的，都是取最大。</p>
+<p>但是实现起来就比较复杂。首先考虑到有两种情况，同种类别击中一个anchor，或不同类别击中一个anchor。</p>
+<p>看了别人代码(https://github.com/yhenon/pytorch-retinanet)以后才发现实现代码的时候一个代码就可以把这两种情况考虑进来。看起来没多少代码，但是感觉还是非常考验逻辑的。</p>
+<h3 id="21-高维度的广播机制矩阵广播矩阵">2.1 高维度的广播机制，矩阵广播矩阵</h3>
+<p>首先用到了高纬度广播的机制。平时用的都是说把一个向量或是常量广播到矩阵或向量。<br>
+但是这里却把矩阵和矩阵进行广播。</p>
+<p><strong>简单的写一下广播的时候shape的变换</strong>：</p>
+<pre><code>（10, 4) + (2, 4) --对被加的矩阵扩展维度--&gt; 
+（10, 4, 1) + (2, 4) --&gt; 
+（10, 4, 1) + (2, 4) = (10, 4, 2)
+</code></pre>
+<p>其实可以看做把(2, 4)形状的矩阵的每一行拿出来和（10, 4)形状的矩阵相加，然后把两个结果concat起来。</p>
+<h3 id="22-数值索引和布尔索引的区别">2.2 数值索引和布尔索引的区别</h3>
+<ul>
+<li>False/true索引是只把true的索引出来。布尔索引要求shape要一致。</li>
+<li>数值索引是把数值对应的数据拿出来然后堆叠到一起。数值索引不需要一致，且可以大于被索引的长度。</li>
+</ul>
+<pre><code class="language-python">## 数值索引
+In [58]: a = torch.randn(10,2)
+Out[58]: 
+tensor([[-0.6997,  0.6535],
+        [-0.3947,  0.3171],
+        [ 0.3076, -1.2978],
+        [-0.4225, -0.3197],
+        [-1.5714, -1.7430],
+        [-0.2521,  0.6664],
+        [ 0.6825, -1.2606],
+        [-1.1892,  0.3615],
+        [-0.3309, -0.0463],
+        [ 0.2456, -0.0654]])
+
+In [59]: IoU_max, IoU_argmax = torch.max(a, dim=1)
+
+In [60]: IoU_max
+Out[60]: 
+tensor([ 0.6535,  0.3171,  0.3076, -0.3197, -1.5714,  0.6664,  0.6825,  0.3615,
+        -0.0463,  0.2456])
+
+In [61]: IoU_argmax
+Out[61]: tensor([1, 1, 0, 1, 0, 1, 0, 1, 1, 0])
+
+In [76]: bbox_annotation = np.array([[ 1,1,1,1],[2,2,2,2]])
+
+In [77]: bbox_annotation[iou_argmax]
+Out[77]: 
+array([[2, 2, 2, 2],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1]])
+</code></pre>
+<h2 id="3-坐标回归">3 坐标回归</h2>
+<p>坐标回归的是相对anchor的一个偏移量（归一化偏移量）。</p>
+<ul>
+<li>中心点回归： 相对于anchor中心点的偏移，再除以anchor的宽度/高度。这里除以宽度相当于是做一个归一化，<strong>因为同样的偏移量但对于大目标和小目标的意义是不一样的</strong>。</li>
+<li>宽/高回归：回归一个log（gt/anchor)；<strong>因为同样的宽高但对于大目标和小目标的意义是不一样的</strong>。大目标的宽高如果误差一点点我们希望提供的loss比较小，而小目标宽高如果误差一点点希望提供的loss比大目标的大一些。所以用log函数，因为log曲线的后面部分的值其实是比较小的，值的增长没那么快。</li>
+</ul>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://github.com/yhenon/pytorch-retinanet</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/shen-du-xue-xi-ji-qi-xue-xi-zhu-yu-biao">
+                  <h3 class="post-title">
+                    深度学习--机器学习术语表
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

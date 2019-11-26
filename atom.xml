@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jzq6520.github.io</id>
     <title>chuck</title>
-    <updated>2019-11-12T09:59:01.973Z</updated>
+    <updated>2019-11-26T15:19:02.002Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jzq6520.github.io"/>
     <link rel="self" href="https://jzq6520.github.io/atom.xml"/>
@@ -11,12 +11,319 @@
     <icon>https://jzq6520.github.io/favicon.ico</icon>
     <rights>All rights reserved 2019, chuck</rights>
     <entry>
+        <title type="html"><![CDATA[目标检测--RetinaNet代码实现的细节]]></title>
+        <id>https://jzq6520.github.io/post/mu-biao-jian-ce-retinanet-dai-ma-shi-xian-de-xi-jie-wen-ti</id>
+        <link href="https://jzq6520.github.io/post/mu-biao-jian-ce-retinanet-dai-ma-shi-xian-de-xi-jie-wen-ti">
+        </link>
+        <updated>2019-11-26T14:13:37.000Z</updated>
+        <content type="html"><![CDATA[<ol>
+<li>网络：
+<ol>
+<li>除了backbone部分，其他的fpn、分类subnet和回归subnet都不加bn；</li>
+<li>fpn的部分不加激活，回归和分类subnet加relu激活，最后的回归不加激活；</li>
+<li>p6到p7要做激活；</li>
+</ol>
+</li>
+<li>loss：
+<ol>
+<li>回归只计算正样本的loss，<strong>且除以正样本的个数</strong>。</li>
+<li>分类只计算正样本和负样本的loss，并且也是<strong>除以正样本的个数</strong>，而不是除以正负样本的。</li>
+</ol>
+</li>
+<li><strong>回归subnet是不共享参数的，分类subnet共享参数</strong>；</li>
+<li>最后预测的时候，对预测的所有概率进行排序，然后取前1000个bbox，然后卡0.05的阈值，最后做nms，<strong>nms的阈值是0.5</strong>.</li>
+<li>分类的最后一个conv的bias初始化为<code>-log((1-0.01)/0.01)</code>,其他照样初始化为0，子网络其他部分卷积核进行标准差为0.01的高斯初始化，bias为0初始化。</li>
+</ol>
+<h2 id="keras中是直接回归两个角的坐标">keras中是直接回归两个角的坐标</h2>
+<p>其实也是可以回归中心点和宽高的。<br>
+如下所示，直接回归角点坐标的一个变换，而不是中心点和宽高：</p>
+<pre><code class="language-python">targets_dx1 = (gt_boxes[:, 0] - anchors[:, 0]) / anchor_widths
+targets_dy1 = (gt_boxes[:, 1] - anchors[:, 1]) / anchor_heights
+targets_dx2 = (gt_boxes[:, 2] - anchors[:, 2]) / anchor_widths
+targets_dy2 = (gt_boxes[:, 3] - anchors[:, 3]) / anchor_heights
+</code></pre>
+<p>然后最后的网络回归的数值还要再在之前的上面除以一个0.2</p>
+<pre><code>if mean is None:
+        mean = np.array([0, 0, 0, 0])
+if std is None:
+    std = np.array([0.2, 0.2, 0.2, 0.2])
+targets = np.stack((targets_dx1, targets_dy1, targets_dx2, targets_dy2))
+targets = targets.T
+
+targets = (targets - mean) / std
+</code></pre>
+<h2 id="子网络subnet">子网络subnet</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<pre><code class="language-python">## 回归的subnet
+options = {
+        'kernel_size'        : 3,
+        'strides'            : 1,
+        'padding'            : 'same',
+        'kernel_initializer' : keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        'bias_initializer'   : 'zeros'}
+for i in range(4):
+        outputs = keras.layers.Conv2D(
+            filters=regression_feature_size,
+            activation='relu',
+            name='pyramid_regression_{}'.format(i),
+            **options
+        )(outputs)
+
+    outputs = keras.layers.Conv2D(num_anchors * num_values, name='pyramid_regression', **options)(outputs)
+
+## 分类的subnet
+options = {
+        'kernel_size' : 3,
+        'strides'     : 1,
+        'padding'     : 'same',
+    }
+for i in range(4):
+        outputs = keras.layers.Conv2D(
+            filters=classification_feature_size,
+            activation='relu',
+            name='pyramid_classification_{}'.format(i),
+            kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+            bias_initializer='zeros',
+            **options
+        )(outputs)
+
+    outputs = keras.layers.Conv2D(
+        filters=num_classes * num_anchors,
+        kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        bias_initializer=initializers.PriorProbability(probability=prior_probability),
+        name='pyramid_classification',
+        **options
+    )(outputs)
+</code></pre>
+<h2 id="fpn">fpn</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<pre><code class="language-python">def __create_pyramid_features(C3, C4, C5, feature_size=256):
+  
+    # upsample C5 to get P5 from the FPN paper
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
+    P5_upsampled = layers.UpsampleLike(name='P5_upsampled')([P5, C4])
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P5')(P5)
+
+    # add P5 elementwise to C4
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
+    P4           = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
+    P4_upsampled = layers.UpsampleLike(name='P4_upsampled')([P4, C3])
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P4')(P4)
+
+    # add P4 elementwise to C3
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
+    P3 = keras.layers.Add(name='P3_merged')([P4_upsampled, P3])
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P3')(P3)
+
+    # &quot;P6 is obtained via a 3x3 stride-2 conv on C5&quot;
+    P6 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=2, padding='same', name='P6')(C5)
+
+    # &quot;P7 is computed by applying ReLU followed by a 3x3 stride-2 conv on P6&quot;
+    P7 = keras.layers.Activation('relu', name='C6_relu')(P6)
+    P7 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=2, padding='same', name='P7')(P7)
+
+    return [P3, P4, P5, P6, P7]
+</code></pre>
+<h2 id="loss">loss</h2>
+<p>代码：https://github.com/fizyr/keras-retinanet</p>
+<p>anchor_state:一个向量，也可以单独传入，-1表示不属于正负样本，是被忽略的，0表示负样本，1表示正样本。</p>
+<pre><code class="language-python">
+def focal(alpha=0.25, gamma=2.0):
+    &quot;&quot;&quot; Create a functor for computing the focal loss.
+
+    Args
+        alpha: Scale the focal weight with alpha.
+        gamma: Take the power of the focal weight with gamma.
+
+    Returns
+        A functor that computes the focal loss using the alpha and gamma.
+    &quot;&quot;&quot;
+    def _focal(y_true, y_pred):
+        &quot;&quot;&quot; Compute the focal loss given the target tensor and the predicted tensor.
+
+        As defined in https://arxiv.org/abs/1708.02002
+
+        Args
+            y_true: Tensor of target data from the generator with shape (B, N, num_classes).
+            y_pred: Tensor of predicted data from the network with shape (B, N, num_classes).
+
+        Returns
+            The focal loss of y_pred w.r.t. y_true.
+        &quot;&quot;&quot;
+        labels         = y_true[:, :, :-1]
+        anchor_state   = y_true[:, :, -1]  # -1 for ignore, 0 for background, 1 for object
+        classification = y_pred
+
+        # filter out &quot;ignore&quot; anchors
+        indices        = backend.where(keras.backend.not_equal(anchor_state, -1))
+        labels         = backend.gather_nd(labels, indices)
+        classification = backend.gather_nd(classification, indices)
+
+        # compute the focal loss
+        alpha_factor = keras.backend.ones_like(labels) * alpha
+        alpha_factor = backend.where(keras.backend.equal(labels, 1), alpha_factor, 1 - alpha_factor)
+        focal_weight = backend.where(keras.backend.equal(labels, 1), 1 - classification, classification)
+        focal_weight = alpha_factor * focal_weight ** gamma
+
+        cls_loss = focal_weight * keras.backend.binary_crossentropy(labels, classification)
+
+        # compute the normalizer: the number of positive anchors
+        normalizer = backend.where(keras.backend.equal(anchor_state, 1))
+        normalizer = keras.backend.cast(keras.backend.shape(normalizer)[0], keras.backend.floatx())
+        normalizer = keras.backend.maximum(keras.backend.cast_to_floatx(1.0), normalizer)
+
+        return keras.backend.sum(cls_loss) / normalizer
+
+    return _focal
+
+
+def smooth_l1(sigma=3.0):
+    &quot;&quot;&quot; Create a smooth L1 loss functor.
+
+    Args
+        sigma: This argument defines the point where the loss changes from L2 to L1.
+
+    Returns
+        A functor for computing the smooth L1 loss given target data and predicted data.
+    &quot;&quot;&quot;
+    sigma_squared = sigma ** 2
+
+    def _smooth_l1(y_true, y_pred):
+        &quot;&quot;&quot; Compute the smooth L1 loss of y_pred w.r.t. y_true.
+
+        Args
+            y_true: Tensor from the generator of shape (B, N, 5). The last value for each box is the state of the anchor (ignore, negative, positive).
+            y_pred: Tensor from the network of shape (B, N, 4).
+
+        Returns
+            The smooth L1 loss of y_pred w.r.t. y_true.
+        &quot;&quot;&quot;
+        # separate target and state
+        regression        = y_pred
+        regression_target = y_true[:, :, :-1]
+        anchor_state      = y_true[:, :, -1]
+
+        # filter out &quot;ignore&quot; anchors
+        indices           = backend.where(keras.backend.equal(anchor_state, 1))
+        regression        = backend.gather_nd(regression, indices)
+        regression_target = backend.gather_nd(regression_target, indices)
+
+        # compute smooth L1 loss
+        # f(x) = 0.5 * (sigma * x)^2          if |x| &lt; 1 / sigma / sigma
+        #        |x| - 0.5 / sigma / sigma    otherwise
+        regression_diff = regression - regression_target
+        regression_diff = keras.backend.abs(regression_diff)
+        regression_loss = backend.where(
+            keras.backend.less(regression_diff, 1.0 / sigma_squared),
+            0.5 * sigma_squared * keras.backend.pow(regression_diff, 2),
+            regression_diff - 0.5 / sigma_squared
+        )
+
+        # compute the normalizer: the number of positive anchors
+        normalizer = keras.backend.maximum(1, keras.backend.shape(indices)[0])
+        normalizer = keras.backend.cast(normalizer, dtype=keras.backend.floatx())
+        return keras.backend.sum(regression_loss) / normalizer
+
+    return _smooth_l1
+</code></pre>
+<h2 id="引用">引用</h2>
+<ul>
+<li>代码：https://github.com/fizyr/keras-retinanet</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[目标检测--RetinaNet做数据部分]]></title>
+        <id>https://jzq6520.github.io/post/mu-biao-jian-ce-retinanet-zuo-shu-ju-bu-fen</id>
+        <link href="https://jzq6520.github.io/post/mu-biao-jian-ce-retinanet-zuo-shu-ju-bu-fen">
+        </link>
+        <updated>2019-11-18T06:40:35.000Z</updated>
+        <content type="html"><![CDATA[<p>制作label，并计算loss。</p>
+<p>首先理一下网络输出的shape，和数据label的shape。再看一下计算loss的时候应该怎么把数据转换成容易计算的形式。</p>
+<h2 id="1-shape">1 shape</h2>
+<h3 id="11-网络输出的shape">1.1 网络输出的shape</h3>
+<p>下图表示分类分支预测输出的feature map。 格子表示featuremap上的像素。可以发现其实featuremap的<strong>每一层是预测种类别的信息</strong>，我们可以假设有四类别的信息，即x,y,w,h，当然实际预测的是x,y,w,h变换后的值。直接可以看出，每个4个像素对应一个anchor，且位置与原图上的位置相对应。<br>
+<img src="https://jzq6520.github.io/post-images/1574061437288.png" alt=""></p>
+<h3 id="12计算loss时候的shape">1.2计算loss时候的shape</h3>
+<p>因为我们需要计算fpn不同level层的损失（loss），由于不同level层的下采样次数不一样 ，所以featuremap的大小也不一样，这时候我们如果想要简单的将不同层的预测输出放在一个矩阵中，然后和label计算损失是不行的。因为像素宽度不一样，所以不能直接concat，所以我们需要reshape一下，再计算损失。reshape以后矩阵的每一行表示一个anchor。<br>
+<img src="https://jzq6520.github.io/post-images/1574062241745.png" alt=""></p>
+<h2 id="2-得到监督数据label或者说target">2 得到监督数据（label）或者说target</h2>
+<p>其实说起来很简单，就是<strong>对于每个anchor只分配一个与其iou最大的目标</strong>，注：这里不管目标是相同类别的还是不同类别的，都是取最大。</p>
+<p>但是实现起来就比较复杂。首先考虑到有两种情况，同种类别击中一个anchor，或不同类别击中一个anchor。</p>
+<p>看了别人代码(https://github.com/yhenon/pytorch-retinanet)以后才发现实现代码的时候一个代码就可以把这两种情况考虑进来。看起来没多少代码，但是感觉还是非常考验逻辑的。</p>
+<h3 id="21-高维度的广播机制矩阵广播矩阵">2.1 高维度的广播机制，矩阵广播矩阵</h3>
+<p>首先用到了高纬度广播的机制。平时用的都是说把一个向量或是常量广播到矩阵或向量。<br>
+但是这里却把矩阵和矩阵进行广播。</p>
+<p><strong>简单的写一下广播的时候shape的变换</strong>：</p>
+<pre><code>（10, 4) + (2, 4) --对被加的矩阵扩展维度--&gt; 
+（10, 4, 1) + (2, 4) --&gt; 
+（10, 4, 1) + (2, 4) = (10, 4, 2)
+</code></pre>
+<p>其实可以看做把(2, 4)形状的矩阵的每一行拿出来和（10, 4)形状的矩阵相加，然后把两个结果concat起来。</p>
+<h3 id="22-数值索引和布尔索引的区别">2.2 数值索引和布尔索引的区别</h3>
+<ul>
+<li>False/true索引是只把true的索引出来。布尔索引要求shape要一致。</li>
+<li>数值索引是把数值对应的数据拿出来然后堆叠到一起。数值索引不需要一致，且可以大于被索引的长度。</li>
+</ul>
+<pre><code class="language-python">## 数值索引
+In [58]: a = torch.randn(10,2)
+Out[58]: 
+tensor([[-0.6997,  0.6535],
+        [-0.3947,  0.3171],
+        [ 0.3076, -1.2978],
+        [-0.4225, -0.3197],
+        [-1.5714, -1.7430],
+        [-0.2521,  0.6664],
+        [ 0.6825, -1.2606],
+        [-1.1892,  0.3615],
+        [-0.3309, -0.0463],
+        [ 0.2456, -0.0654]])
+
+In [59]: IoU_max, IoU_argmax = torch.max(a, dim=1)
+
+In [60]: IoU_max
+Out[60]: 
+tensor([ 0.6535,  0.3171,  0.3076, -0.3197, -1.5714,  0.6664,  0.6825,  0.3615,
+        -0.0463,  0.2456])
+
+In [61]: IoU_argmax
+Out[61]: tensor([1, 1, 0, 1, 0, 1, 0, 1, 1, 0])
+
+In [76]: bbox_annotation = np.array([[ 1,1,1,1],[2,2,2,2]])
+
+In [77]: bbox_annotation[iou_argmax]
+Out[77]: 
+array([[2, 2, 2, 2],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1],
+       [2, 2, 2, 2],
+       [2, 2, 2, 2],
+       [1, 1, 1, 1]])
+</code></pre>
+<h2 id="3-坐标回归">3 坐标回归</h2>
+<p>坐标回归的是相对anchor的一个偏移量（归一化偏移量）。</p>
+<ul>
+<li>中心点回归： 相对于anchor中心点的偏移，再除以anchor的宽度/高度。这里除以宽度相当于是做一个归一化，<strong>因为同样的偏移量但对于大目标和小目标的意义是不一样的</strong>。</li>
+<li>宽/高回归：回归一个log（gt/anchor)；<strong>因为同样的宽高但对于大目标和小目标的意义是不一样的</strong>。大目标的宽高如果误差一点点我们希望提供的loss比较小，而小目标宽高如果误差一点点希望提供的loss比大目标的大一些。所以用log函数，因为log曲线的后面部分的值其实是比较小的，值的增长没那么快。</li>
+</ul>
+<h2 id="引用">引用</h2>
+<ul>
+<li>https://github.com/yhenon/pytorch-retinanet</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[深度学习--机器学习术语表]]></title>
         <id>https://jzq6520.github.io/post/shen-du-xue-xi-ji-qi-xue-xi-zhu-yu-biao</id>
         <link href="https://jzq6520.github.io/post/shen-du-xue-xi-ji-qi-xue-xi-zhu-yu-biao">
         </link>
         <updated>2019-11-12T09:44:49.000Z</updated>
-        <content type="html"><![CDATA[<ul>
+        <content type="html"><![CDATA[<p>---- from《Deep Learning with PyTorch》</p>
+<ul>
 <li>
 <p><strong>Sample or input or data point</strong>: These mean particular instances of training a set. In our image classification problem seen in the last chapter, each image can be referred to as a sample, input, or data point.</p>
 </li>
@@ -24,10 +331,10 @@
 <p><strong>Prediction or output</strong>: The value our algorithm generates as an output. For example, in our previous example our algorithm predicted a particular image as 0, which is the label given to cat, so the number 0 is our prediction or output.</p>
 </li>
 <li>
-<p><strong>Target or label</strong>: The actual tagged label for an image. Loss value or</p>
+<p><strong>Target or label</strong>: The actual tagged label for an image.</p>
 </li>
 <li>
-<p><strong>prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
+<p><strong>Loss value or prediction error</strong>: Some measure of distance between the predicted value and actual value. The smaller the value, the better the accuracy.</p>
 </li>
 <li>
 <p><strong>Classes</strong>: Possible set of values or labels for a given dataset. In the example in our previous chapter, we had two classes—cats and dogs.</p>
@@ -53,6 +360,22 @@
 <li>
 <p><strong>Epoch</strong>: Running the algorithm through a complete dataset is called an epoch. It is common to train (update the weights) for several epochs.</p>
 </li>
+</ul>
+<h2 id="中文">中文：</h2>
+<p>——-- 摘自《PyTorch深度学习》</p>
+<ul>
+<li><strong>样本或输入或数据点</strong>:这些是指训练一个集合的特定实例。在我们上一章看到的图像分类问题中，每个图像都可以被称为样本、输入或数据点。</li>
+<li><strong>预测或输出</strong>:我们的算法生成的输出值。例如，在前面的例子中，我们的算法将特定的图像预测为0，这是给cat的标签，所以数字0是我们的预测或输出。</li>
+<li><strong>目标或标签</strong>:图像的实际标签。</li>
+<li><strong>损失值或预测误差</strong>:预测值与实际值之间的距离的某种度量。数值越小，精度越好。</li>
+<li><strong>类</strong>:给定数据集的可能的值或标签集。在前一章的例子中，我们有两个类——猫和狗。</li>
+<li><strong>二进制分类</strong>:一个分类任务，其中每个输入示例应该被分类为两个排他的类别之一。</li>
+<li><strong>多类分类</strong>:一个分类任务，其中每个输入示例可以分为两个以上不同的类别。</li>
+<li><strong>多标签分类</strong>:输入示例可以使用多个标签进行标记—例如，用不同类型的食物(如意大利、墨西哥和印度)标记餐馆。另一个常用的例子是图像中的对象检测，该算法识别图像中的不同对象。</li>
+<li><strong>标量回归</strong>:每个输入数据点都与一个标量质量相关联，它是一个数字。一些例子可以用来预测房价、股票价格和板球比分。</li>
+<li><strong>向量回归</strong>:算法需要预测一个以上的标量。一个很好的例子是当你试图识别一个包含一条鱼在图像中的位置的边界框。为了预测边界框，您的算法需要预测表示正方形边缘的四个标量。</li>
+<li><strong>Batch</strong>:对于大多数情况，我们在一堆输入样本上训练我们的算法。批处理大小通常在2到256之间变化，这取决于GPU的内存。每个批处理的权重也会更新，因此算法的学习速度往往比在单个示例上训练的速度要快。</li>
+<li><strong>Epoch</strong>:在完整数据集上运行算法称为Epoch。训练(更新重量)几个时代是很常见的。</li>
 </ul>
 ]]></content>
     </entry>
@@ -767,134 +1090,6 @@ cross entropy可以看着只计算这个神经元负责的当前正样本的loss
 <p>All architectures in Table 1 are trained end-to-end. The input image is resized such that its shorter side has 800 pixels. We adopt synchronized SGD training on 8 GPUs. A mini-batch involves 2 images per GPU and 256 anchors per image. We use a weight decay of 0.0001 and a momentum of 0.9. The learning rate is 0.02 for the ﬁrst 30k mini-batches and 0.002 for the next 10k. For all RPN experiments (including baselines), we include the anchor boxes that are outside the image for training, which is unlike [29] where these anchor boxes are ignored. Other implementation details are as in [29]. Training RPN with FPN on 8 GPUs takes about 8 hours on COCO.</p>
 <h3 id="object-detection-with-fastfaster-r-cnn">Object Detection with Fast/Faster R-CNN</h3>
 <p>The input image is resized such that its shorter side has 800 pixels. Synchronized SGD is used to train the model on 8 GPUs. Each mini-batch in- volves 2 image per GPU and 512 RoIs per image. We use a weight decay of 0.0001 and a momentum of 0.9. The learning rate is 0.02 for the ﬁrst 60k mini-batches and 0.002 for the next 20k. We use 2000 RoIs per image for training and 1000 for testing. Training Fast R-CNN with FPN takes about 10 hours on the COCO dataset.</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-笔记-重读YOLO目标检测系列 v2]]></title>
-        <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v2</id>
-        <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v2">
-        </link>
-        <updated>2019-10-30T02:59:08.000Z</updated>
-        <content type="html"><![CDATA[<p>哎，看下来 yolo v1 v2总感觉作者写文章一般般，写的不清晰。</p>
-<h2 id="anchor尺寸设置">anchor尺寸设置</h2>
-<p>不像Faster R-CNN里面一样使用手动设置anchor的尺寸，这里使用k-means来进行聚类，例如我们要五种类型的anchor，那么就聚为5类，那么聚类中心的尺寸就是我们的anchor尺寸。</p>
-<p>但是这里的聚类距离选择的不是欧式距离，而是<code>1-IOU(box, centroid)</code>作为<strong>距离度量函数</strong>。这里说明一下怎么聚类，因为一个anchor是有两个值（RPN中提到的），一个是像素个数，还有一个长宽比，所以这里应该<strong>将长宽的大小作为聚类特征</strong>（因为长宽大小就决定了有多少像素和长宽比了），论文中说在做目标检测的时候主要是想要一个较高的IOU，但是k-means在聚类的时候是计算一个较近的距离，所以这里是1减去IOU（因为iou越大，1减去iou就越小了）。所以这里用<code>1-IOU</code>衡量，那怎么计算iou呢，我们可以假设box的中心点是<code>（0，0）</code>，因为是对现在所有的目标的box进行聚类找出我们的anchor的尺寸，所以我们的数据就是所有目标的box的长宽，然后假设中心点是<code>（0，0）</code>，这样我们就可以计算两个box之间的iou了。</p>
-<p>其实RPN中是想要多种尺寸的anchor，也就是不同长宽的box，但不是说一定要像RPN中说的一样要指定几种面积，然后每种面积有几种长宽比。所以YOLO V2中就使用聚类来得到不同长宽的anchor（box）。</p>
-<h2 id="label制作">label制作</h2>
-<p>置信度：应该也是一个1和0，落在网格里面就是算有目标，这个和RPN不一样，RPN是通过iou计算正负样本的，这里是看是不是落在网格里面，如果不是这个区别那么就变成了普通的RPN了。原文：The network predicts 5 coordinates for each bounding box, t x , t y , t w , t h , and t o 。to就是置信度。</p>
-<p>但是，需要注意的是，每个cell中实际上有5个anchor，并不是每个anchor的会预测这个物体，我们只会选择一个长宽和这个bbox最匹配的anchor来负责预测这个物体。那么什么叫长宽最为匹配？这个实际上就是将anchor移动到图像的右上角，bbox也移动到图像的左上角，然后去计算它们的iou，iou最大的其中一个anchor负责预测这个物体。这点和RPN中不一样，RPN只需要iou符合大于某个阈值就可以了。感觉yolo复杂多了。</p>
-<p>和RPN还有个不同的是，RPN的是目标和不是目标是两个神经元预测，也就是softmax，这里是一个预测 sigmoid。</p>
-<p>在RPN 里面中心点的是回归一个相对于宽高的偏移量，即：<br>
-<img src="https://jzq6520.github.io/post-images/1572412895262.png" alt=""><br>
-原文中符号写错了：<br>
-<img src="https://jzq6520.github.io/post-images/1572414868247.png" alt=""><br>
-这样回归其实是有缺点的，这个公式回归出来的中心点是不受约束的，它的<strong>活动范围是全图</strong>，可以想象其实我们回归出t以后然后计算出的<strong>x,y的值可以是图像中的任意位置</strong>，<strong>在随机初始化的情况下，模型需要很长时间才能稳定地预测出合理的偏移量</strong>。</p>
-<p>所以yolo v2就把关键点回归约束在网格之内，是相对于网格左上角的一个偏移量，这样归一化以后的偏移量就是在0到1之间。<strong>这样回归会更加稳定</strong>。<br>
-即<code>tx = bx - cx, ty = by - cy</code>，</p>
-<p>距离如下图所示，那个<strong>对t做变换的参数不用管他</strong>，只是为了说明最好是加sigmoid的激活的， σ是sigmoid函数，也就是为了约束到0到1之间。实际上做数据的时候就是转换成t就可以了。<br>
-<img src="https://jzq6520.github.io/post-images/1572413565039.png" alt=""><br>
-宽高和RPN一样：<br>
-<img src="https://jzq6520.github.io/post-images/1572413551539.png" alt=""></p>
-<h2 id="输入图像的大小">输入图像的大小</h2>
-<p>为了使得目标占很大，或者是中心点在图的中间的目标在预测的适合更加准确，所以最好让输出的特征图的像素是个奇数，也就是说把图像隔成奇数个网格，这样就不会像偶数格一样把图像中心分成两部分了，大家可以想象一下3格和4格的区别，4格就把图的中心分割成一半了，如果目标中心点正好在中心区域的周围，那么偏移一点误差也很大了。</p>
-<h2 id="其他一些加入的改进">其他一些加入的改进</h2>
-<ol>
-<li>加入了一个不同层特征的融合。concat连接</li>
-<li>多尺度训练，Every 10 batches our network randomly chooses a new image dimension size. Since our model downsamples by a factor of 32, we pull from the following multiples of 32: {320, 352, ..., 608}. Thus the smallest option is 320 × 320 and the largest is 608 × 608. We resize the network to that dimension and continue training.</li>
-</ol>
-<h2 id="网络">网络</h2>
-<p><strong>主干网络使用了darknet-19，因为文章说vgg16虽然效果精度高，但是计算量大</strong>。darknet-19是使用1x1来减少计算量，就是bottleneck。网络如下：<br>
-<img src="https://jzq6520.github.io/post-images/1572415768870.png" alt=""></p>
-<p>网上的图：<br>
-<img src="https://jzq6520.github.io/post-images/1572417862443.jpg" alt=""><br>
-这是在imagenet上进行预训练的结构，训练检测的时候去掉最后一个卷积层，然后增加一个3x3的卷积层和一个1x1的卷积层。原文：<em>We modify this network for detection by removing the last convolutional layer and instead adding on three 3 × 3 convolutional layers with 1024 ﬁlters each followed by a ﬁnal 1 × 1 convolutional layer with the number of outputs we need for detection。</em></p>
-<p>并且，还增加了一个从最后的3×3×512层到第二个到最后一个卷积层的透传层，这样我们的模型可以使用细粒度的特征。原文（看的不是很清晰）：We also add a passthrough layer from the ﬁnal 3 × 3 × 512 layer to the second to last convolutional layer so that our model can use ﬁne grain features.</p>
-<p>anchor的个数也是通过实验选择出来的。最后选择了5性价比比较高，越多效果越好。<br>
-<img src="https://jzq6520.github.io/post-images/1572416170928.png" alt=""></p>
-<h3 id="网络的预测输出">网络的预测输出</h3>
-<p>其实每个anchor都是预测：4个（坐标值）+1个（置信度）+ n个类别：<br>
-<img src="https://jzq6520.github.io/post-images/1572419086667.png" alt=""></p>
-<p>对比YOLO1的输出张量，YOLO2的主要变化就是会输出5个先验框，且每个先验框都会尝试预测一个对象。输出的 <code>13*13*5*25</code> 张量中，25维向量包含 20个对象的分类概率+4个边框坐标+1个边框置信度。</p>
-<h2 id="损失函数">损失函数</h2>
-<p>？？？？？？what？<br>
-文章中居然没说用什么loss？？？， 难道用的是smooth L1，还是yolo中的loss？？<br>
-<strong>应该是结合吧，既然预测宽和高用的是RPN的，预测中心点用的是yolo，预测有没有目标也是yolo的。那么应该就是结合一下了，宽高用smooth L1， 中心点用均方差，有没有目标（置信度）用均方差</strong>以上只是猜测，具体看代码。</p>
-<p>重温yolo v2 - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490 中的图：<br>
-<img src="https://jzq6520.github.io/post-images/1572420200314.jpg" alt=""><br>
-<img src="https://jzq6520.github.io/post-images/1572420615339.png" alt=""><br>
-<img src="https://jzq6520.github.io/post-images/1572420619180.png" alt=""></p>
-<p><strong>卧槽 差点被坑了，文章中是把网络输出换算成x，y，w，h之后才进行计算loss的</strong>。<strong>不是直接回归t。RPN中是回归t的</strong>。</p>
-<h2 id="训练参数学习率">训练参数，学习率</h2>
-<ul>
-<li>学习率：train the network for 160 epochs with a starting learning rate of 10−3 , dividing it by 10 at 60 and 90 epochs.</li>
-<li>sgd：We use a weight decay of 0.0005 and momentum of 0.9.</li>
-<li>数据增强：We use a similar data augmentation to YOLO and SSD with random crops, color shifting, etc</li>
-</ul>
-<h2 id="实验结果">实验结果</h2>
-<p>分辨率越高效果越好：<br>
-<img src="https://jzq6520.github.io/post-images/1572414966868.png" alt=""></p>
-<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572421391035.png" alt=""></figure>
-<h2 id="引用">引用</h2>
-<ul>
-<li>YOLOv2 / YOLO9000 深入理解 - X-猪的文章 - 知乎https://zhuanlan.zhihu.com/p/47575929</li>
-<li><strong>重温yolo v2</strong> - stone的文章 - 知乎https://zhuanlan.zhihu.com/p/40659490</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[CV-笔记-重读YOLO目标检测系列 v1]]></title>
-        <id>https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v1</id>
-        <link href="https://jzq6520.github.io/post/cv-bi-ji-chong-du-yolo-mu-biao-jian-ce-xi-lie-v1">
-        </link>
-        <updated>2019-10-29T07:46:45.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li>将对象检测定义为一个<strong>回归问题</strong>，回归到空间分离的边界框和相关的类概率。</li>
-<li>与最先进的检测系统相比，YOLO会产生更多的定位错误，但不太可能预测背景上的误报<em>less likely to predict false positives on background</em>（假阳少）</li>
-<li>都看做一个回归问题，所以不需要复杂的pipeline。</li>
-<li>titan x gpu实现每秒150帧。</li>
-<li>yolo是看<strong>整张图片</strong>进行预测的，相对来说区域建议网络第二阶段是是看roi。</li>
-<li>yolo的背景的假阳少，因为他可以看到更大的信息（现在Faster R-CNN的第一个RPN模块其实也是看整个上下文的，这里对比的只是Fast R-CNN）。原文：<em>Fast R-CNN, a top detection method， mistakes back-ground patches in an image for objects because it can’t see the larger context. YOLO makes less than half the number of background errors compared to Fast R-CNN.</em></li>
-</ul>
-<h2 id="如何检测">如何检测</h2>
-<ol>
-<li>将图片分成SxS个格子；</li>
-<li>如果目标落在哪个格子上，哪个格子就负责整个目标。简单的说就是做数据的时候，这个格子的class label是1，在yolo里面是使用置信度来计算的。</li>
-</ol>
-<p>有些博客不懂乱说，例如知乎上的一篇文章，上来就说最后一层的featuremap对应的就是前面分好的网格里面的格子的特征，可见对感受野的概念不是很理解，其实这里的想法和Faster R-CNN里面的概念比较像，anchor其实也是在原图上滑动的呀，只是说这里没有anchor，而是这里的featuremap上的像素对应的是一个格子，也不能说是格子，因为格子的作用和anchor也是非常类似的，<strong>作用都是来进行分配任务，教网络怎么预测，网络学的是什么，那么预测的也是什么了</strong>。只是说这里是根据中心点是不是落在网络里面来选择正样本，而RPN里面是根据和anchor的IOU的大小来规定哪个是正样本哪个是负样本。</p>
-<p>只是这里说的比较明确，说是把原图分割成最后一层feature map大小的个数，feature map是多少个像素，那么就分成几个格子。</p>
-<p>只是说<strong>Faster R-CNN里面好像没有明确提到anchor的中心点在原图的哪个地方</strong>。其实这也是我们规定哪个点就是哪个点，<strong>但是按照感受野的概念，感受野中心的区域的权重往往会高一点</strong>，所以anchor的中心点可以设置成格子的中心。所以anchor的中心点在原图的坐标经过换算一下也是很简单的。应该就是<code>(x*stride + stride/2, y*stride + stride/2)</code>,这里的x和y表示在feature map上的坐标，计算出来的表示原图上的坐标，这也是我自己推测的（<strong>代码还没看过</strong>）。</p>
-<h2 id="定义label">定义label</h2>
-<p>每个格子预测<strong>坐标（x,y,w,h）+ 置信度（是否有目标，有、没有）+ 类别（class）</strong>：<br>
-* <strong>置信度=Pr(Object)+ IOU</strong>，这是论文里面说的，iou论文里面是说预测的和真实的。但是没有预测哪里来的iou，<strong>所以做数据的是置信度就是有目标是1，没有目标是0</strong>，不用多想这里的置信度就是有没有目标，就是0和1。<br>
-* 坐标：宽和高是<strong>相对于图像</strong>大小的，中心点是<strong>相对于格子</strong>的的。<br>
-* 类别：是哪个类别</p>
-<p>置信度和坐标是绑定在一起的，类别是独立的。例如一个格子检测两个目标，那么就有两组坐标和对应的置信度，但是类别可以是有20个。<em>但是这样有个问题，就是如果两个框都是有目标，那么怎么知道哪个框是哪个类别的目标呢？</em> 是不是这里的意思就是一个格子就只能预测一个类别，但是可以有两个包围框预测，最后应该是看哪个包围框更准（置信度高，即是目标的概率高）就选哪个？确实和我想的一样，<strong>两个包围框都是预测一个类别的（见引用）</strong>。如图所示：<br>
-<img src="https://jzq6520.github.io/post-images/1572353048785.png" alt=""></p>
-<p>Fast R-CNN最后只是有一个类别和坐标，但是他的类别里面是包含背景的，yolo的类别里面是不包含背景。</p>
-<p>下面这幅图终于看懂了，Class probability map确实只是class，但这里只是表示这个格子预测的目标是哪个类（就是目标中心对于的框的目标），下面这个图片的Class probability map画的应该是预测出来的，那么做数据的时候是怎么做的。。。如果没有目标那么类别是什么？即使不计算loss那也总要填一个值吧。这里好像又没有背景这个类别。<br>
-这个应该是预测时候的示意图。<br>
-<img src="https://jzq6520.github.io/post-images/1572338771015.png" alt=""></p>
-<h2 id="训练的时候">训练的时候</h2>
-<ul>
-<li>训练的时候只预测一个目标，选择iou高的。原文：<em>YOLO predicts multiple bounding boxes per grid cell. At training time we only want one bounding box predictor to be responsible for each object. We assign one predictor to be “responsible” for predicting an object based on which prediction has the highest current IOU with the ground truth.</em></li>
-</ul>
-<h2 id="损失函数">损失函数</h2>
-<p>通常没有目标的区域比较多，而有目标的区域少，所以<strong>坐标的回归</strong>在loss里面占的比重很少，所以为了<strong>减少这种不平衡</strong>，将<strong>非目标的置信度回归的权重减少</strong>。<br>
-<img src="https://jzq6520.github.io/post-images/1572341526648.png" alt=""></p>
-<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1572341047772.png" alt=""></figure>
-<p>这个长的像1的系数表示有目标的适合是1，没有的适合是0。那头上写的是noobj的时候就反一下。这里大写的C表示confidence置信度。p那个表示类别。计算不是目标的置信度的适合权重设置为0.5 。</p>
-<p>根号的作用：<br>
-<img src="https://jzq6520.github.io/post-images/1572352978309.png" alt=""></p>
-<h2 id="缺点">缺点</h2>
-<ul>
-<li>不能同时检测两个中心点在同一个网格的物体。</li>
-<li>对于不常见的长宽比的物体效果较差</li>
-<li>对于多尺度效果较差</li>
-</ul>
-<h2 id="引用">引用</h2>
-<ul>
-<li>图解YOLO - 晓雷的文章 - 知乎 https://zhuanlan.zhihu.com/p/24916786</li>
-</ul>
 ]]></content>
     </entry>
 </feed>
