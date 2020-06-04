@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Pyvista---(6)创建3D矩阵并赋值可视化&amp;创建可视化CT数据 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Pyvista---(6)创建3D矩阵并赋值可视化&amp;创建可视化CT数据</h2>
+            <div class="post-date">2020-04-03</div>
+            
+            <div class="post-content">
+              <p>pyvista里面把这种<strong>三维的矩阵</strong>称为“统一网格（Uniform Grid）”，那这个网络里面的值就是矩阵的值。也就是说相当于就是一个矩阵。</p>
+<pre><code>values = np.linspace(0, 10, 1000).reshape((20, 5, 10))
+values.shape
+
+# 首先类似于新建一个空的矩阵
+grid = pv.UniformGrid()
+
+# 然后设置维度，如果想给cell填充数据则维度设置为 矩阵shape + 1，
+# 如果是给point填充数据指定为矩阵shape
+# 填充cell，颜色就不是渐变的，是每个块一个颜色，正好和ct的数据一样。
+grid.dimensions = np.array(values.shape) + 1
+
+# 设置origin和spacing，这两个参数正好和ct的参数一个意思。
+grid.origin = (100, 33, 55.6)  # The bottom left corner of the data set
+grid.spacing = (1, 5, 2)  # These are the cell sizes along each axis
+
+# 设置（网格）矩阵的值
+grid.cell_arrays[&quot;values&quot;] = values.flatten(order=&quot;F&quot;)  # Flatten the array!
+
+# plot
+grid.plot(show_edges=True)
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1585893542981.png" alt=""></figure>
+<h1 id="显示ct数据">显示ct数据</h1>
+<p>下面读取一个ct的数据看看，对ct数据剪切了一下，可以看到里面。<br>
+记得显示的适合设置<code>grid.plot(show_edges=False)</code>。<br>
+<img src="https://jzq6520.github.io/post-images/1585893792402.png" alt=""></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pyvista-5pyvista-zhong-chang-yong-de-han-shu-he-ying-yong-2">
+                  <h3 class="post-title">
+                    Pyvista---(5)创建三角面
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

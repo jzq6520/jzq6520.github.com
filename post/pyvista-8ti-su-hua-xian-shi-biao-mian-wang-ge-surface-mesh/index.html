@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Pyvista---(8)体素化显示表面网格和三角网格显示的区别 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Pyvista---(8)体素化显示表面网格和三角网格显示的区别</h2>
+            <div class="post-date">2020-04-03</div>
+            
+            <div class="post-content">
+              <p>之前显示mesh都是用三角网格的方式，其实也可以把每个坐标当做一个像素点，那么点的值就是像素值。<br>
+这种显示方法和“统一网格<strong>UniformGrid</strong>”很像，UniformGrid更像是三维的显示一个三维矩阵，就像打印一张二维图像一样，不是mask，但是UniformGrid是不好吧0值变成透明的，而这个显示表明是透明的，体素化显示就可以看做打印3d mask。</p>
+<p>下面分别看一下三角表明，体素化的区别：</p>
+<h1 id="1-三角网格显示">1. 三角网格显示</h1>
+<pre><code># sphinx_gallery_thumbnail_number = 2
+from pyvista import examples
+import pyvista as pv
+import numpy as np
+
+# Load a surface to voxelize
+surface = examples.download_foot_bones()
+surface
+
+cpos = [(7.656346967151718, -9.802071079151158, -11.021236183314311),
+ (0.2224512272564101, -0.4594554282112895, 0.5549738359311297),
+ (-0.6279216753504941, -0.7513057097368635, 0.20311105371647392)]
+
+surface.plot(cpos=cpos, opacity=0.75)
+
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1585901154835.png" alt=""></figure>
+<h1 id="2-体素化显示">2. 体素化显示</h1>
+<pre><code>voxels = pv.voxelize(surface, density=surface.length/200)
+
+p = pv.Plotter()
+p.add_mesh(voxels, color=True, show_edges=True, opacity=0.5)
+p.add_mesh(surface, color=&quot;lightblue&quot;, opacity=0.5)
+p.show(cpos=cpos)
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1585901505214.png" alt=""></figure>
+<h2 id="21-给体素赋值">2.1 给体素赋值</h2>
+<p>当然这里也可以是别的值</p>
+<pre><code>voxels[&quot;density&quot;] = np.full(voxels.n_cells, 3.65) # g/cc
+voxels
+voxels.plot(scalars=&quot;density&quot;, cpos=cpos) ## 指定scalars是什么，他会通过字典去索引
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://jzq6520.github.io/post-images/1585901287499.png" alt=""></figure>
+<h1 id="链接">链接</h1>
+<ul>
+<li>https://docs.pyvista.org/examples/01-filter/voxelize.html#sphx-glr-examples-01-filter-voxelize-py</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pyvista-7pyvista-zhong-chang-yong-de-han-shu-he-ying-yong-2">
+                  <h3 class="post-title">
+                     Pyvista---(7)pyvista中常用的函数和应用--2
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1574781538318">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1574781538318" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -118,6 +118,8 @@
 <li><strong>回归subnet是不共享参数的，分类subnet共享参数</strong>；</li>
 <li>最后预测的时候，对预测的所有概率进行排序，然后取前1000个bbox，然后卡0.05的阈值，最后做nms，<strong>nms的阈值是0.5</strong>.</li>
 <li>分类的最后一个conv的bias初始化为<code>-log((1-0.01)/0.01)</code>,其他照样初始化为0，子网络其他部分卷积核进行标准差为0.01的高斯初始化，bias为0初始化。</li>
+<li>除了backbone部分使用迁移学习，<strong>其他conv参数的初始化都使用，均值为0.，标准差为0.01的高斯分布</strong>，不然有一定概率出现模型不收敛，然后loss爆炸。</li>
+<li></li>
 </ol>
 <h2 id="keras中是直接回归两个角的坐标">keras中是直接回归两个角的坐标</h2>
 <p>其实也是可以回归中心点和宽高的。<br>
@@ -314,6 +316,7 @@ def smooth_l1(sigma=3.0):
 <h2 id="引用">引用</h2>
 <ul>
 <li>代码：https://github.com/fizyr/keras-retinanet</li>
+<li>https://medium.com/@14prakash/the-intuition-behind-retinanet-eb636755607d</li>
 </ul>
 
             </div>

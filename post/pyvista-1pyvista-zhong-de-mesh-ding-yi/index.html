@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Pyvista---(2)pyvista中的mesh定义 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Pyvista---(2)pyvista中的mesh定义</h2>
+            <div class="post-date">2020-04-02</div>
+            
+            <div class="post-content">
+              <ul>
+<li>为了简化数据表示的复杂度，在pyvista中，mesh可以表示面，也可以表示体素。</li>
+<li>pyvista里面的所有数据都有节点（node），节点是网格的顶点，由XYZ坐标表示，即使是二维数据也是要有XYZ坐标。</li>
+<li>数据也可以是只包含顶点，比如点云（point cloud），点云是一群点。</li>
+</ul>
+<h1 id="0-mesh-三要素">0 mesh 三要素</h1>
+<ul>
+<li>顶点（node）</li>
+<li>格子（cell)</li>
+<li>值（attributes）:可以是顶点的值也可以是格子的值，如果设置顶点的值那么颜色就是渐变的，设置格子的值颜色就是不渐变的。</li>
+</ul>
+<h2 id="1-mesh中的顶点">1 mesh中的顶点</h2>
+<p>下面以三个例子说明</p>
+<h3 id="11-点云">1.1 点云</h3>
+<ul>
+<li>可以用<code>pyvista.PolyData</code>来创建点云，也就是创建一个包含点的数据结构，可以是二维的也可以是三维的，然后这个数据是可以用来被可视化的。</li>
+<li>用numpy生成一堆点云的坐标，然后转为用vista可视化出来。</li>
+</ul>
+<pre><code class="language-python">import numpy as np
+import pyvista as pv
+
+nodes = np.random.rand(100, 3)
+mesh = pv.PolyData(nodes)
+mesh.plot(point_size=10, screenshot='random_nodes.png')
+</code></pre>
+<p>结果：<br>
+<img src="https://jzq6520.github.io/post-images/1585817022539.png" alt=""></p>
+<h3 id="12-网格gridded-mesh三维数组">1.2 网格（gridded mesh），三维数组</h3>
+<pre><code class="language-python">import pyvista as pv
+from pyvista import examples
+mesh = examples.load_hexbeam()
+
+p = pv.Plotter() ## 建一个画板
+# 然后在画板上画图
+p.add_mesh(mesh, show_edges=True, color='white')
+p.add_mesh(pv.PolyData(mesh.points), color='red', point_size=10, render_points_as_spheres=True)
+## 相机位置
+p.camera_position = [(6.20, 3.00, 7.50),
+                 (0.16, 0.13, 2.65),
+                 (-0.28, 0.94, -0.21)]
+p.show(screenshot='beam_nodes.png')
+</code></pre>
+<p>结果：<br>
+<img src="https://jzq6520.github.io/post-images/1585817823046.png" alt=""></p>
+<h3 id="13-三角表面兔子">1.3 三角表面，兔子</h3>
+<pre><code class="language-python">mesh = examples.download_bunny_coarse()
+
+p = pv.Plotter()
+p.add_mesh(mesh, show_edges=True, color='white')
+p.add_mesh(pv.PolyData(mesh.points), color='red',
+       point_size=10, render_points_as_spheres=True)
+p.camera_position = [(0.02, 0.30, 0.73),
+                 (0.02, 0.03, -0.022),
+                 (-0.03, 0.94, -0.34)]
+p.show(screenshot='bunny_nodes.png')
+</code></pre>
+<p>结果：<br>
+<img src="https://jzq6520.github.io/post-images/1585817927157.png" alt=""></p>
+<h2 id="2-mesh中的-cell单元小格子">2 mesh中的 cell（单元），小格子</h2>
+<ul>
+<li>如果了解医学图像处理的话，ct中的一个体素就是一个cell。</li>
+<li>当然，单元不仅限于体素，它们可以是三个节点之间的三角形，两个节点之间的线，甚至单个节点也可以是其自己的单元（但这是特例）。</li>
+</ul>
+<p>如图所示：<br>
+<img src="https://jzq6520.github.io/post-images/1585818259021.png" alt=""></p>
+<p>在前面的代码上加上这句话即可画出上图：</p>
+<pre><code class="language-python">p.add_mesh(mesh.extract_cells(mesh.n_cells-1),
+           color='pink', edge_color='blue',
+           line_width=5, show_edges=True)
+</code></pre>
+<h2 id="3-mesh中的属性attributes颜色">3 mesh中的属性（attributes），颜色</h2>
+<ul>
+<li>给每个顶点赋值，所以他的颜色是渐变的，如果给cell赋值，那么每个格子的颜色就是一样的。</li>
+<li>之前说的顶点是坐标点，那这个属性就是这个坐标点的值。简单来说顶点是矩阵的坐标，属性就是矩阵里面的值。那么值被可视化出来就是灰度了。<strong>毕竟在图像中矩阵的值就表示灰度值</strong>。</li>
+<li>可以通过<code>.point_arrays</code>或<code>.cell_arrays</code>方法来给mesh赋值。值可以是point的或是cell的，通过这个两个方法。这两个方法是一个字典。</li>
+<li>point数据是指存在于网格的每个节点上的值的数组（标量，向量等）。该数组的顺序至关重要！属性数组中的每个元素必须对应于网格中的节点或单元。</li>
+</ul>
+<pre><code class="language-python">import pyvista as pv
+from pyvista import examples
+mesh = examples.load_hexbeam()
+camera_position = [(6.20, 3.00, 7.50),
+                 (0.16, 0.13, 2.65),
+                 (-0.28, 0.94, -0.21)]
+# 这里是给每个顶点赋值，所以他的颜色是渐变的，如果给cell赋值，那么每个格子的颜色就是一样的。
+mesh.point_arrays['my point values'] = np.arange(mesh.n_points)
+
+mesh.plot(scalars='my point values', cpos=camera_position,
+          show_edges=True, screenshot='beam_point_data.png')
+</code></pre>
+<ul>
+<li>这里是给每个顶点赋值，所以他的颜色是渐变的，如果给cell赋值，那么每个格子的颜色就是一样的。<br>
+<img src="https://jzq6520.github.io/post-images/1585819280887.png" alt=""></li>
+</ul>
+<h4 id="给格子cell赋值">给格子（cell）赋值</h4>
+<pre><code class="language-python">mesh.cell_arrays['my cell values'] = np.arange(mesh.n_cells)
+mesh.plot(scalars='my cell values', cpos=bcpos,
+          show_edges=True, screenshot='beam_cell_data.png')
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1585819438010.png" alt=""></figure>
+<h2 id="链接">链接</h2>
+<ul>
+<li>https://docs.pyvista.org/getting-started/what-is-a-mesh.html</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pyvista-1yi-chong-qiang-da-de-san-wei-ke-shi-hua-gong-ju">
+                  <h3 class="post-title">
+                    Pyvista---(1)一种强大的三维可视化工具
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

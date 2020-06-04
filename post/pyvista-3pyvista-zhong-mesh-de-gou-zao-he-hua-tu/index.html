@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Pyvista---(3)pyvista中mesh的构造和画图 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Pyvista---(3)pyvista中mesh的构造和画图</h2>
+            <div class="post-date">2020-04-03</div>
+            
+            <div class="post-content">
+              <h1 id="mesh的构造">mesh的构造</h1>
+<ol>
+<li>cell的数量：mesh.n_cells</li>
+<li>points的数量：mesh.n_points</li>
+<li>mesh的中心：mesh.center</li>
+<li>mesh的点：mesh.points</li>
+<li>mesh中包含的矩阵：mesh.point_arrays</li>
+<li>查看mesh的信息：print mesh</li>
+<li>访问mesh中矩阵的值：通过字典的方式访问
+<ol>
+<li>访问point的值：mesh.point_arrays['new_points']</li>
+<li>访问cell的值：mesh.cell_arrays['new_points']</li>
+</ol>
+</li>
+<li>给mesh赋值：
+<ol>
+<li>给point赋值：mesh.point_arrays['new_points'] = np.zeros(mesh.n_points)</li>
+<li>给cell赋值：mesh.cell_arrays['new_points'] = np.zeros(mesh.n_cells)</li>
+</ol>
+</li>
+<li>如果是结构化的矩阵，获得mesh的值的维度：mesh.dimensions</li>
+</ol>
+<h1 id="画mesh">画mesh</h1>
+<p>有两种方法画mesh</p>
+<h2 id="第一种">第一种</h2>
+<p>直接画。</p>
+<pre><code>import pyvista as pv
+from pyvista import examples
+
+mesh = examples.load_airplane()
+mesh.plot(screenshot='airplane.png')
+</code></pre>
+<h2 id="第二种">第二种</h2>
+<p>指定更多参数的画：<br>
+先通过<code>pv.Plotter()</code>新建一个渲染窗口，然后通过<code>add_mesh</code>增加mesh。</p>
+<pre><code class="language-python">plotter = pv.Plotter()    # instantiate the plotter
+plotter.add_mesh(mesh)    # add a mesh to the scene
+cpos = plotter.show()     # show the rendering window
+</code></pre>
+<p>请注意，该show方法将返回渲染窗口上次使用的相机位置，以备您选择相机位置并在以后再次使用时使用。</p>
+<p>然后，您可以使用此缓存的摄像机进行其他打印，而不必与打印窗口手动交互：</p>
+<pre><code class="language-python">plotter = pv.Plotter(off_screen=True)
+plotter.add_mesh(mesh, color='tan')
+plotter.camera_position = cpos
+plotter.show(screenshot='airplane.png') ## 保存成图片
+</code></pre>
+<h2 id="可交互的窗口">可交互的窗口</h2>
+<ul>
+<li>pyvista.Plotter：标准绘图仪，它将代码暂停直到关闭</li>
+<li>pyvista.BackgroundPlotter：创建一个交互式的渲染窗口，并且不暂停代码执行</li>
+</ul>
+<h2 id="导出mesh保存成vtk">导出mesh，保存成vtk</h2>
+<p>可以使用.save() 直接绑定到这些对象的方法将任何PyVista网格对象保存为VTK文件格式。例如，上面使用的网格可以保存为：</p>
+<pre><code>mesh.save(&quot;mesh.vtk&quot;)
+</code></pre>
+<h1 id="例子">例子</h1>
+<pre><code class="language-python">&gt;&gt;&gt; mesh = examples.load_airplane()
+&gt;&gt;&gt; # cell的数量
+&gt;&gt;&gt; mesh.n_cells
+2452
+&gt;&gt;&gt; # point的数量
+&gt;&gt;&gt; mesh.n_points
+1335
+&gt;&gt;&gt; # What about scalar arrays? Are there any?
+&gt;&gt;&gt; mesh.n_arrays
+0
+&gt;&gt;&gt; # What are the mesh bounds?
+&gt;&gt;&gt; mesh.bounds
+[139.06100463867188, 1654.9300537109375, 32.09429931640625, 1319.949951171875, -17.741199493408203, 282.1300048828125]
+&gt;&gt;&gt; # mesh的中心
+&gt;&gt;&gt; mesh.center
+[896.9955291748047, 676.0221252441406, 132.19440269470215]
+# 点
+the_pts = mesh.points
+array([[896.994 ,  48.7601,  82.2656],
+       [906.593 ,  48.7601,  80.7452],
+       [907.539 ,  55.4902,  83.6581],
+       [896.994 ,  55.4902,  85.3283],
+       [896.994 ,  42.8477,  77.825 ]], dtype=float32)
+
+</code></pre>
+<h2 id="point_arrays">point_arrays</h2>
+<pre><code class="language-python">mesh = examples.load_uniform()
+## 获得值
+arr = mesh.point_arrays['Spatial Point Data']
+print mesh #查看mesh信息
+
+output：
+UniformGrid (0x12c9a9328)
+  N Cells:	729
+  N Points:	1000
+  X Bounds:	0.000e+00, 9.000e+00
+  Y Bounds:	0.000e+00, 9.000e+00
+  Z Bounds:	0.000e+00, 9.000e+00
+  Dimensions:	10, 10, 10
+  Spacing:	1.000e+00, 1.000e+00, 1.000e+00
+  N Arrays:	2
+
+# mesh.dimensions
+mesh = examples.load_uniform()
+mesh.dimensions
+output：
+[10, 10, 10]
+</code></pre>
+<p>mesh的值是存储成一维的，所以如果想转换成原来的三维矩阵的话，就需要按照mesh.dimensions 将arr矩阵转换成矩阵。这样其实就是一个矩阵了，因为numpy矩阵本身就是这样。</p>
+<h2 id="如果是unstructuredgrid则没有meshdimensions">如果是'UnstructuredGrid'则没有mesh.dimensions</h2>
+<p>访问的话就会报错：</p>
+<pre><code>AttributeError: 'UnstructuredGrid' object has no attribute 'dimensions'
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pyvista-1pyvista-zhong-de-mesh-ding-yi">
+                  <h3 class="post-title">
+                    Pyvista---(2)pyvista中的mesh定义
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Pyvista---(4)pyvista中常用的函数和应用 | chuck</title>
+<meta name="description" content="天地不仁以万物为刍狗">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
+<link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jzq6520.github.io">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
+        <h1 class="site-title">chuck</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      天地不仁以万物为刍狗
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Pyvista---(4)pyvista中常用的函数和应用</h2>
+            <div class="post-date">2020-04-03</div>
+            
+            <div class="post-content">
+              <h1 id="1-多个图类似于matplotlib">1. 多个图，类似于matplotlib</h1>
+<pre><code class="language-python">p = pv.Plotter(shape=(3, 3))
+p.subplot(0, 0)
+</code></pre>
+<h1 id="2-指定颜色和平滑阴影">2. 指定颜色和平滑阴影</h1>
+<pre><code>supertoroid.plot(color=&quot;tan&quot;, smooth_shading=True)
+</code></pre>
+<h1 id="3-创建点云">3. 创建点云</h1>
+<pre><code class="language-python">import pyvista as pv
+import numpy as np
+## 生成一组点云的坐标，然后构建点云的mesh
+points = np.random.rand(30000, 3)
+point_cloud = pv.PolyData(points)
+print np.allclose(points, point_cloud.points)#检测是否一致
+# 画点云
+point_cloud.plot(eye_dome_lighting=True)
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://jzq6520.github.io/post-images/1585884475887.png" alt=""></figure>
+<h2 id="31-给点云赋值">3.1 给点云赋值</h2>
+<pre><code class="language-python">## 给点云赋值，这里就把z轴坐标的值赋值给点云
+data = points[:,-1]
+point_cloud[&quot;value&quot;] = data
+point_cloud.plot(render_points_as_spheres=True)
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://jzq6520.github.io/post-images/1585884520313.png" alt=""></figure>
+<h2 id="32-画向量把向量的值存在点云中">3.2 画向量,把向量的值存在点云中</h2>
+<p>因为mesh个一给点赋很多的值，通过字典的形式，只需要个数对的上，还有就是mesh中点的顺序要和值的存储顺序一样。</p>
+<pre><code>def compute_vectors(mesh):
+    origin = mesh.center
+    vectors = mesh.points - origin
+    vectors = vectors / np.linalg.norm(vectors, axis=1)[:, None]
+    return vectors
+
+vectors = compute_vectors(point_cloud)
+point_cloud['vectors'] = vectors
+arrows = point_cloud.glyph(orient='vectors', scale=False, factor=0.15,) #通过这个函数构建箭头
+# Display the arrows
+plotter = pv.Plotter()
+plotter.add_mesh(point_cloud, color='maroon', point_size=10.,
+                 render_points_as_spheres=True)
+plotter.add_mesh(arrows, color='lightblue')
+# plotter.add_point_labels([point_cloud.center,], ['Center',],
+#                          point_color='yellow', point_size=20)
+plotter.show_grid()
+plotter.show()
+
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://jzq6520.github.io/post-images/1585884809052.png" alt=""></figure>
+<h1 id="4-画多面的图并不是封闭">4. 画多面的图，并不是封闭</h1>
+<pre><code>import pyvista as pv
+# mesh points
+vertices = np.array([[0, 0, 0],
+                     [1, 0, 0],
+                     [1, 1, 0],
+                     [0, 1, 0],
+                     [0.5, 0.5, -1]])
+
+# mesh faces,这个还不知道是什么意思，怎么定义？
+faces = np.hstack([[4, 0, 1, 2, 3],  # square
+                   [3, 0, 1, 4],     # triangle
+                   [3, 1, 2, 4]])    # triangle
+
+surf = pv.PolyData(vertices, faces)
+surf.cell_arrays['scalars'] = np.arange(3)
+# plot each face with a different color
+# surf.plot(scalars=np.arange(3), cpos=[-1, 1, 0.5])
+
+p = pv.Plotter() ## 建一个普通画板
+# p = pv.BackgroundPlotter() ## 建一个交互式画板
+p.camera_position = [-1, 1, 0.5]
+p.add_mesh(surf)
+p.show()
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://jzq6520.github.io/post-images/1585885445640.png" alt=""></figure>
+<h1 id="5-画线条">5. 画线条</h1>
+<p>https://docs.pyvista.org/examples/00-load/create-spline.html</p>
+<pre><code class="language-python">def make_points():
+    &quot;&quot;&quot;Helper to make XYZ points&quot;&quot;&quot;
+    theta = np.linspace(-4 * np.pi, 4 * np.pi, 100)
+    z = np.linspace(-2, 2, 100)
+    r = z**2 + 1
+    x = r * np.sin(theta)
+    y = r * np.cos(theta)
+    return np.column_stack((x, y, z))
+
+points = make_points()
+
+def polyline_from_points(points):
+    poly = pv.PolyData()
+    poly.points = points
+    the_cell = np.arange(0, len(points), dtype=np.int)
+    the_cell = np.insert(the_cell, 0, len(points))
+    poly.lines = the_cell
+    return poly
+
+polyline = polyline_from_points(points)
+polyline[&quot;scalars&quot;] = np.arange(polyline.n_points)
+tube = polyline.tube(radius=0.1)
+tube.plot(smooth_shading=True)
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://jzq6520.github.io/post-images/1585885657835.png" alt=""></figure>
+<h2 id="51-让线条更加平滑">5.1 让线条更加平滑</h2>
+<p>通过插值</p>
+<pre><code># Create spline with 1000 interpolation points
+spline = pv.Spline(points, 1000)
+
+# add scalars to spline and plot it
+spline[&quot;scalars&quot;] = np.arange(spline.n_points)
+tube = spline.tube(radius=0.1)
+tube.plot(smooth_shading=True)
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://jzq6520.github.io/post-images/1585885783913.png" alt=""></figure>
+<h2 id="52-画中心线细线">5.2 画中心线/细线</h2>
+<p>样条线也可以绘制为普通线</p>
+<pre><code># generate same spline with 400 interpolation points
+spline = pv.Spline(points, 400)
+
+# plot without scalars
+spline.plot(line_width=4, color=&quot;k&quot;)
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://jzq6520.github.io/post-images/1585885858134.png" alt=""></figure>
+<h1 id="6-绘制表明曲面三维mask">6. 绘制表明，曲面，三维mask</h1>
+<p>https://docs.pyvista.org/examples/00-load/create-structured-surface.html</p>
+<p>首先构建一个numpy的meshgrid，然后用pyvista画。</p>
+<pre><code class="language-python">import pyvista as pv
+from pyvista import examples
+import numpy as np
+
+x = np.arange(-10, 10, 0.25)
+y = np.arange(-10, 10, 0.25)
+x, y = np.meshgrid(x, y)
+r = np.sqrt(x ** 2 + y ** 2)
+z = np.sin(r)
+
+grid = pv.StructuredGrid(x, y, z)
+grid.plot()
+
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://jzq6520.github.io/post-images/1585886015467.png" alt=""></figure>
+<p>访问其中的点的值：</p>
+<pre><code>grid.points
+</code></pre>
+<h2 id="61-绘制平均曲率">6.1 绘制平均曲率</h2>
+<pre><code># Plot mean curvature as well
+grid.plot_curvature(clim=[-1, 1])
+</code></pre>
+<h1 id="7-创建一个空的grid结构然后设置坐标">7 创建一个空的grid结构，然后设置坐标</h1>
+<p>坐标的顺序是对的才可以，不然画出来会是乱的。</p>
+<pre><code>points = np.random.rand(30000, 3)
+
+mesh = pv.StructuredGrid()
+# Set the coordinates from the numpy array
+mesh.points = points
+# set the dimensions
+mesh.dimensions = [29, 32, 1]
+
+# and then inspect it!
+mesh.plot(show_edges=True, show_grid=True, cpos=&quot;xy&quot;)
+</code></pre>
+<p>下图就是乱的，因为坐标是随机生成的，坐标的顺序是混乱的。<br>
+<img src="https://jzq6520.github.io/post-images/1585891666700.png" alt=""></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jzq6520.github.io/post/pyvista-3pyvista-zhong-mesh-de-gou-zao-he-hua-tu">
+                  <h3 class="post-title">
+                    Pyvista---(3)pyvista中mesh的构造和画图
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '81582cfb33261fe0bcc0',
+        clientSecret: 'ca46b3a9c6197df0bda57648b59e5ea77b37930b',
+        repo: 'jzq6520.github.io',
+        owner: 'jzq6520',
+        admin: ['jzq6520'],
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

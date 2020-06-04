@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1574781538318">
+<link rel="shortcut icon" href="https://jzq6520.github.io/favicon.ico?v=1591270610380">
 <link rel="stylesheet" href="https://jzq6520.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://jzq6520.github.io">
-        <img src="https://jzq6520.github.io/images/avatar.png?v=1574781538318" class="site-logo">
+        <img src="https://jzq6520.github.io/images/avatar.png?v=1591270610380" class="site-logo">
         <h1 class="site-title">chuck</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -172,10 +172,18 @@ array([[2, 2, 2, 2],
 <ul>
 <li>中心点回归： 相对于anchor中心点的偏移，再除以anchor的宽度/高度。这里除以宽度相当于是做一个归一化，<strong>因为同样的偏移量但对于大目标和小目标的意义是不一样的</strong>。</li>
 <li>宽/高回归：回归一个log（gt/anchor)；<strong>因为同样的宽高但对于大目标和小目标的意义是不一样的</strong>。大目标的宽高如果误差一点点我们希望提供的loss比较小，而小目标宽高如果误差一点点希望提供的loss比大目标的大一些。所以用log函数，因为log曲线的后面部分的值其实是比较小的，值的增长没那么快。</li>
+<li>keras-retinanet中是回归左上角和右下角的角点坐标，回归的转换和中心点回归时候一样，只是对应的是anchor的角点，代码如下。</li>
 </ul>
+<pre><code>targets_dx1 = (gt_boxes[:, 0] - anchors[:, 0]) / anchor_widths
+targets_dy1 = (gt_boxes[:, 1] - anchors[:, 1]) / anchor_heights
+targets_dx2 = (gt_boxes[:, 2] - anchors[:, 2]) / anchor_widths
+targets_dy2 = (gt_boxes[:, 3] - anchors[:, 3]) / anchor_heights
+
+</code></pre>
 <h2 id="引用">引用</h2>
 <ul>
 <li>https://github.com/yhenon/pytorch-retinanet</li>
+<li>https://medium.com/@14prakash/the-intuition-behind-retinanet-eb636755607d</li>
 </ul>
 
             </div>
